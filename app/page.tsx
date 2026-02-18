@@ -5,7 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { tasks } from "@/data/tasks";
 import { categoryLabels, type TaskCategory } from "@/types";
-import { getRecentTasks } from "@/lib/storage";
+import { clearProgress, getActiveTaskProgress, getFavorites, getWorkerName, hasFavorites } from "@/lib/storage";
+import { checklists } from "@/data/checklists";
+import { TaskIcon } from "@/components/task-icon";
+import { Onboarding } from "@/components/onboarding";
 
 const categoryOrder: TaskCategory[] = [
   "gros-oeuvre",
@@ -23,16 +26,26 @@ function normalize(str: string) {
 
 export default function HomePage() {
   const [query, setQuery] = useState("");
-  const [recentIds, setRecentIds] = useState<string[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [editingFavorites, setEditingFavorites] = useState(false);
+  const [activeProgress, setActiveProgress] = useState<{ taskId: string; checkedIds: string[] }[]>([]);
   const [showTop, setShowTop] = useState(false);
+  const [searchPinned, setSearchPinned] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [workerName, setWorkerNameState] = useState("");
 
   useEffect(() => {
-    setRecentIds(getRecentTasks());
+    setFavoriteIds(getFavorites());
+    setActiveProgress(getActiveTaskProgress());
+    setWorkerNameState(getWorkerName());
+    if (!hasFavorites()) setShowOnboarding(true);
   }, []);
 
   useEffect(() => {
     function onScroll() {
       setShowTop(window.scrollY > 400);
+      setSearchPinned(window.scrollY > 60);
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -42,10 +55,22 @@ export default function HomePage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const recentTasks = useMemo(
-    () => recentIds.map((id) => tasks.find((t) => t.id === id)).filter(Boolean),
-    [recentIds],
+  const favoriteTasks = useMemo(
+    () => favoriteIds.map((id) => tasks.find((t) => t.id === id)).filter(Boolean),
+    [favoriteIds],
   );
+
+  const activeTasks = useMemo(() => {
+    return activeProgress
+      .map(({ taskId, checkedIds }) => {
+        const task = tasks.find((t) => t.id === taskId);
+        const cl = checklists[taskId];
+        if (!task || !cl) return null;
+        const total = cl.phases.flatMap((p) => p.items).length;
+        return { task, checked: checkedIds.length, total };
+      })
+      .filter(Boolean) as { task: (typeof tasks)[number]; checked: number; total: number }[];
+  }, [activeProgress]);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return tasks;
@@ -110,30 +135,70 @@ export default function HomePage() {
             />
           </button>
 
-          <div className="flex items-center justify-end gap-2">
-            <Link
-              href="/history"
-              className="rounded-lg p-2 text-white/90 transition-colors hover:bg-white/10 hover:text-white"
-              aria-label="Récents"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </Link>
-            <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-white"
-              aria-hidden
+          <div className="relative flex items-center justify-end">
+            <button
+              onClick={() => setShowMenu((v) => !v)}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/30"
+              aria-label="Menu"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-            </div>
+            </button>
+
+            {showMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                  {workerName && (
+                    <div className="border-b border-gray-100 px-4 py-3">
+                      <p className="font-heading text-sm font-bold text-gray-900">{workerName}</p>
+                      <p className="text-xs text-gray-400">Travailleur</p>
+                    </div>
+                  )}
+                  <div className="py-1">
+                    <Link
+                      href="/history"
+                      onClick={() => setShowMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                      <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Historique
+                    </Link>
+                    <button
+                      onClick={() => { setShowMenu(false); setEditingFavorites(true); setShowOnboarding(true); }}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                      <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.518 4.674h4.911c.969 0 1.372 1.24.588 1.81l-3.974 2.888 1.518 4.674c.3.921-.755 1.688-1.539 1.118L12 15.203l-3.974 2.888c-.783.57-1.838-.197-1.539-1.118l1.518-4.674-3.974-2.888c-.783-.57-.38-1.81.588-1.81h4.911l1.518-4.674z" />
+                      </svg>
+                      Modifier mes favoris
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowMenu(false);
+                        setEditingFavorites(false);
+                        setShowOnboarding(true);
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                      <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Recommencer l&apos;accueil
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
       </header>
 
-      <div className="sticky top-0 z-10 bg-[#118914] px-5 pt-1.5 pb-3 sm:px-8">
+      <div className={`sticky top-0 z-10 bg-[#118914] px-5 pb-3 sm:px-8 transition-[padding] duration-200 ${searchPinned ? "pt-3" : "pt-1.5"}`}>
         <div className="relative">
           <svg
             className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70"
@@ -163,21 +228,84 @@ export default function HomePage() {
       </div>
 
       <main className="flex-1 px-5 py-4 sm:px-8">
-        {/* Recent tasks */}
-        {!query && recentTasks.length > 0 && (
+        {/* Active / ongoing tasks */}
+        {!query && activeTasks.length > 0 && (
           <section className="mb-6">
-            <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">
-              Récents
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted">
+              En cours
             </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {activeTasks.map(({ task, checked, total }) => (
+                <div key={task.id} className="relative">
+                  <Link
+                    href={`/tasks/${task.id}?resume=1`}
+                    className="flex aspect-[4/3] flex-col justify-between rounded-2xl border-2 border-green-200 bg-green-50 p-5 transition-colors hover:border-green-300 active:bg-green-100"
+                  >
+                    <div className="flex items-start justify-between">
+                      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-green-700 shadow-sm">
+                        <TaskIcon taskId={task.id} className="h-6 w-6" />
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-heading text-base font-bold leading-tight text-green-900">
+                        {task.title}
+                      </p>
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-green-200">
+                        <div
+                          className="h-full rounded-full bg-green-600 transition-all"
+                          style={{ width: `${(checked / total) * 100}%` }}
+                        />
+                      </div>
+                      <p className="mt-1.5 text-sm font-medium text-green-700">
+                        {checked}/{total} vérifications
+                      </p>
+                    </div>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      if (!confirm("Abandonner cette inspection ?")) return;
+                      clearProgress(task.id);
+                      setActiveProgress((prev) => prev.filter((p) => p.taskId !== task.id));
+                    }}
+                    className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-gray-400 shadow-sm transition-colors hover:bg-white hover:text-red-500"
+                    aria-label="Abandonner"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6h12z" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Favorites */}
+        {!query && favoriteTasks.length > 0 && (
+          <section className="mb-6">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
+                Favoris
+              </h2>
+              <button
+                onClick={() => { setEditingFavorites(true); setShowOnboarding(true); }}
+                className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+                </svg>
+                Modifier
+              </button>
+            </div>
             <div className="relative">
               <div className="flex gap-2 overflow-x-auto scroll-smooth pb-1">
-                {recentTasks.map((task) => task && (
+                {favoriteTasks.map((task) => task && (
                 <Link
                   key={task.id}
                   href={`/tasks/${task.id}`}
                   className="flex shrink-0 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 transition-colors hover:border-gray-300 hover:bg-gray-50"
                 >
-                  <span className="text-lg">{task.icon}</span>
+                  <TaskIcon taskId={task.id} className="h-4 w-4 text-gray-500" />
                   <span className="font-heading text-xs font-semibold">{task.title}</span>
                 </Link>
               ))}
@@ -211,8 +339,8 @@ export default function HomePage() {
                       href={`/tasks/${task.id}`}
                       className="flex min-h-[56px] items-center gap-3.5 rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 hover:bg-gray-50 active:bg-gray-50"
                     >
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-2xl">
-                        {task.icon}
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
+                        <TaskIcon taskId={task.id} className="h-5 w-5" />
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="font-heading text-base font-semibold leading-tight">{task.title}</p>
@@ -233,6 +361,19 @@ export default function HomePage() {
       <footer className="px-5 py-4 text-center text-xs text-muted">
         Restez vigilant. Chaque geste compte.
       </footer>
+
+      {/* Onboarding overlay */}
+      {showOnboarding && (
+        <Onboarding
+          initial={editingFavorites ? favoriteIds : []}
+          skipWelcome={editingFavorites}
+          onDone={(ids) => {
+            setFavoriteIds(ids);
+            setShowOnboarding(false);
+            setEditingFavorites(false);
+          }}
+        />
+      )}
 
       {/* Back to top */}
       <button

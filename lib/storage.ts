@@ -32,6 +32,72 @@ export function clearProgress(taskId: string) {
   } catch { /* ignore */ }
 }
 
+export function getActiveTaskProgress(): { taskId: string; checkedIds: string[] }[] {
+  const results: { taskId: string; checkedIds: string[] }[] = [];
+  const d = new Date().toISOString().slice(0, 10);
+  const prefix = `${PREFIX}:progress:`;
+  const suffix = `:${d}`;
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(prefix) && k.endsWith(suffix)) {
+        const taskId = k.slice(prefix.length, k.length - suffix.length);
+        const raw = localStorage.getItem(k);
+        const checkedIds: string[] = raw ? JSON.parse(raw) : [];
+        if (checkedIds.length > 0) {
+          results.push({ taskId, checkedIds });
+        }
+      }
+    }
+  } catch { /* ignore */ }
+  return results;
+}
+
+// ── Worker name ──────────────────────────────────────────────────
+
+const NAME_KEY = key("worker-name");
+
+export function getWorkerName(): string {
+  try {
+    return localStorage.getItem(NAME_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+export function setWorkerName(name: string) {
+  try {
+    localStorage.setItem(NAME_KEY, name);
+  } catch { /* ignore */ }
+}
+
+// ── Favorites ────────────────────────────────────────────────────
+
+const FAVORITES_KEY = key("favorites");
+
+export function getFavorites(): string[] {
+  try {
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function setFavorites(ids: string[]) {
+  try {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(ids));
+  } catch { /* ignore */ }
+}
+
+export function hasFavorites(): boolean {
+  try {
+    return localStorage.getItem(FAVORITES_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
 // ── Recent tasks ─────────────────────────────────────────────────
 
 const RECENT_KEY = key("recent");

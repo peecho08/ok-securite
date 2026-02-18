@@ -1,13 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { tasks } from "@/data/tasks";
 import { checklists } from "@/data/checklists";
 import type { Phase } from "@/types";
-import { addRecentTask, loadProgress, saveProgress } from "@/lib/storage";
+import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress } from "@/lib/storage";
 
 function haptic() {
   try { navigator?.vibrate?.(10); } catch { /* unsupported */ }
@@ -16,6 +16,8 @@ function haptic() {
 export default function TaskPage() {
   const { taskId } = useParams<{ taskId: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const shouldResume = searchParams.get("resume") === "1";
 
   const task = tasks.find((t) => t.id === taskId);
   const checklist = checklists[taskId];
@@ -24,7 +26,7 @@ export default function TaskPage() {
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [collapsed, setCollapsed] = useState<Set<Phase>>(new Set());
   const [expandedInfo, setExpandedInfo] = useState<string | null>(null);
-  const [workerName, setWorkerName] = useState("");
+  const [workerName, setWorkerName] = useState(getWorkerName);
   const [showCelebration, setShowCelebration] = useState(false);
   const [phaseToast, setPhaseToast] = useState<{ phase: Phase; title: string } | null>(null);
   const [undoToast, setUndoToast] = useState<string | null>(null);
@@ -32,13 +34,17 @@ export default function TaskPage() {
   const userToggledRef = useRef(false);
   const prevCompletedPhasesRef = useRef<Set<Phase>>(new Set());
 
-  // Load saved progress and track recent task
+  // Load or clear progress depending on entry mode
   useEffect(() => {
     if (!taskId) return;
-    const saved = loadProgress(taskId);
-    if (saved.length > 0) setChecked(new Set(saved));
+    if (shouldResume) {
+      const saved = loadProgress(taskId);
+      if (saved.length > 0) setChecked(new Set(saved));
+    } else {
+      clearProgress(taskId);
+    }
     addRecentTask(taskId);
-  }, [taskId]);
+  }, [taskId, shouldResume]);
 
   // Persist progress on change
   useEffect(() => {
@@ -167,11 +173,26 @@ export default function TaskPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="truncate text-lg font-bold leading-tight">
               {task.title}
             </h1>
           </div>
+          {checked.size > 0 && (
+            <button
+              onClick={() => {
+                if (!confirm("Abandonner cette inspection ? La progression sera perdue.")) return;
+                clearProgress(taskId);
+                router.push("/");
+              }}
+              className="flex h-10 items-center gap-1.5 rounded-lg px-3 text-xs text-red-500 transition-colors hover:bg-red-50 active:bg-red-50"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6h12z" />
+              </svg>
+              Abandonner
+            </button>
+          )}
         </div>
 
         <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-gray-100">

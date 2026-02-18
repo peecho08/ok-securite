@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { clearHistory, getHistory, type HistoryEntry } from "@/lib/storage";
+import { TaskIcon } from "@/components/task-icon";
 
 export default function HistoryPage() {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
@@ -80,8 +81,8 @@ export default function HistoryPage() {
                         key={`${entry.completedAt}-${i}`}
                         className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3.5"
                       >
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-xl">
-                          {entry.taskIcon}
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
+                          <TaskIcon taskId={entry.taskId} className="h-5 w-5" fallback={entry.taskIcon} />
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="font-heading text-sm font-semibold leading-tight">
