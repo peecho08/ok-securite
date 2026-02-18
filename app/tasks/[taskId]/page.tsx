@@ -30,7 +30,7 @@ export default function TaskPage() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [phaseToast, setPhaseToast] = useState<{ phase: Phase; title: string } | null>(null);
   const [undoToast, setUndoToast] = useState<string | null>(null);
-  const undoTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const userToggledRef = useRef(false);
   const prevCompletedPhasesRef = useRef<Set<Phase>>(new Set());
 
