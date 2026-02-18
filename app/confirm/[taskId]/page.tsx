@@ -6,6 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { tasks } from "@/data/tasks";
 import { addHistory, clearProgress } from "@/lib/storage";
+import { TaskIcon } from "@/components/task-icon";
+import { AlertTriangle } from "lucide-react";
 
 export default function ConfirmPage() {
   const { taskId } = useParams<{ taskId: string }>();
@@ -71,7 +73,7 @@ export default function ConfirmPage() {
               className="h-20 w-auto sm:h-24"
             />
           ) : (
-            <span className="text-6xl sm:text-7xl">⚠️</span>
+            <AlertTriangle className="h-20 w-20 text-amber-600 sm:h-24 sm:w-24" />
           )}
         </div>
 
@@ -79,9 +81,10 @@ export default function ConfirmPage() {
           {allDone ? "Checklist complétée" : "Checklist incomplète"}
         </h1>
 
-        <p className="mt-2 text-sm text-muted">
-          {task.title}
-        </p>
+        <div className="mt-3 flex items-center gap-2 text-muted">
+          <TaskIcon taskId={taskId} className="h-5 w-5" />
+          <span className="text-sm">{task.title}</span>
+        </div>
 
         {/* Summary card */}
         <div className="mt-8 w-full max-w-md rounded-xl border border-gray-200 bg-white p-5">

@@ -97,6 +97,29 @@ export default function HomePage() {
       }));
   }, [filtered]);
 
+  const [greeting] = useState(() => {
+    const h = new Date().getHours();
+    const pick = (opts: string[]) => opts[Math.floor(Math.random() * opts.length)];
+    if (h < 5) return pick(["Bonne nuit", "Encore debout", "Nuit blanche"]);
+    if (h < 12) return pick(["Bon matin", "Bonne matinée", "Salut"]);
+    if (h < 17) return pick(["Bon après-midi", "Bonne journée", "Salut"]);
+    return pick(["Bonne soirée", "Bonne fin de journée", "Salut"]);
+  });
+
+  const [motivationalQuote] = useState(() => {
+    const quotes = [
+      "Discipline. Effort. Respect.",
+      "Le travail bien fait, ça parle tout seul.",
+      "Travaille fort. Reste solide.",
+      "Travaille comme si ton nom était dessus.",
+      "La fierté commence par la sécurité.",
+      "Chaque geste compte. Chaque règle aussi.",
+      "La sécurité n'est pas une option.",
+      "Le vrai talent, c'est l'effort.",
+    ];
+    return quotes[Math.floor(Math.random() * quotes.length)];
+  });
+
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="bg-[#118914] px-5 pt-6 pb-4 sm:px-8">
@@ -130,7 +153,7 @@ export default function HomePage() {
               alt="OK Chantier"
               width={188}
               height={48}
-              className="h-[40px] w-auto brightness-0 invert"
+              className="h-12 w-auto brightness-0 invert sm:h-9"
               priority
             />
           </button>
@@ -138,40 +161,41 @@ export default function HomePage() {
           <div className="relative flex items-center justify-end">
             <button
               onClick={() => setShowMenu((v) => !v)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/30"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition-colors active:bg-white/40 sm:h-9 sm:w-9"
               aria-label="Menu"
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="h-6 w-6 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </button>
 
             {showMenu && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                <div className="fixed inset-0 z-40 bg-black/30 sm:bg-transparent" onClick={() => setShowMenu(false)} aria-hidden />
+                <div className="fixed inset-x-0 bottom-0 z-50 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:max-h-none sm:w-56 sm:rounded-xl sm:rounded-t-none sm:border sm:border-t-0 sm:shadow-xl">
+                  <div className="mx-auto mb-2 mt-3 h-1 w-12 rounded-full bg-gray-200 sm:hidden" aria-hidden />
                   {workerName && (
-                    <div className="border-b border-gray-100 px-4 py-3">
-                      <p className="font-heading text-sm font-bold text-gray-900">{workerName}</p>
-                      <p className="text-xs text-gray-400">Travailleur</p>
+                    <div className="border-b border-gray-100 px-5 py-4 sm:px-4 sm:py-3">
+                      <p className="font-heading text-base font-bold text-gray-900 sm:text-sm">{workerName}</p>
+                      <p className="text-sm text-gray-400 sm:text-xs">Travailleur</p>
                     </div>
                   )}
-                  <div className="py-1">
+                  <div className="py-2 pb-[env(safe-area-inset-bottom)] sm:py-1 sm:pb-0">
                     <Link
                       href="/history"
                       onClick={() => setShowMenu(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                      className="flex min-h-[52px] items-center gap-4 px-5 py-3 text-base text-gray-700 transition-colors active:bg-gray-100 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50"
                     >
-                      <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       Historique
                     </Link>
                     <button
                       onClick={() => { setShowMenu(false); setEditingFavorites(true); setShowOnboarding(true); }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                      className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50"
                     >
-                      <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.518 4.674h4.911c.969 0 1.372 1.24.588 1.81l-3.974 2.888 1.518 4.674c.3.921-.755 1.688-1.539 1.118L12 15.203l-3.974 2.888c-.783.57-1.838-.197-1.539-1.118l1.518-4.674-3.974-2.888c-.783-.57-.38-1.81.588-1.81h4.911l1.518-4.674z" />
                       </svg>
                       Modifier mes favoris
@@ -182,9 +206,9 @@ export default function HomePage() {
                         setEditingFavorites(false);
                         setShowOnboarding(true);
                       }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                      className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50"
                     >
-                      <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
                       Recommencer l&apos;accueil
@@ -228,6 +252,23 @@ export default function HomePage() {
       </div>
 
       <main className="flex-1 px-5 py-4 sm:px-8">
+        {/* Motivational empty state */}
+        {!query && activeTasks.length === 0 && (
+          <section className="mx-auto mb-6 max-w-xs py-6 text-center">
+            {workerName && (
+              <p className="mb-3 font-heading text-lg font-semibold text-gray-400">
+                {greeting}, {workerName}
+              </p>
+            )}
+            <p className="font-heading text-2xl font-bold text-gray-700">
+              &laquo;&nbsp;{motivationalQuote}&nbsp;&raquo;
+            </p>
+            <p className="mt-1.5 text-sm text-gray-400">
+              Choisissez une tâche pour commencer.
+            </p>
+          </section>
+        )}
+
         {/* Active / ongoing tasks */}
         {!query && activeTasks.length > 0 && (
           <section className="mb-6">
@@ -235,8 +276,8 @@ export default function HomePage() {
               En cours
             </h2>
             <div className="grid grid-cols-2 gap-3">
-              {activeTasks.map(({ task, checked, total }) => (
-                <div key={task.id} className="relative">
+              {activeTasks.map(({ task, checked, total }, i) => (
+                <div key={task.id} className="animate-slide-in-up relative" style={{ animationDelay: `${i * 80}ms` }}>
                   <Link
                     href={`/tasks/${task.id}?resume=1`}
                     className="flex aspect-[4/3] flex-col justify-between rounded-2xl border-2 border-green-200 bg-green-50 p-5 transition-colors hover:border-green-300 active:bg-green-100"
@@ -298,15 +339,15 @@ export default function HomePage() {
               </button>
             </div>
             <div className="relative">
-              <div className="flex gap-2 overflow-x-auto scroll-smooth pb-1">
+              <div className="flex gap-2.5 overflow-x-auto scroll-smooth pb-1">
                 {favoriteTasks.map((task) => task && (
                 <Link
                   key={task.id}
                   href={`/tasks/${task.id}`}
-                  className="flex shrink-0 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                  className="flex min-h-[48px] shrink-0 items-center gap-2.5 rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300 hover:bg-gray-50 active:bg-gray-50"
                 >
-                  <TaskIcon taskId={task.id} className="h-4 w-4 text-gray-500" />
-                  <span className="font-heading text-xs font-semibold">{task.title}</span>
+                  <TaskIcon taskId={task.id} className="h-5 w-5 text-gray-500" />
+                  <span className="font-heading text-sm font-semibold">{task.title}</span>
                 </Link>
               ))}
               </div>

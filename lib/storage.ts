@@ -4,16 +4,15 @@ function key(...parts: string[]) {
   return `${PREFIX}:${parts.join(":")}`;
 }
 
-// ── Checklist progress (keyed by taskId + today's date) ──────────
+// ── Checklist progress (persists until finished or deleted) ──────
 
-function todayKey(taskId: string) {
-  const d = new Date().toISOString().slice(0, 10);
-  return key("progress", taskId, d);
+function progressKey(taskId: string) {
+  return key("progress", taskId);
 }
 
 export function loadProgress(taskId: string): string[] {
   try {
-    const raw = localStorage.getItem(todayKey(taskId));
+    const raw = localStorage.getItem(progressKey(taskId));
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -22,26 +21,25 @@ export function loadProgress(taskId: string): string[] {
 
 export function saveProgress(taskId: string, checkedIds: string[]) {
   try {
-    localStorage.setItem(todayKey(taskId), JSON.stringify(checkedIds));
+    localStorage.setItem(progressKey(taskId), JSON.stringify(checkedIds));
   } catch { /* quota exceeded — ignore */ }
 }
 
 export function clearProgress(taskId: string) {
   try {
-    localStorage.removeItem(todayKey(taskId));
+    localStorage.removeItem(progressKey(taskId));
   } catch { /* ignore */ }
 }
 
 export function getActiveTaskProgress(): { taskId: string; checkedIds: string[] }[] {
   const results: { taskId: string; checkedIds: string[] }[] = [];
-  const d = new Date().toISOString().slice(0, 10);
   const prefix = `${PREFIX}:progress:`;
-  const suffix = `:${d}`;
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && k.startsWith(prefix) && k.endsWith(suffix)) {
-        const taskId = k.slice(prefix.length, k.length - suffix.length);
+      if (k && k.startsWith(prefix)) {
+        const taskId = k.slice(prefix.length);
+        if (taskId.includes(":")) continue; // skip legacy date-keyed entries
         const raw = localStorage.getItem(k);
         const checkedIds: string[] = raw ? JSON.parse(raw) : [];
         if (checkedIds.length > 0) {

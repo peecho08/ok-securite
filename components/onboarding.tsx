@@ -34,6 +34,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
   const [name, setName] = useState(getWorkerName);
   const [selected, setSelected] = useState<Set<string>>(new Set(initial));
   const [search, setSearch] = useState("");
+  const [exiting, setExiting] = useState(false);
 
   function handleStart() {
     if (name.trim()) setWorkerName(name.trim());
@@ -50,10 +51,11 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
   }
 
   function handleConfirm() {
-    if (selected.size < MIN_FAVORITES) return;
+    if (selected.size < MIN_FAVORITES || exiting) return;
     const ids = Array.from(selected);
     setFavorites(ids);
-    onDone(ids);
+    setExiting(true);
+    setTimeout(() => onDone(ids), 350);
   }
 
   const filteredGrouped = useMemo(() => {
@@ -123,7 +125,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white">
+    <div className={`fixed inset-0 z-50 flex flex-col bg-white ${exiting ? "animate-fade-out-up" : ""}`}>
       <div className="bg-[#118914] px-5 pb-4 pt-8 sm:px-8">
         <div className="mx-auto max-w-3xl">
           {!skipWelcome && (

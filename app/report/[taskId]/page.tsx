@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { tasks } from "@/data/tasks";
+import { getWorkerName } from "@/lib/storage";
+import { TaskIcon } from "@/components/task-icon";
+import { ClipboardCheck } from "lucide-react";
 
 const severityOptions = [
   { value: "observation", label: "Observation", color: "bg-blue-100 text-blue-800" },
@@ -18,7 +21,7 @@ export default function ReportPage() {
 
   const [severity, setSeverity] = useState("observation");
   const [description, setDescription] = useState("");
-  const [reporter, setReporter] = useState("");
+  const [reporter, setReporter] = useState(() => getWorkerName());
   const [submitted, setSubmitted] = useState(false);
 
   if (!task) {
@@ -54,8 +57,8 @@ export default function ReportPage() {
   if (submitted) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center px-5 text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-          <span className="text-4xl">📋</span>
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100 text-green-700">
+          <ClipboardCheck className="h-10 w-10" />
         </div>
         <h1 className="mt-6 text-2xl font-bold">Rapport enregistré</h1>
         <p className="mt-2 text-sm text-muted">
