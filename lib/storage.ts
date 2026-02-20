@@ -51,6 +51,24 @@ export function getActiveTaskProgress(): { taskId: string; checkedIds: string[] 
   return results;
 }
 
+// ── App unlock (password gate) ────────────────────────────────────
+
+const UNLOCK_KEY = key("unlocked");
+
+export function isUnlocked(): boolean {
+  try {
+    return localStorage.getItem(UNLOCK_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function setUnlocked() {
+  try {
+    localStorage.setItem(UNLOCK_KEY, "1");
+  } catch { /* ignore */ }
+}
+
 // ── Worker name ──────────────────────────────────────────────────
 
 const NAME_KEY = key("worker-name");

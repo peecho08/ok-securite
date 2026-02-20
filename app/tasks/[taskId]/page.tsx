@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { tasks } from "@/data/tasks";
 import { checklists } from "@/data/checklists";
@@ -11,6 +10,37 @@ import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress
 
 function haptic() {
   try { navigator?.vibrate?.(10); } catch { /* unsupported */ }
+}
+
+const SWIPE_THRESHOLD = 60;
+
+function useSwipeRight(onSwipe: () => void) {
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const swiping = useRef(false);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    startX.current = e.touches[0].clientX;
+    startY.current = e.touches[0].clientY;
+    swiping.current = true;
+  }, []);
+
+  const onTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!swiping.current) return;
+    swiping.current = false;
+    const dx = e.changedTouches[0].clientX - startX.current;
+    const dy = Math.abs(e.changedTouches[0].clientY - startY.current);
+    if (dx > SWIPE_THRESHOLD && dy < dx * 0.7) {
+      onSwipe();
+    }
+  }, [onSwipe]);
+
+  return { onTouchStart, onTouchEnd };
+}
+
+function SwipeItem({ onSwipe, children }: { onSwipe: () => void; children: React.ReactNode }) {
+  const handlers = useSwipeRight(onSwipe);
+  return <div {...handlers}>{children}</div>;
 }
 
 export default function TaskPage() {
@@ -27,12 +57,13 @@ export default function TaskPage() {
   const [collapsed, setCollapsed] = useState<Set<Phase>>(new Set());
   const [expandedInfo, setExpandedInfo] = useState<string | null>(null);
   const [workerName, setWorkerName] = useState(getWorkerName);
-  const [showCelebration, setShowCelebration] = useState(false);
   const [phaseToast, setPhaseToast] = useState<{ phase: Phase; title: string } | null>(null);
   const [undoToast, setUndoToast] = useState<string | null>(null);
+  const [unlockedFlash, setUnlockedFlash] = useState<Phase | null>(null);
   const undoTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const userToggledRef = useRef(false);
   const prevCompletedPhasesRef = useRef<Set<Phase>>(new Set());
+  const phaseRefs = useRef<Map<Phase, HTMLElement>>(new Map());
 
   // Load or clear progress depending on entry mode
   useEffect(() => {
@@ -52,7 +83,7 @@ export default function TaskPage() {
     saveProgress(taskId, Array.from(checked));
   }, [taskId, checked]);
 
-  // Auto-collapse phases when fully checked + show phase toast when a phase is newly completed
+  // Auto-collapse phases when fully checked + show phase toast + scroll to next phase
   useEffect(() => {
     if (!checklist) return;
     const completedPhases = new Set<Phase>();
@@ -72,6 +103,20 @@ export default function TaskPage() {
       if (group) {
         setPhaseToast({ phase: newlyCompleted, title: group.title });
         try { navigator?.vibrate?.([30, 20, 30]); } catch { /* unsupported */ }
+
+        const completedIdx = checklist.phases.findIndex((g) => g.phase === newlyCompleted);
+        const nextPhase = checklist.phases[completedIdx + 1];
+        if (nextPhase) {
+          setUnlockedFlash(nextPhase.phase);
+          setTimeout(() => setUnlockedFlash(null), 1200);
+          try { navigator?.vibrate?.([20, 10, 20, 10, 40]); } catch { /* unsupported */ }
+          const el = phaseRefs.current.get(nextPhase.phase);
+          if (el) {
+            setTimeout(() => {
+              el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 400);
+          }
+        }
       }
     }
   }, [checklist, checked]);
@@ -83,17 +128,20 @@ export default function TaskPage() {
     return () => clearTimeout(t);
   }, [phaseToast]);
 
-  // Celebration when the user checks the very last item
+  // Auto-navigate to confirm page when all items checked
   useEffect(() => {
     if (!userToggledRef.current) return;
     userToggledRef.current = false;
-    const allChecked = allItems.length > 0 && checked.size === allItems.length;
-    if (!allChecked) return;
-    setShowCelebration(true);
+    const allDone = allItems.length > 0 && checked.size === allItems.length;
+    if (!allDone || !taskId) return;
     try { navigator?.vibrate?.([50, 30, 50]); } catch { /* unsupported */ }
-    const t = setTimeout(() => setShowCelebration(false), 2500);
-    return () => clearTimeout(t);
-  }, [checked, allItems.length]);
+    const params = new URLSearchParams({
+      items: String(allItems.length),
+      checked: String(allItems.length),
+      worker: workerName.trim(),
+    });
+    router.push(`/confirm/${taskId}?${params.toString()}`);
+  }, [checked, allItems.length, taskId, workerName, router]);
 
   const toggle = useCallback((id: string, wasChecked: boolean) => {
     haptic();
@@ -160,9 +208,9 @@ export default function TaskPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col pb-28">
+    <div className="flex min-h-dvh flex-col pb-28 dark:bg-neutral-900">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-gray-100 bg-white px-5 py-4 sm:px-8">
+      <header className="sticky top-0 z-10 border-b border-gray-100 bg-white px-5 py-4 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
         <div className="flex items-center gap-3">
           <Link
             href="/"
@@ -195,7 +243,7 @@ export default function TaskPage() {
           )}
         </div>
 
-        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-gray-100">
+        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-gray-100 dark:bg-neutral-700">
           <div
             className="h-full rounded-full bg-green-500 transition-all duration-300"
             style={{ width: `${progress * 100}%` }}
@@ -208,24 +256,39 @@ export default function TaskPage() {
 
       {/* Checklist */}
       <main className="flex-1 px-5 py-4 sm:px-8">
-        {checklist.phases.map((group) => {
+        {checklist.phases.map((group, phaseIdx) => {
           const checkedInPhase = group.items.filter((i) => checked.has(i.id)).length;
           const allPhaseChecked = checkedInPhase === group.items.length;
           const isCollapsed = collapsed.has(group.phase);
 
+          const isLocked = phaseIdx > 0 && !checklist.phases
+            .slice(0, phaseIdx)
+            .every((prev) => prev.items.every((i) => checked.has(i.id)));
+
           return (
-            <section key={group.phase} className="mb-6">
+            <section
+              key={group.phase}
+              className={`mb-6 scroll-mt-24 transition-all duration-500 ${isLocked ? "opacity-40" : ""} ${unlockedFlash === group.phase ? "animate-phase-unlock" : ""}`}
+              ref={(el) => { if (el) phaseRefs.current.set(group.phase, el); }}
+            >
               <div className="mb-3 flex items-center gap-2">
                 <button
-                  onClick={() => togglePhaseCollapse(group.phase)}
-                  className="flex min-h-[48px] flex-1 items-center gap-2 text-left"
+                  onClick={() => !isLocked && togglePhaseCollapse(group.phase)}
+                  className={`flex min-h-[48px] flex-1 items-center gap-2 text-left ${isLocked ? "cursor-not-allowed" : ""}`}
+                  disabled={isLocked}
                 >
-                  <svg
-                    className={`h-5 w-5 shrink-0 text-gray-400 transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
+                  {isLocked ? (
+                    <svg className="h-5 w-5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  ) : (
+                    <svg
+                      className={`h-5 w-5 shrink-0 text-gray-400 transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  )}
                   <h2 className="font-heading text-base font-semibold text-muted">{group.title}</h2>
                 </button>
 
@@ -234,23 +297,29 @@ export default function TaskPage() {
                 </span>
               </div>
 
-              {!isCollapsed && (
-                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              {isLocked && (
+                <p className="text-xs text-gray-400">
+                  Complétez l&apos;étape précédente pour débloquer.
+                </p>
+              )}
+
+              {!isLocked && !isCollapsed && (
+                <div className="animate-fade-in grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                   {[...group.items]
                     .sort((a, b) => (a.critical && !b.critical ? -1 : !a.critical && b.critical ? 1 : 0))
                     .map((item) => {
                     const isChecked = checked.has(item.id);
                     const isInfoOpen = expandedInfo === item.id;
                     return (
-                      <div key={item.id}>
+                      <SwipeItem key={item.id} onSwipe={() => { if (!isChecked) toggle(item.id, false); }}>
                         <button
                           onClick={() => toggle(item.id, isChecked)}
                           className={`flex w-full items-start gap-3.5 rounded-xl border p-4 text-left transition-colors ${
                             isChecked
-                              ? "border-green-200 bg-green-50"
+                              ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950"
                               : item.critical
-                                ? "border-red-200 bg-red-50/30 hover:border-red-300 hover:bg-red-50 active:bg-red-50"
-                                : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 active:bg-gray-50"
+                                ? "border-red-200 bg-red-50/30 hover:border-red-300 hover:bg-red-50 active:bg-red-50 dark:border-red-800 dark:bg-red-950/30"
+                                : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600"
                           }`}
                         >
                           <span
@@ -289,14 +358,19 @@ export default function TaskPage() {
                             {item.info}
                           </div>
                         )}
-                      </div>
+                      </SwipeItem>
                     );
                   })}
                 </div>
               )}
 
-              {isCollapsed && allPhaseChecked && (
-                <p className="text-xs text-green-600">Tous les points sont cochés.</p>
+              {!isLocked && isCollapsed && allPhaseChecked && (
+                <div className="animate-fade-in flex items-center gap-2 text-green-600">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <p className="text-sm font-medium">Tous les points sont cochés</p>
+                </div>
               )}
             </section>
           );
@@ -308,21 +382,21 @@ export default function TaskPage() {
       </main>
 
       {/* Sticky CTA */}
-      <div className="fixed bottom-0 left-1/2 z-20 w-full max-w-3xl -translate-x-1/2 border-t border-gray-100 bg-white px-5 py-3 sm:px-8">
+      <div className="fixed bottom-0 left-1/2 z-20 w-full max-w-3xl -translate-x-1/2 border-t border-gray-100 bg-white px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
         <input
           type="text"
           value={workerName}
           onChange={(e) => setWorkerName(e.target.value)}
           placeholder="Nom du travailleur (optionnel)"
-          className="mb-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white"
+          className="mb-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:bg-neutral-750"
         />
         <button
           onClick={handleConfirm}
           disabled={!allChecked}
           className={`w-full rounded-xl py-3.5 font-heading text-sm font-bold tracking-wide transition-colors ${
             allChecked
-              ? "bg-black text-accent hover:bg-gray-900 active:bg-gray-900"
-              : "cursor-not-allowed bg-gray-200 text-gray-400"
+              ? "bg-black text-accent hover:bg-gray-900 active:bg-gray-900 dark:bg-green-600 dark:text-white dark:hover:bg-green-700"
+              : "cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"
           }`}
         >
           {allChecked ? "VALIDER LA CHECKLIST ✓" : `${allItems.length - checked.size} point(s) restant(s)`}
@@ -349,54 +423,26 @@ export default function TaskPage() {
       {/* Phase completion toast */}
       {phaseToast && (
         <div
-          className="fixed left-1/2 top-24 z-40 -translate-x-1/2 animate-scale-in rounded-xl border-2 border-green-300 bg-green-50 px-4 py-3 shadow-lg"
+          className="fixed inset-x-0 bottom-[120px] z-40 flex justify-center px-5 sm:px-8"
           role="status"
           aria-live="polite"
         >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-500 text-white">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <div className="animate-slide-in-bottom flex w-full max-w-3xl items-center gap-4 rounded-2xl border-2 border-green-300 bg-green-50 px-5 py-4 shadow-lg sm:px-8">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-500 text-white">
+              <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <div>
-              <p className="font-heading font-bold text-green-800">Bravo !</p>
+            <div className="min-w-0 flex-1">
+              <p className="font-heading text-base font-bold text-green-800">Bravo !</p>
               <p className="text-sm text-green-700">
-                {phaseToast.title} terminé — Passez à l&apos;étape suivante →
+                {phaseToast.title} terminé
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Celebration overlay */}
-      {showCelebration && (
-        <div
-          className="fixed inset-0 z-50 flex min-h-dvh flex-col items-center justify-center bg-green-500/95 px-6"
-          onClick={() => setShowCelebration(false)}
-          role="dialog"
-          aria-live="polite"
-          aria-label="Félicitations"
-        >
-          <div className="animate-scale-in flex flex-col items-center gap-6 text-center">
-            <Image
-              src="/ok.svg"
-              alt="OK"
-              width={188}
-              height={98}
-              className="h-24 w-auto brightness-0 invert"
-            />
-            <div className="flex flex-col gap-1">
-              <p className="font-heading text-2xl font-bold text-white drop-shadow-sm">
-                Félicitations !
-              </p>
-              <p className="text-base text-white/95">
-                Tous les points sont cochés.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -20,6 +20,7 @@ export default function ConfirmPage() {
   const task = tasks.find((t) => t.id === taskId);
   const allDone = items > 0 && checkedCount === items;
   const [saved, setSaved] = useState(false);
+  const [notified, setNotified] = useState(false);
 
   const now = useMemo(() => new Date(), []);
   const timestamp = now.toLocaleDateString("fr-FR", {
@@ -57,11 +58,11 @@ export default function ConfirmPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col dark:bg-neutral-900">
       <main className="flex flex-1 flex-col items-center justify-center px-5 py-10 text-center sm:px-8">
         <div
           className={`flex h-48 w-48 items-center justify-center rounded-full sm:h-56 sm:w-56 ${
-            allDone ? "bg-green-100" : "bg-amber-100"
+            allDone ? "animate-stamp bg-green-100" : "bg-amber-100"
           }`}
         >
           {allDone ? (
@@ -87,7 +88,7 @@ export default function ConfirmPage() {
         </div>
 
         {/* Summary card */}
-        <div className="mt-8 w-full max-w-md rounded-xl border border-gray-200 bg-white p-5">
+        <div className="mt-8 w-full max-w-md rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-800">
           {workerName && (
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <span className="text-sm text-muted">Travailleur</span>
@@ -119,13 +120,55 @@ export default function ConfirmPage() {
             </span>
           </div>
         </div>
+
+        {allDone && (
+          <p className="mt-4 text-sm text-muted">
+            Bien joué. Prends soin de toi.
+          </p>
+        )}
       </main>
 
-      <div className="border-t border-gray-100 px-5 py-4 sm:px-8">
+      <div className="border-t border-gray-100 px-5 py-4 dark:border-neutral-800 sm:px-8">
+        {allDone && !notified && (
+          <button
+            onClick={async () => {
+              const summary = [
+                `Checklist ${task.title} complétée`,
+                workerName ? `Travailleur : ${workerName}` : "",
+                `${checkedCount}/${items} points vérifiés`,
+                `${timestamp} à ${time}`,
+                "",
+                "Envoyé via OK Chantier",
+              ].filter(Boolean).join("\n");
+              try {
+                if (navigator.share) {
+                  await navigator.share({ title: `OK Chantier — ${task.title}`, text: summary });
+                  setNotified(true);
+                } else {
+                  await navigator.clipboard.writeText(summary);
+                  setNotified(true);
+                }
+              } catch {
+                setNotified(true);
+              }
+            }}
+            className="mb-3 w-full rounded-xl bg-[#118914] py-3.5 font-heading text-sm font-bold tracking-wide text-white transition-colors hover:bg-[#0e7511] active:bg-[#0e7511]"
+          >
+            NOTIFIER MON SUPERVISEUR
+          </button>
+        )}
+        {notified && (
+          <div className="mb-3 flex items-center justify-center gap-2 rounded-xl bg-green-50 py-3.5 text-sm font-medium text-green-700">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Notification envoyée
+          </div>
+        )}
         <div className="flex gap-3">
           <Link
             href="/"
-            className="block flex-1 rounded-xl border-2 border-black py-3.5 text-center font-heading text-sm font-bold transition-colors active:bg-gray-50"
+            className="block flex-1 rounded-xl border-2 border-black py-3.5 text-center font-heading text-sm font-bold transition-colors active:bg-gray-50 dark:border-neutral-300 dark:text-neutral-100"
           >
             ACCUEIL
           </Link>

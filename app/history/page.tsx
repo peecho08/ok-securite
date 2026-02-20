@@ -30,8 +30,8 @@ export default function HistoryPage() {
   }, {});
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-10 border-b border-gray-100 bg-white px-5 py-4 sm:px-8">
+    <div className="flex min-h-dvh flex-col dark:bg-neutral-900">
+      <header className="sticky top-0 z-10 border-b border-gray-100 bg-white px-5 py-4 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
         <div className="flex items-center gap-3">
           <Link
             href="/"
@@ -79,7 +79,7 @@ export default function HistoryPage() {
                     return (
                       <div
                         key={`${entry.completedAt}-${i}`}
-                        className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3.5"
+                        className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3.5 dark:border-neutral-700 dark:bg-neutral-800"
                       >
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
                           <TaskIcon taskId={entry.taskId} className="h-5 w-5" fallback={entry.taskIcon} />

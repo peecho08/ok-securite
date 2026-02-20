@@ -9,6 +9,7 @@ import { clearProgress, getActiveTaskProgress, getFavorites, getWorkerName, hasF
 import { checklists } from "@/data/checklists";
 import { TaskIcon } from "@/components/task-icon";
 import { Onboarding } from "@/components/onboarding";
+import { useTheme } from "@/components/theme-provider";
 
 const categoryOrder: TaskCategory[] = [
   "gros-oeuvre",
@@ -25,6 +26,7 @@ function normalize(str: string) {
 }
 
 export default function HomePage() {
+  const { theme, toggle: toggleTheme } = useTheme();
   const [query, setQuery] = useState("");
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -116,36 +118,30 @@ export default function HomePage() {
       "Chaque geste compte. Chaque règle aussi.",
       "La sécurité n'est pas une option.",
       "Le vrai talent, c'est l'effort.",
+      "Prends soin de toi. C'est aussi ça, être solide.",
+      "Ta santé compte. Corps et tête.",
+      "Bien dans sa tête, bien sur le chantier.",
     ];
     return quotes[Math.floor(Math.random() * quotes.length)];
+  });
+
+  const [footerMessage] = useState(() => {
+    const messages = [
+      "Restez vigilant. Chaque geste compte.",
+      "Prends soin de toi.",
+      "La sécurité, c'est aussi prendre soin de soi.",
+    ];
+    return messages[Math.floor(Math.random() * messages.length)];
   });
 
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="bg-[#118914] px-5 pt-6 pb-4 sm:px-8">
-        <div className="grid grid-cols-3 items-center gap-2">
-          <a
-            href="https://www.cnesst.gouv.qc.ca/fr"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex flex-col items-start gap-1 transition-opacity hover:opacity-80"
-          >
-            <span className="text-xs text-white/80 underline decoration-white/40 underline-offset-2">
-              Alimenté par
-            </span>
-            <Image
-              src="/cnesst-logo.svg"
-              alt="CNESST"
-              width={80}
-              height={30}
-              className="h-[19px] w-auto brightness-0 invert"
-            />
-          </a>
-
+        <div className="flex items-center justify-between gap-4">
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="flex justify-center cursor-pointer transition-opacity hover:opacity-80"
+            className="flex shrink-0 cursor-pointer transition-opacity hover:opacity-80"
             aria-label="Rafraîchir la page"
           >
             <Image
@@ -153,12 +149,29 @@ export default function HomePage() {
               alt="OK Chantier"
               width={188}
               height={48}
-              className="h-12 w-auto brightness-0 invert sm:h-9"
+              className="h-[50px] w-auto brightness-0 invert sm:h-10"
               priority
             />
           </button>
 
-          <div className="relative flex items-center justify-end">
+          <div className="relative flex shrink-0 items-center gap-4 sm:gap-3">
+            <a
+              href="https://www.cnesst.gouv.qc.ca/fr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-end gap-1 transition-opacity hover:opacity-80"
+            >
+              <span className="text-xs text-white/80 underline decoration-white/40 underline-offset-2">
+                Alimenté par
+              </span>
+              <Image
+                src="/cnesst-logo.svg"
+                alt="CNESST"
+                width={80}
+                height={30}
+                className="h-[19px] w-auto brightness-0 invert"
+              />
+            </a>
             <button
               onClick={() => setShowMenu((v) => !v)}
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition-colors active:bg-white/40 sm:h-9 sm:w-9"
@@ -172,11 +185,21 @@ export default function HomePage() {
             {showMenu && (
               <>
                 <div className="fixed inset-0 z-40 bg-black/30 sm:bg-transparent" onClick={() => setShowMenu(false)} aria-hidden />
-                <div className="fixed inset-x-0 bottom-0 z-50 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:max-h-none sm:w-56 sm:rounded-xl sm:rounded-t-none sm:border sm:border-t-0 sm:shadow-xl">
+                <div
+                  className="fixed inset-x-0 bottom-0 z-50 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] dark:border-neutral-700 dark:bg-neutral-800 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:max-h-none sm:w-56 sm:rounded-xl sm:rounded-t-none sm:border sm:border-t-0 sm:shadow-xl"
+                  onTouchStart={(e) => {
+                    (e.currentTarget as HTMLElement).dataset.touchY = String(e.touches[0].clientY);
+                  }}
+                  onTouchEnd={(e) => {
+                    const startY = Number((e.currentTarget as HTMLElement).dataset.touchY ?? 0);
+                    const dy = e.changedTouches[0].clientY - startY;
+                    if (dy > 60) setShowMenu(false);
+                  }}
+                >
                   <div className="mx-auto mb-2 mt-3 h-1 w-12 rounded-full bg-gray-200 sm:hidden" aria-hidden />
                   {workerName && (
-                    <div className="border-b border-gray-100 px-5 py-4 sm:px-4 sm:py-3">
-                      <p className="font-heading text-base font-bold text-gray-900 sm:text-sm">{workerName}</p>
+                    <div className="border-b border-gray-100 px-5 py-4 dark:border-neutral-700 sm:px-4 sm:py-3">
+                      <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100 sm:text-sm">{workerName}</p>
                       <p className="text-sm text-gray-400 sm:text-xs">Travailleur</p>
                     </div>
                   )}
@@ -184,29 +207,56 @@ export default function HomePage() {
                     <Link
                       href="/history"
                       onClick={() => setShowMenu(false)}
-                      className="flex min-h-[52px] items-center gap-4 px-5 py-3 text-base text-gray-700 transition-colors active:bg-gray-100 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50"
+                      className="flex min-h-[52px] items-center gap-4 px-5 py-3 text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
                       <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       Historique
                     </Link>
+                    <Link
+                      href="/bien-etre"
+                      onClick={() => setShowMenu(false)}
+                      className="flex min-h-[52px] items-center gap-4 px-5 py-3 text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
+                    >
+                      <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      Bien-être
+                    </Link>
                     <button
                       onClick={() => { setShowMenu(false); setEditingFavorites(true); setShowOnboarding(true); }}
-                      className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50"
+                      className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
                       <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.518 4.674h4.911c.969 0 1.372 1.24.588 1.81l-3.974 2.888 1.518 4.674c.3.921-.755 1.688-1.539 1.118L12 15.203l-3.974 2.888c-.783.57-1.838-.197-1.539-1.118l1.518-4.674-3.974-2.888c-.783-.57-.38-1.81.588-1.81h4.911l1.518-4.674z" />
                       </svg>
                       Modifier mes favoris
                     </button>
+                    {/* Dark mode toggle — hidden for now
+                    <button
+                      onClick={() => { toggleTheme(); setShowMenu(false); }}
+                      className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
+                    >
+                      {theme === "dark" ? (
+                        <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                      ) : (
+                        <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                      )}
+                      {theme === "dark" ? "Mode clair" : "Mode sombre"}
+                    </button>
+                    */}
                     <button
                       onClick={() => {
                         setShowMenu(false);
                         setEditingFavorites(false);
                         setShowOnboarding(true);
                       }}
-                      className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50"
+                      className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
                       <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -251,7 +301,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <main className="flex-1 px-5 py-4 sm:px-8">
+      <main className="flex-1 px-5 py-4 dark:bg-neutral-900 sm:px-8">
         {/* Motivational empty state */}
         {!query && activeTasks.length === 0 && (
           <section className="mx-auto mb-6 max-w-xs py-6 text-center">
@@ -260,7 +310,7 @@ export default function HomePage() {
                 {greeting}, {workerName}
               </p>
             )}
-            <p className="font-heading text-2xl font-bold text-gray-700">
+            <p className="font-heading text-2xl font-bold text-gray-700 dark:text-neutral-200">
               &laquo;&nbsp;{motivationalQuote}&nbsp;&raquo;
             </p>
             <p className="mt-1.5 text-sm text-gray-400">
@@ -272,32 +322,32 @@ export default function HomePage() {
         {/* Active / ongoing tasks */}
         {!query && activeTasks.length > 0 && (
           <section className="mb-6">
-            <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted">
+            <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted">
               En cours
             </h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4 sm:gap-3">
               {activeTasks.map(({ task, checked, total }, i) => (
                 <div key={task.id} className="animate-slide-in-up relative" style={{ animationDelay: `${i * 80}ms` }}>
                   <Link
                     href={`/tasks/${task.id}?resume=1`}
-                    className="flex aspect-[4/3] flex-col justify-between rounded-2xl border-2 border-green-200 bg-green-50 p-5 transition-colors hover:border-green-300 active:bg-green-100"
+                    className="flex aspect-[4/3] flex-col justify-between gap-4 rounded-2xl border-2 border-green-200 bg-green-50 p-5 transition-colors hover:border-green-300 active:bg-green-100 dark:border-green-800 dark:bg-green-950 dark:hover:border-green-700"
                   >
                     <div className="flex items-start justify-between">
-                      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-green-700 shadow-sm">
+                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-green-700 shadow-sm dark:bg-green-900 dark:text-green-300">
                         <TaskIcon taskId={task.id} className="h-6 w-6" />
                       </span>
                     </div>
-                    <div>
-                      <p className="font-heading text-base font-bold leading-tight text-green-900">
+                    <div className="min-w-0 space-y-4">
+                      <p className="font-heading text-base font-bold leading-tight text-green-900 dark:text-green-200">
                         {task.title}
                       </p>
-                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-green-200">
+                      <div className="h-2 overflow-hidden rounded-full bg-green-200">
                         <div
                           className="h-full rounded-full bg-green-600 transition-all"
                           style={{ width: `${(checked / total) * 100}%` }}
                         />
                       </div>
-                      <p className="mt-1.5 text-sm font-medium text-green-700">
+                      <p className="text-sm font-medium text-green-700">
                         {checked}/{total} vérifications
                       </p>
                     </div>
@@ -344,7 +394,7 @@ export default function HomePage() {
                 <Link
                   key={task.id}
                   href={`/tasks/${task.id}`}
-                  className="flex min-h-[48px] shrink-0 items-center gap-2.5 rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300 hover:bg-gray-50 active:bg-gray-50"
+                  className="flex min-h-[48px] shrink-0 items-center gap-2.5 rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300 hover:bg-gray-50 active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600"
                 >
                   <TaskIcon taskId={task.id} className="h-5 w-5 text-gray-500" />
                   <span className="font-heading text-sm font-semibold">{task.title}</span>
@@ -352,7 +402,7 @@ export default function HomePage() {
               ))}
               </div>
               <div
-                className="pointer-events-none absolute right-0 top-0 bottom-1 w-16 bg-gradient-to-l from-white via-white/60 to-transparent"
+                className="pointer-events-none absolute right-0 top-0 bottom-1 w-16 bg-gradient-to-l from-white via-white/60 to-transparent dark:from-neutral-900 dark:via-neutral-900/60"
                 aria-hidden
               />
             </div>
@@ -374,24 +424,31 @@ export default function HomePage() {
                   {label}
                 </h2>
                 <div className="grid gap-2.5 sm:grid-cols-2">
-                  {groupTasks.map((task) => (
+                  {groupTasks.map((task) => {
+                    const cl = checklists[task.id];
+                    const totalPoints = cl ? cl.phases.flatMap((p) => p.items).length : 0;
+                    return (
                     <Link
                       key={task.id}
                       href={`/tasks/${task.id}`}
-                      className="flex min-h-[56px] items-center gap-3.5 rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 hover:bg-gray-50 active:bg-gray-50"
+                      className="flex min-h-[56px] items-center gap-3.5 rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 hover:bg-gray-50 active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600 dark:hover:bg-neutral-750"
                     >
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300">
                         <TaskIcon taskId={task.id} className="h-5 w-5" />
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="font-heading text-base font-semibold leading-tight">{task.title}</p>
                         <p className="mt-0.5 text-sm text-muted">{task.description}</p>
+                        {totalPoints > 0 && (
+                          <p className="mt-1 text-xs text-gray-400">{totalPoints} points</p>
+                        )}
                       </div>
                       <svg className="ml-auto h-5 w-5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             ))}
@@ -399,8 +456,8 @@ export default function HomePage() {
         )}
       </main>
 
-      <footer className="px-5 py-4 text-center text-xs text-muted">
-        Restez vigilant. Chaque geste compte.
+      <footer className="px-5 py-4 text-center text-xs text-muted dark:bg-neutral-900">
+        {footerMessage}
       </footer>
 
       {/* Onboarding overlay */}
