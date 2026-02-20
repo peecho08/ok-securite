@@ -302,8 +302,13 @@ export default function TaskPage() {
                   <h2 className="font-heading text-base font-semibold text-muted">{localPhaseTitle(group.title)}</h2>
                 </button>
 
-                <span className="shrink-0 text-xs text-muted">
+                <span className={`flex shrink-0 items-center gap-1.5 text-xs ${allPhaseChecked ? "text-green-600 font-medium" : "text-muted"}`}>
                   {checkedInPhase}/{group.items.length}
+                  {allPhaseChecked && (
+                    <svg className="h-4 w-4 animate-phase-check" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
                 </span>
               </div>
 
@@ -371,15 +376,6 @@ export default function TaskPage() {
                       </SwipeItem>
                     );
                   })}
-                </div>
-              )}
-
-              {!isLocked && isCollapsed && allPhaseChecked && (
-                <div className="animate-fade-in flex items-center gap-2 text-green-600">
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <p className="text-sm font-medium">{t("task.allChecked")}</p>
                 </div>
               )}
             </section>
