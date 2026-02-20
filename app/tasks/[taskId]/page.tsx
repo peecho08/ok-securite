@@ -433,16 +433,18 @@ export default function TaskPage() {
       {/* Phase completion toast */}
       {phaseToast && (
         <div
-          className="fixed bottom-[140px] left-1/2 z-40 flex -translate-x-1/2 items-center gap-2.5 rounded-xl bg-green-600 px-5 py-3 text-white shadow-lg animate-fade-in"
+          className="fixed inset-x-0 bottom-[120px] z-40 flex justify-center px-5 sm:px-8 animate-fade-in"
           role="status"
           aria-live="polite"
         >
-          <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-          <span className="text-sm font-semibold">
-            {localPhaseTitle(phaseToast.title)} — {t("task.phaseCompleteDetail")}
-          </span>
+          <div className="flex w-full max-w-3xl items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-3.5 shadow-md">
+            <svg className="h-5 w-5 shrink-0 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <p className="text-sm font-semibold text-green-800">
+              {localPhaseTitle(phaseToast.title)} — {t("task.phaseCompleteDetail")}
+            </p>
+          </div>
         </div>
       )}
 
