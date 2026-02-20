@@ -278,7 +278,7 @@ export default function TaskPage() {
           return (
             <section
               key={group.phase}
-              className={`mb-6 scroll-mt-24 transition-opacity duration-300 ${isLocked ? "opacity-40" : ""}`}
+              className={`mb-6 scroll-mt-36 transition-opacity duration-300 ${isLocked ? "opacity-40" : ""}`}
               ref={(el) => { if (el) phaseRefs.current.set(group.phase, el); }}
             >
               <div className="mb-3 flex items-center gap-2">
