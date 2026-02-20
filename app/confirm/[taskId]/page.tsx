@@ -84,17 +84,19 @@ export default function ConfirmPage() {
           )}
         </div>
 
-        <h1 className="mt-6 text-2xl font-bold">
-          {allDone ? t("confirm.complete") : t("confirm.incomplete")}
-        </h1>
+        <div className="animate-confirm-content">
+          <h1 className="mt-6 text-2xl font-bold">
+            {allDone ? t("confirm.complete") : t("confirm.incomplete")}
+          </h1>
 
-        <div className="mt-3 flex items-center gap-2 text-muted">
-          <TaskIcon taskId={taskId} className="h-5 w-5" />
-          <span className="text-sm">{localTitle(task)}</span>
+          <div className="mt-3 flex items-center justify-center gap-2 text-muted">
+            <TaskIcon taskId={taskId} className="h-5 w-5" />
+            <span className="text-sm">{localTitle(task)}</span>
+          </div>
         </div>
 
         {/* Summary card */}
-        <div className="mt-8 w-full max-w-md rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-800">
+        <div className="animate-confirm-card mt-8 w-full max-w-md rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-800">
           {workerName && (
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <span className="text-sm text-muted">{t("confirm.worker")}</span>
@@ -128,13 +130,13 @@ export default function ConfirmPage() {
         </div>
 
         {allDone && (
-          <p className="mt-4 text-sm text-muted">
+          <p className="animate-confirm-card mt-4 text-sm text-muted">
             {t("confirm.wellDone")}
           </p>
         )}
       </main>
 
-      <div className="border-t border-gray-100 px-5 py-4 dark:border-neutral-800 sm:px-8">
+      <div className="animate-confirm-footer border-t border-gray-100 px-5 py-4 dark:border-neutral-800 sm:px-8">
         {allDone && !notified && (
           <button
             onClick={async () => {
