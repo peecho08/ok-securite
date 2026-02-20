@@ -160,7 +160,7 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <div className="fixed top-0 left-0 right-0 z-20 bg-[#118914]" style={{ height: "env(safe-area-inset-top)" }} />
+      <div className="safe-area-green-cover" />
       <header className="bg-[#118914] px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-4 sm:px-8">
         <div className="flex items-center justify-between gap-4">
           <button
