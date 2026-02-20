@@ -9,7 +9,7 @@ export default function BienEtrePage() {
 
   return (
     <div className="flex min-h-dvh flex-col dark:bg-neutral-900">
-      <header className="sticky top-0 z-10 border-b border-gray-100 bg-white px-5 py-4 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
+      <header className="sticky top-0 z-10 border-b border-gray-100 bg-white px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
         <div className="flex items-center gap-3">
           <Link
             href="/"

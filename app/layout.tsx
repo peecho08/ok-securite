@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "OK Chantier",
   },
 };
@@ -35,7 +35,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#000000",
+  viewportFit: "cover",
+  themeColor: "#118914",
 };
 
 export default function RootLayout({
