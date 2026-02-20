@@ -4,23 +4,27 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { clearHistory, getHistory, type HistoryEntry } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
+import { useLocale } from "@/lib/i18n";
 
 export default function HistoryPage() {
+  const { locale, t } = useLocale();
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
 
   useEffect(() => {
     setEntries(getHistory());
   }, []);
 
+  const dateLocale = locale === "en" ? "en-CA" : "fr-FR";
+
   function handleClear() {
-    if (confirm("Effacer tout l'historique ?")) {
+    if (confirm(t("history.clearConfirm"))) {
       clearHistory();
       setEntries([]);
     }
   }
 
   const grouped = entries.reduce<Record<string, HistoryEntry[]>>((acc, entry) => {
-    const day = new Date(entry.completedAt).toLocaleDateString("fr-FR", {
+    const day = new Date(entry.completedAt).toLocaleDateString(dateLocale, {
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -36,19 +40,19 @@ export default function HistoryPage() {
           <Link
             href="/"
             className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors active:bg-gray-100"
-            aria-label="Retour"
+            aria-label={t("nav.back")}
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
-          <h1 className="text-lg font-bold">Historique</h1>
+          <h1 className="text-lg font-bold">{t("history.title")}</h1>
           {entries.length > 0 && (
             <button
               onClick={handleClear}
               className="ml-auto text-xs text-red-500 hover:text-red-700"
             >
-              Tout effacer
+              {t("history.clearAll")}
             </button>
           )}
         </div>
@@ -57,9 +61,9 @@ export default function HistoryPage() {
       <main className="flex-1 px-5 py-4 sm:px-8">
         {entries.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="font-heading text-lg font-semibold text-gray-400">Aucun historique</p>
+            <p className="font-heading text-lg font-semibold text-gray-400">{t("history.empty")}</p>
             <p className="mt-1 text-sm text-muted">
-              Les checklists complétées apparaîtront ici.
+              {t("history.emptyHint")}
             </p>
           </div>
         ) : (
@@ -72,7 +76,7 @@ export default function HistoryPage() {
                 <div className="space-y-2">
                   {dayEntries.map((entry, i) => {
                     const isComplete = entry.checkedCount === entry.totalCount;
-                    const time = new Date(entry.completedAt).toLocaleTimeString("fr-FR", {
+                    const time = new Date(entry.completedAt).toLocaleTimeString(dateLocale, {
                       hour: "2-digit",
                       minute: "2-digit",
                     });

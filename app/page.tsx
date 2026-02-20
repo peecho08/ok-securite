@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { tasks } from "@/data/tasks";
-import { categoryLabels, type TaskCategory } from "@/types";
+import { categoryLabels, categoryLabelsEn, type TaskCategory } from "@/types";
+import { useLocale } from "@/lib/i18n";
 import { clearProgress, getActiveTaskProgress, getFavorites, getWorkerName, hasFavorites } from "@/lib/storage";
 import { checklists } from "@/data/checklists";
 import { TaskIcon } from "@/components/task-icon";
@@ -26,6 +27,7 @@ function normalize(str: string) {
 }
 
 export default function HomePage() {
+  const { locale, setLocale, t } = useLocale();
   const { theme, toggle: toggleTheme } = useTheme();
   const [query, setQuery] = useState("");
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
@@ -36,6 +38,43 @@ export default function HomePage() {
   const [searchPinned, setSearchPinned] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [workerName, setWorkerNameState] = useState("");
+  const [placeholderIdx, setPlaceholderIdx] = useState(0);
+
+  const localTitle = (task: (typeof tasks)[number]) => (locale === "en" && task.titleEn) ? task.titleEn : task.title;
+  const localDesc = (task: (typeof tasks)[number]) => (locale === "en" && task.descriptionEn) ? task.descriptionEn : task.description;
+  const localCatLabel = (cat: TaskCategory) => locale === "en" ? categoryLabelsEn[cat] : categoryLabels[cat];
+
+  const placeholderExamples = locale === "en" ? [
+    "formwork",
+    "working at heights",
+    "electrical",
+    "scaffolding",
+    "concrete pour",
+    "plumbing",
+    "demolition",
+    "painting",
+    "welding",
+    "roofing",
+  ] : [
+    "coffrage",
+    "travaux en hauteur",
+    "électricité",
+    "échafaudage",
+    "coulage béton",
+    "plomberie",
+    "démolition",
+    "peinture",
+    "soudage",
+    "toiture",
+  ];
+
+  useEffect(() => {
+    setPlaceholderIdx(0);
+    const interval = setInterval(() => {
+      setPlaceholderIdx((i) => (i + 1) % placeholderExamples.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [locale]);
 
   useEffect(() => {
     setFavoriteIds(getFavorites());
@@ -78,10 +117,12 @@ export default function HomePage() {
     if (!query.trim()) return tasks;
     const q = normalize(query);
     return tasks.filter((task) => {
-      const haystack = normalize(`${task.title} ${task.description} ${categoryLabels[task.category]}`);
+      const haystack = normalize(
+        `${task.title} ${task.titleEn ?? ""} ${task.description} ${task.descriptionEn ?? ""} ${localCatLabel(task.category)} ${(task.keywords ?? []).join(" ")}`
+      );
       return haystack.includes(q);
     });
-  }, [query]);
+  }, [query, locale]);
 
   const grouped = useMemo(() => {
     const map = new Map<TaskCategory, typeof tasks>();
@@ -94,44 +135,27 @@ export default function HomePage() {
       .filter((cat) => map.has(cat))
       .map((cat) => ({
         category: cat,
-        label: categoryLabels[cat],
-        tasks: map.get(cat)!.sort((a, b) => a.title.localeCompare(b.title, "fr")),
+        label: localCatLabel(cat),
+        tasks: map.get(cat)!.sort((a, b) => localTitle(a).localeCompare(localTitle(b), locale === "en" ? "en" : "fr")),
       }));
-  }, [filtered]);
+  }, [filtered, locale]);
 
   const [greeting] = useState(() => {
     const h = new Date().getHours();
-    const pick = (opts: string[]) => opts[Math.floor(Math.random() * opts.length)];
-    if (h < 5) return pick(["Bonne nuit", "Encore debout", "Nuit blanche"]);
-    if (h < 12) return pick(["Bon matin", "Bonne matinée", "Salut"]);
-    if (h < 17) return pick(["Bon après-midi", "Bonne journée", "Salut"]);
-    return pick(["Bonne soirée", "Bonne fin de journée", "Salut"]);
+    if (h < 5) return "home.greeting.night";
+    if (h < 12) return "home.greeting.morning";
+    if (h < 17) return "home.greeting.afternoon";
+    return "home.greeting.evening";
   });
 
-  const [motivationalQuote] = useState(() => {
-    const quotes = [
-      "Discipline. Effort. Respect.",
-      "Le travail bien fait, ça parle tout seul.",
-      "Travaille fort. Reste solide.",
-      "Travaille comme si ton nom était dessus.",
-      "La fierté commence par la sécurité.",
-      "Chaque geste compte. Chaque règle aussi.",
-      "La sécurité n'est pas une option.",
-      "Le vrai talent, c'est l'effort.",
-      "Prends soin de toi. C'est aussi ça, être solide.",
-      "Ta santé compte. Corps et tête.",
-      "Bien dans sa tête, bien sur le chantier.",
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
+  const [quoteKey] = useState(() => {
+    const keys = Array.from({ length: 11 }, (_, i) => `quote.${i + 1}`);
+    return keys[Math.floor(Math.random() * keys.length)];
   });
 
-  const [footerMessage] = useState(() => {
-    const messages = [
-      "Restez vigilant. Chaque geste compte.",
-      "Prends soin de toi.",
-      "La sécurité, c'est aussi prendre soin de soi.",
-    ];
-    return messages[Math.floor(Math.random() * messages.length)];
+  const [footerKey] = useState(() => {
+    const keys = ["footer.msg1", "footer.msg2", "footer.msg3"];
+    return keys[Math.floor(Math.random() * keys.length)];
   });
 
   return (
@@ -142,7 +166,7 @@ export default function HomePage() {
             type="button"
             onClick={() => window.location.reload()}
             className="flex shrink-0 cursor-pointer transition-opacity hover:opacity-80"
-            aria-label="Rafraîchir la page"
+            aria-label={t("nav.refresh")}
           >
             <Image
               src="/logo.svg"
@@ -162,7 +186,7 @@ export default function HomePage() {
               className="flex flex-col items-end gap-1 transition-opacity hover:opacity-80"
             >
               <span className="text-xs text-white/80 underline decoration-white/40 underline-offset-2">
-                Alimenté par
+                {t("nav.poweredBy")}
               </span>
               <Image
                 src="/cnesst-logo.svg"
@@ -175,7 +199,7 @@ export default function HomePage() {
             <button
               onClick={() => setShowMenu((v) => !v)}
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition-colors active:bg-white/40 sm:h-9 sm:w-9"
-              aria-label="Menu"
+              aria-label={t("nav.menu")}
             >
               <svg className="h-6 w-6 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -200,7 +224,7 @@ export default function HomePage() {
                   {workerName && (
                     <div className="border-b border-gray-100 px-5 py-4 dark:border-neutral-700 sm:px-4 sm:py-3">
                       <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100 sm:text-sm">{workerName}</p>
-                      <p className="text-sm text-gray-400 sm:text-xs">Travailleur</p>
+                      <p className="text-sm text-gray-400 sm:text-xs">{t("menu.worker")}</p>
                     </div>
                   )}
                   <div className="py-2 pb-[env(safe-area-inset-bottom)] sm:py-1 sm:pb-0">
@@ -212,7 +236,7 @@ export default function HomePage() {
                       <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Historique
+                      {t("menu.history")}
                     </Link>
                     <Link
                       href="/bien-etre"
@@ -222,7 +246,7 @@ export default function HomePage() {
                       <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                       </svg>
-                      Bien-être
+                      {t("menu.wellbeing")}
                     </Link>
                     <button
                       onClick={() => { setShowMenu(false); setEditingFavorites(true); setShowOnboarding(true); }}
@@ -231,7 +255,16 @@ export default function HomePage() {
                       <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.518 4.674h4.911c.969 0 1.372 1.24.588 1.81l-3.974 2.888 1.518 4.674c.3.921-.755 1.688-1.539 1.118L12 15.203l-3.974 2.888c-.783.57-1.838-.197-1.539-1.118l1.518-4.674-3.974-2.888c-.783-.57-.38-1.81.588-1.81h4.911l1.518-4.674z" />
                       </svg>
-                      Modifier mes favoris
+                      {t("menu.editFavorites")}
+                    </button>
+                    <button
+                      onClick={() => { setLocale(locale === "fr" ? "en" : "fr"); setShowMenu(false); }}
+                      className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
+                    >
+                      <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                      </svg>
+                      {t("menu.language")}
                     </button>
                     {/* Dark mode toggle — hidden for now
                     <button
@@ -261,7 +294,7 @@ export default function HomePage() {
                       <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
-                      Recommencer l&apos;accueil
+                      {t("menu.restartOnboarding")}
                     </button>
                   </div>
                 </div>
@@ -284,14 +317,23 @@ export default function HomePage() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher une tâche…"
-            className="w-full rounded-lg border border-white/30 bg-white/15 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/60 outline-none transition-colors focus:border-white/50 focus:bg-white/20"
+            className="w-full rounded-lg border border-white/30 bg-white/15 py-2.5 pl-10 pr-4 text-sm text-white outline-none transition-colors focus:border-white/50 focus:bg-white/20"
           />
+          {!query && (
+            <div className="pointer-events-none absolute inset-0 flex items-center pl-10 pr-4 text-sm text-white/60">
+              <span>{t("home.search.try")}&nbsp;</span>
+              <span className="inline-flex h-[1.25em] items-center overflow-hidden">
+                <span key={placeholderIdx} className="animate-placeholder-rotate block">
+                  « {placeholderExamples[placeholderIdx]} »
+                </span>
+              </span>
+            </div>
+          )}
           {query && (
             <button
               onClick={() => setQuery("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
-              aria-label="Effacer"
+              aria-label={t("home.search.clear")}
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -307,14 +349,14 @@ export default function HomePage() {
           <section className="mx-auto mb-6 max-w-xs py-6 text-center">
             {workerName && (
               <p className="mb-3 font-heading text-lg font-semibold text-gray-400">
-                {greeting}, {workerName}
+                {t(greeting)}, {workerName}
               </p>
             )}
             <p className="font-heading text-2xl font-bold text-gray-700 dark:text-neutral-200">
-              &laquo;&nbsp;{motivationalQuote}&nbsp;&raquo;
+              &laquo;&nbsp;{t(quoteKey)}&nbsp;&raquo;
             </p>
             <p className="mt-1.5 text-sm text-gray-400">
-              Choisissez une tâche pour commencer.
+              {t("home.chooseTask")}
             </p>
           </section>
         )}
@@ -323,7 +365,7 @@ export default function HomePage() {
         {!query && activeTasks.length > 0 && (
           <section className="mb-6">
             <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted">
-              En cours
+              {t("home.ongoing")}
             </h2>
             <div className="grid grid-cols-2 gap-4 sm:gap-3">
               {activeTasks.map(({ task, checked, total }, i) => (
@@ -339,7 +381,7 @@ export default function HomePage() {
                     </div>
                     <div className="min-w-0 space-y-4">
                       <p className="font-heading text-base font-bold leading-tight text-green-900 dark:text-green-200">
-                        {task.title}
+                        {localTitle(task)}
                       </p>
                       <div className="h-2 overflow-hidden rounded-full bg-green-200">
                         <div
@@ -348,18 +390,18 @@ export default function HomePage() {
                         />
                       </div>
                       <p className="text-sm font-medium text-green-700">
-                        {checked}/{total} vérifications
+                        {checked}/{total} {t("home.verifications")}
                       </p>
                     </div>
                   </Link>
                   <button
                     onClick={() => {
-                      if (!confirm("Abandonner cette inspection ?")) return;
+                      if (!confirm(t("home.abandonConfirm"))) return;
                       clearProgress(task.id);
                       setActiveProgress((prev) => prev.filter((p) => p.taskId !== task.id));
                     }}
                     className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-gray-400 shadow-sm transition-colors hover:bg-white hover:text-red-500"
-                    aria-label="Abandonner"
+                    aria-label={t("home.abandon")}
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6h12z" />
@@ -376,7 +418,7 @@ export default function HomePage() {
           <section className="mb-6">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
-                Favoris
+                {t("home.favorites")}
               </h2>
               <button
                 onClick={() => { setEditingFavorites(true); setShowOnboarding(true); }}
@@ -385,7 +427,7 @@ export default function HomePage() {
                 <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
                 </svg>
-                Modifier
+                {t("home.edit")}
               </button>
             </div>
             <div className="relative">
@@ -397,7 +439,7 @@ export default function HomePage() {
                   className="flex min-h-[48px] shrink-0 items-center gap-2.5 rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300 hover:bg-gray-50 active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600"
                 >
                   <TaskIcon taskId={task.id} className="h-5 w-5 text-gray-500" />
-                  <span className="font-heading text-sm font-semibold">{task.title}</span>
+                  <span className="font-heading text-sm font-semibold">{localTitle(task)}</span>
                 </Link>
               ))}
               </div>
@@ -411,9 +453,9 @@ export default function HomePage() {
 
         {grouped.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="font-heading text-lg font-semibold text-gray-400">Aucune tâche trouvée</p>
+            <p className="font-heading text-lg font-semibold text-gray-400">{t("home.noResults")}</p>
             <p className="mt-1 text-sm text-muted">
-              Essayez un autre terme comme &laquo;&nbsp;béton&nbsp;&raquo; ou &laquo;&nbsp;hauteur&nbsp;&raquo;
+              {t("home.noResultsHint")}
             </p>
           </div>
         ) : (
@@ -437,10 +479,10 @@ export default function HomePage() {
                         <TaskIcon taskId={task.id} className="h-5 w-5" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="font-heading text-base font-semibold leading-tight">{task.title}</p>
-                        <p className="mt-0.5 text-sm text-muted">{task.description}</p>
+                        <p className="font-heading text-base font-semibold leading-tight">{localTitle(task)}</p>
+                        <p className="mt-0.5 text-sm text-muted">{localDesc(task)}</p>
                         {totalPoints > 0 && (
-                          <p className="mt-1 text-xs text-gray-400">{totalPoints} points</p>
+                          <p className="mt-1 text-xs text-gray-400">{totalPoints} {t("home.points")}</p>
                         )}
                       </div>
                       <svg className="ml-auto h-5 w-5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -457,7 +499,7 @@ export default function HomePage() {
       </main>
 
       <footer className="px-5 py-4 text-center text-xs text-muted dark:bg-neutral-900">
-        {footerMessage}
+        {t(footerKey)}
       </footer>
 
       {/* Onboarding overlay */}

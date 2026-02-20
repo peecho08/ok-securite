@@ -8,10 +8,12 @@ import { tasks } from "@/data/tasks";
 import { addHistory, clearProgress } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
 import { AlertTriangle } from "lucide-react";
+import { useLocale } from "@/lib/i18n";
 
 export default function ConfirmPage() {
   const { taskId } = useParams<{ taskId: string }>();
   const searchParams = useSearchParams();
+  const { locale, t } = useLocale();
 
   const items = Number(searchParams.get("items")) || 0;
   const checkedCount = Number(searchParams.get("checked")) || 0;
@@ -22,20 +24,24 @@ export default function ConfirmPage() {
   const [saved, setSaved] = useState(false);
   const [notified, setNotified] = useState(false);
 
+  const localTitle = (task: (typeof tasks)[number]) =>
+    locale === "en" && task.titleEn ? task.titleEn : task.title;
+
   const now = useMemo(() => new Date(), []);
-  const timestamp = now.toLocaleDateString("fr-FR", {
+  const dateLocale = locale === "en" ? "en-CA" : "fr-FR";
+  const timestamp = now.toLocaleDateString(dateLocale, {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   });
-  const time = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const time = now.toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" });
 
   useEffect(() => {
     if (!task || saved) return;
     addHistory({
       taskId,
-      taskTitle: task.title,
+      taskTitle: locale === "en" && task.titleEn ? task.titleEn : task.title,
       taskIcon: task.icon,
       workerName,
       checkedCount,
@@ -44,14 +50,14 @@ export default function ConfirmPage() {
     });
     if (allDone) clearProgress(taskId);
     setSaved(true);
-  }, [task, taskId, workerName, checkedCount, items, allDone, now, saved]);
+  }, [task, taskId, workerName, checkedCount, items, allDone, now, saved, locale]);
 
   if (!task) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center px-5 text-center">
-        <p className="font-heading text-lg font-semibold">Tâche introuvable</p>
+        <p className="font-heading text-lg font-semibold">{t("task.notFound")}</p>
         <Link href="/" className="mt-4 text-sm text-muted underline">
-          Retour à l&apos;accueil
+          {t("task.backHome")}
         </Link>
       </div>
     );
@@ -79,40 +85,40 @@ export default function ConfirmPage() {
         </div>
 
         <h1 className="mt-6 text-2xl font-bold">
-          {allDone ? "Checklist complétée" : "Checklist incomplète"}
+          {allDone ? t("confirm.complete") : t("confirm.incomplete")}
         </h1>
 
         <div className="mt-3 flex items-center gap-2 text-muted">
           <TaskIcon taskId={taskId} className="h-5 w-5" />
-          <span className="text-sm">{task.title}</span>
+          <span className="text-sm">{localTitle(task)}</span>
         </div>
 
         {/* Summary card */}
         <div className="mt-8 w-full max-w-md rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-800">
           {workerName && (
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <span className="text-sm text-muted">Travailleur</span>
+              <span className="text-sm text-muted">{t("confirm.worker")}</span>
               <span className="font-heading font-bold">{workerName}</span>
             </div>
           )}
           <div className={`flex items-center justify-between ${workerName ? "border-b border-gray-100 py-3" : "border-b border-gray-100 pb-3"}`}>
-            <span className="text-sm text-muted">Points vérifiés</span>
+            <span className="text-sm text-muted">{t("confirm.pointsChecked")}</span>
             <span className="font-heading font-bold">
               {checkedCount} / {items}
             </span>
           </div>
           <div className="flex items-center justify-between border-b border-gray-100 py-3">
-            <span className="text-sm text-muted">Statut</span>
+            <span className="text-sm text-muted">{t("confirm.status")}</span>
             <span
               className={`font-heading rounded-md px-2 py-0.5 text-xs font-semibold ${
                 allDone ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
               }`}
             >
-              {allDone ? "COMPLET" : "INCOMPLET"}
+              {allDone ? t("confirm.statusComplete") : t("confirm.statusIncomplete")}
             </span>
           </div>
           <div className="flex items-center justify-between pt-3">
-            <span className="text-sm text-muted">Date</span>
+            <span className="text-sm text-muted">{t("confirm.date")}</span>
             <span className="text-right text-sm font-medium">
               {timestamp}
               <br />
@@ -123,7 +129,7 @@ export default function ConfirmPage() {
 
         {allDone && (
           <p className="mt-4 text-sm text-muted">
-            Bien joué. Prends soin de toi.
+            {t("confirm.wellDone")}
           </p>
         )}
       </main>
@@ -132,17 +138,18 @@ export default function ConfirmPage() {
         {allDone && !notified && (
           <button
             onClick={async () => {
+              const taskTitle = localTitle(task);
               const summary = [
-                `Checklist ${task.title} complétée`,
-                workerName ? `Travailleur : ${workerName}` : "",
-                `${checkedCount}/${items} points vérifiés`,
+                t("confirm.shareChecklist").replace("{task}", taskTitle),
+                workerName ? t("confirm.shareWorker").replace("{name}", workerName) : "",
+                t("confirm.sharePoints").replace("{checked}", String(checkedCount)).replace("{total}", String(items)),
                 `${timestamp} à ${time}`,
                 "",
-                "Envoyé via OK Chantier",
+                t("confirm.shareVia"),
               ].filter(Boolean).join("\n");
               try {
                 if (navigator.share) {
-                  await navigator.share({ title: `OK Chantier — ${task.title}`, text: summary });
+                  await navigator.share({ title: t("confirm.shareTitle").replace("{task}", taskTitle), text: summary });
                   setNotified(true);
                 } else {
                   await navigator.clipboard.writeText(summary);
@@ -154,7 +161,7 @@ export default function ConfirmPage() {
             }}
             className="mb-3 w-full rounded-xl bg-[#118914] py-3.5 font-heading text-sm font-bold tracking-wide text-white transition-colors hover:bg-[#0e7511] active:bg-[#0e7511]"
           >
-            NOTIFIER MON SUPERVISEUR
+            {t("confirm.notify")}
           </button>
         )}
         {notified && (
@@ -162,7 +169,7 @@ export default function ConfirmPage() {
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
-            Notification envoyée
+            {t("confirm.notified")}
           </div>
         )}
         <div className="flex gap-3">
@@ -170,13 +177,13 @@ export default function ConfirmPage() {
             href="/"
             className="block flex-1 rounded-xl border-2 border-black py-3.5 text-center font-heading text-sm font-bold transition-colors active:bg-gray-50 dark:border-neutral-300 dark:text-neutral-100"
           >
-            ACCUEIL
+            {t("nav.home")}
           </Link>
           <Link
             href="/history"
             className="block flex-1 rounded-xl border-2 border-gray-300 py-3.5 text-center font-heading text-sm font-bold text-gray-600 transition-colors active:bg-gray-50"
           >
-            HISTORIQUE
+            {t("nav.history")}
           </Link>
         </div>
       </div>

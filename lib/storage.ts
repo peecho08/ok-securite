@@ -114,6 +114,24 @@ export function hasFavorites(): boolean {
   }
 }
 
+// ── Language ─────────────────────────────────────────────────────
+
+const LANG_KEY = key("lang");
+
+export function getLanguage(): string {
+  try {
+    return localStorage.getItem(LANG_KEY) || "fr";
+  } catch {
+    return "fr";
+  }
+}
+
+export function setLanguage(lang: string) {
+  try {
+    localStorage.setItem(LANG_KEY, lang);
+  } catch { /* ignore */ }
+}
+
 // ── Recent tasks ─────────────────────────────────────────────────
 
 const RECENT_KEY = key("recent");

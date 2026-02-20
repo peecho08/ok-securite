@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { tasks } from "@/data/tasks";
-import { categoryLabels, type TaskCategory } from "@/types";
+import { categoryLabels, categoryLabelsEn, type TaskCategory } from "@/types";
 import { setFavorites, getWorkerName, setWorkerName } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
+import { useLocale } from "@/lib/i18n";
 
 const categoryOrder: TaskCategory[] = [
   "gros-oeuvre",
@@ -30,11 +31,17 @@ interface OnboardingProps {
 }
 
 export function Onboarding({ initial = [], skipWelcome = false, onDone }: OnboardingProps) {
+  const { locale, t } = useLocale();
   const [step, setStep] = useState<"welcome" | "pick">(skipWelcome ? "pick" : "welcome");
   const [name, setName] = useState(getWorkerName);
   const [selected, setSelected] = useState<Set<string>>(new Set(initial));
   const [search, setSearch] = useState("");
   const [exiting, setExiting] = useState(false);
+
+  const localTitle = (task: (typeof tasks)[number]) =>
+    locale === "en" && task.titleEn ? task.titleEn : task.title;
+  const localCatLabel = (cat: TaskCategory) =>
+    locale === "en" ? categoryLabelsEn[cat] : categoryLabels[cat];
 
   function handleStart() {
     if (name.trim()) setWorkerName(name.trim());
@@ -62,14 +69,21 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
     const q = normalize(search);
     return categoryOrder.map((cat) => ({
       category: cat,
-      label: categoryLabels[cat],
-      tasks: tasks.filter((t) => {
-        if (t.category !== cat) return false;
+      label: locale === "en" ? categoryLabelsEn[cat] : categoryLabels[cat],
+      tasks: tasks.filter((task) => {
+        if (task.category !== cat) return false;
         if (!q) return true;
-        return normalize(`${t.title} ${t.description}`).includes(q);
+        const searchable = [
+          task.title,
+          task.description,
+          task.titleEn ?? "",
+          task.descriptionEn ?? "",
+          (task.keywords ?? []).join(" "),
+        ].join(" ");
+        return normalize(searchable).includes(q);
       }),
     })).filter((g) => g.tasks.length > 0);
-  }, [search]);
+  }, [search, locale]);
 
   const count = selected.size;
   const canConfirm = count >= MIN_FAVORITES;
@@ -88,17 +102,17 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
           />
 
           <h1 className="mt-8 font-heading text-2xl font-bold">
-            {name.trim() ? `Bonjour ${name.trim().split(" ")[0]}` : "Bonjour"} !
+            {name.trim() ? `${t("onboarding.hello")} ${name.trim().split(" ")[0]}` : t("onboarding.hello")} !
           </h1>
           <p className="mt-2 max-w-sm text-base text-gray-500">
-            L&apos;application qui vous accompagne pour assurer la sécurité sur vos chantiers.
+            {t("onboarding.subtitle")}
           </p>
 
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Votre prénom"
+            placeholder={t("onboarding.namePlaceholder")}
             className="mt-8 w-full max-w-xs rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-center text-base outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white"
           />
 
@@ -106,12 +120,12 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
             onClick={handleStart}
             className="mt-6 w-full max-w-xs rounded-xl bg-[#118914] py-4 font-heading text-base font-bold tracking-wide text-white transition-colors hover:bg-[#0e7511] active:bg-[#0e7511]"
           >
-            COMMENCER
+            {t("onboarding.start")}
           </button>
 
         </div>
         <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-1.5">
-          <span className="text-sm text-gray-400">Alimenté par</span>
+          <span className="text-sm text-gray-400">{t("nav.poweredBy")}</span>
           <Image
             src="/cnesst-logo.svg"
             alt="CNESST"
@@ -136,14 +150,14 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
-              Retour
+              {t("nav.back")}
             </button>
           )}
           <h1 className="font-heading text-2xl font-bold text-white">
-            Choisissez vos tâches
+            {t("onboarding.pickTitle")}
           </h1>
           <p className="mt-1 text-sm text-white/70">
-            Sélectionnez au moins {MIN_FAVORITES} tâche pour un accès rapide.
+            {t("onboarding.pickSubtitle")}
           </p>
 
           <div className="relative mt-4">
@@ -157,7 +171,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher une tâche…"
+              placeholder={t("onboarding.searchPlaceholder")}
               className="w-full rounded-xl border border-white/25 bg-white/15 py-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-white/50 focus:border-white/40 focus:bg-white/20"
             />
             {search && (
@@ -178,12 +192,12 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
         <div className="mx-auto max-w-3xl">
           <div className="space-y-6">
             {filteredGrouped.length === 0 ? (
-              <p className="py-8 text-center text-sm text-gray-400">Aucune tâche trouvée</p>
+              <p className="py-8 text-center text-sm text-gray-400">{t("onboarding.noResults")}</p>
             ) : (
               filteredGrouped.map(({ category, label, tasks: catTasks }) => (
                 <section key={category}>
                   <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400">
-                    {label}
+                    {localCatLabel(category)}
                   </h2>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {catTasks.map((task) => {
@@ -206,7 +220,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
                             <TaskIcon taskId={task.id} className="h-4.5 w-4.5" />
                           </span>
                           <span className="min-w-0 text-sm font-semibold leading-tight">
-                            {task.title}
+                            {localTitle(task)}
                           </span>
                         </button>
                       );
@@ -222,7 +236,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-100 bg-white px-5 py-4 sm:px-8">
         <div className="mx-auto max-w-3xl">
           <p className="mb-2 text-center text-sm text-gray-500">
-            {count} tâche{count !== 1 ? "s" : ""} sélectionnée{count !== 1 ? "s" : ""}
+            {t("onboarding.taskCount").replace("{count}", String(count)).replace("{s}", count !== 1 ? "s" : "")}
           </p>
           <button
             onClick={handleConfirm}
@@ -233,7 +247,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
                 : "cursor-not-allowed bg-gray-200 text-gray-400"
             }`}
           >
-            {canConfirm ? "C\u2019EST PARTI" : "Sélectionnez au moins 1 tâche"}
+            {canConfirm ? t("onboarding.confirm") : t("onboarding.selectMin")}
           </button>
         </div>
       </div>

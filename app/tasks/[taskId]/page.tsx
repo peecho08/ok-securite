@@ -5,8 +5,10 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { tasks } from "@/data/tasks";
 import { checklists } from "@/data/checklists";
+import { checklistItemsEn, phaseTitlesEn } from "@/data/checklists-en";
 import type { Phase } from "@/types";
 import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress } from "@/lib/storage";
+import { useLocale } from "@/lib/i18n";
 
 function haptic() {
   try { navigator?.vibrate?.(10); } catch { /* unsupported */ }
@@ -48,8 +50,19 @@ export default function TaskPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const shouldResume = searchParams.get("resume") === "1";
+  const { locale, t } = useLocale();
 
   const task = tasks.find((t) => t.id === taskId);
+  const localTitle = (task: (typeof tasks)[number]) =>
+    locale === "en" && task.titleEn ? task.titleEn : task.title;
+  const localItemLabel = (item: { id: string; label: string }) =>
+    locale === "en" && checklistItemsEn[item.id] ? checklistItemsEn[item.id].label : item.label;
+  const localItemInfo = (item: { id: string; info?: string }) =>
+    locale === "en" && checklistItemsEn[item.id]
+      ? (checklistItemsEn[item.id].info ?? item.info ?? "")
+      : (item.info ?? "");
+  const localPhaseTitle = (title: string) =>
+    locale === "en" && phaseTitlesEn[title] ? phaseTitlesEn[title] : title;
   const checklist = checklists[taskId];
   const allItems = checklist?.phases.flatMap((p) => p.items) ?? [];
 
@@ -187,9 +200,9 @@ export default function TaskPage() {
   if (!task || !checklist) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center px-5 text-center">
-        <p className="font-heading text-lg font-semibold">Tâche introuvable</p>
+        <p className="font-heading text-lg font-semibold">{t("task.notFound")}</p>
         <Link href="/" className="mt-4 text-sm text-muted underline">
-          Retour à l&apos;accueil
+          {t("task.backHome")}
         </Link>
       </div>
     );
@@ -215,7 +228,7 @@ export default function TaskPage() {
           <Link
             href="/"
             className="flex h-12 w-12 items-center justify-center rounded-lg text-gray-500 transition-colors active:bg-gray-100"
-            aria-label="Retour"
+            aria-label={t("nav.back")}
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -223,13 +236,13 @@ export default function TaskPage() {
           </Link>
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-lg font-bold leading-tight">
-              {task.title}
+              {localTitle(task)}
             </h1>
           </div>
           {checked.size > 0 && (
             <button
               onClick={() => {
-                if (!confirm("Abandonner cette inspection ? La progression sera perdue.")) return;
+                if (!confirm(t("task.abandonConfirm"))) return;
                 clearProgress(taskId);
                 router.push("/");
               }}
@@ -238,7 +251,7 @@ export default function TaskPage() {
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6h12z" />
               </svg>
-              Abandonner
+              {t("task.abandon")}
             </button>
           )}
         </div>
@@ -250,7 +263,7 @@ export default function TaskPage() {
           />
         </div>
         <p className="mt-1 text-xs text-muted">
-          {checked.size} / {allItems.length} vérifications
+          {checked.size} / {allItems.length} {t("task.verifications")}
         </p>
       </header>
 
@@ -289,7 +302,7 @@ export default function TaskPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
                   )}
-                  <h2 className="font-heading text-base font-semibold text-muted">{group.title}</h2>
+                  <h2 className="font-heading text-base font-semibold text-muted">{localPhaseTitle(group.title)}</h2>
                 </button>
 
                 <span className="shrink-0 text-xs text-muted">
@@ -299,7 +312,7 @@ export default function TaskPage() {
 
               {isLocked && (
                 <p className="text-xs text-gray-400">
-                  Complétez l&apos;étape précédente pour débloquer.
+                  {t("task.unlockPrevious")}
                 </p>
               )}
 
@@ -336,12 +349,12 @@ export default function TaskPage() {
                           <span className={`flex min-w-0 flex-1 flex-col items-start gap-0.5 text-base leading-snug ${isChecked ? "text-green-900" : ""}`}>
                             {item.critical && !isChecked && (
                               <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700">
-                                CRITIQUE
+                                {t("task.critical")}
                               </span>
                             )}
-                            <span>{item.label}</span>
+                            <span>{localItemLabel(item)}</span>
                           </span>
-                          {item.info && (
+                          {localItemInfo(item) && (
                             <span
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -353,9 +366,9 @@ export default function TaskPage() {
                             </span>
                           )}
                         </button>
-                        {isInfoOpen && item.info && (
+                        {isInfoOpen && localItemInfo(item) && (
                           <div className="mx-2 mt-1.5 rounded-lg bg-blue-50 px-3.5 py-2.5 text-sm text-blue-800">
-                            {item.info}
+                            {localItemInfo(item)}
                           </div>
                         )}
                       </SwipeItem>
@@ -369,7 +382,7 @@ export default function TaskPage() {
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  <p className="text-sm font-medium">Tous les points sont cochés</p>
+                  <p className="text-sm font-medium">{t("task.allChecked")}</p>
                 </div>
               )}
             </section>
@@ -377,7 +390,7 @@ export default function TaskPage() {
         })}
 
         <p className="mt-2 mb-4 text-center text-[11px] text-gray-400">
-          Source : CNESST / Code de sécurité pour les travaux de construction
+          {t("task.source")}
         </p>
       </main>
 
@@ -387,7 +400,7 @@ export default function TaskPage() {
           type="text"
           value={workerName}
           onChange={(e) => setWorkerName(e.target.value)}
-          placeholder="Nom du travailleur (optionnel)"
+          placeholder={t("task.workerName")}
           className="mb-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:bg-neutral-750"
         />
         <button
@@ -399,7 +412,7 @@ export default function TaskPage() {
               : "cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"
           }`}
         >
-          {allChecked ? "VALIDER LA CHECKLIST ✓" : `${allItems.length - checked.size} point(s) restant(s)`}
+          {allChecked ? t("task.validate") : `${allItems.length - checked.size} ${t("task.remaining")}`}
         </button>
       </div>
 
@@ -410,12 +423,12 @@ export default function TaskPage() {
           role="status"
           aria-live="polite"
         >
-          <span className="text-sm">Point décoché</span>
+          <span className="text-sm">{t("task.unchecked")}</span>
           <button
             onClick={handleUndo}
             className="shrink-0 rounded-lg bg-white/20 px-4 py-2 text-sm font-bold transition-colors hover:bg-white/30 active:bg-white/40"
           >
-            ANNULER
+            {t("task.undo")}
           </button>
         </div>
       )}
@@ -434,9 +447,9 @@ export default function TaskPage() {
               </svg>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-heading text-base font-bold text-green-800">Bravo !</p>
+              <p className="font-heading text-base font-bold text-green-800">{t("task.phaseComplete")}</p>
               <p className="text-sm text-green-700">
-                {phaseToast.title} terminé
+                {localPhaseTitle(phaseToast.title)} {t("task.phaseCompleteDetail")}
               </p>
             </div>
           </div>

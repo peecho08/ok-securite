@@ -7,17 +7,22 @@ import { tasks } from "@/data/tasks";
 import { getWorkerName } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
 import { ClipboardCheck } from "lucide-react";
+import { useLocale } from "@/lib/i18n";
 
 const severityOptions = [
-  { value: "observation", label: "Observation", color: "bg-blue-100 text-blue-800" },
-  { value: "presquaccident", label: "Presqu'accident", color: "bg-amber-100 text-amber-800" },
-  { value: "incident", label: "Incident / Blessure", color: "bg-red-100 text-red-800" },
+  { value: "observation", labelKey: "report.observation", color: "bg-blue-100 text-blue-800" },
+  { value: "presquaccident", labelKey: "report.nearMiss", color: "bg-amber-100 text-amber-800" },
+  { value: "incident", labelKey: "report.incident", color: "bg-red-100 text-red-800" },
 ];
 
 export default function ReportPage() {
   const { taskId } = useParams<{ taskId: string }>();
   const router = useRouter();
+  const { locale, t } = useLocale();
   const task = tasks.find((t) => t.id === taskId);
+
+  const localTitle = (task: (typeof tasks)[number]) =>
+    locale === "en" && task.titleEn ? task.titleEn : task.title;
 
   const [severity, setSeverity] = useState("observation");
   const [description, setDescription] = useState("");
@@ -27,8 +32,8 @@ export default function ReportPage() {
   if (!task) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center px-5 text-center">
-        <p className="font-heading text-lg font-semibold">Tâche introuvable</p>
-        <Link href="/" className="mt-4 text-sm text-muted underline">Retour</Link>
+        <p className="font-heading text-lg font-semibold">{t("task.notFound")}</p>
+        <Link href="/" className="mt-4 text-sm text-muted underline">{t("report.back")}</Link>
       </div>
     );
   }
@@ -38,7 +43,7 @@ export default function ReportPage() {
 
     const report = {
       taskId,
-      taskTitle: task!.title,
+      taskTitle: localTitle(task!),
       severity,
       description,
       reporter,
@@ -60,22 +65,22 @@ export default function ReportPage() {
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100 text-green-700">
           <ClipboardCheck className="h-10 w-10" />
         </div>
-        <h1 className="mt-6 text-2xl font-bold">Rapport enregistré</h1>
+        <h1 className="mt-6 text-2xl font-bold">{t("report.saved")}</h1>
         <p className="mt-2 text-sm text-muted">
-          Votre signalement a été sauvegardé localement.
+          {t("report.savedDetail")}
         </p>
         <div className="mt-8 flex gap-3">
           <Link
             href={`/confirm/${taskId}`}
             className="rounded-xl border-2 border-gray-300 px-5 py-3 font-heading text-sm font-bold transition-colors active:bg-gray-50"
           >
-            Retour
+            {t("report.back")}
           </Link>
           <Link
             href="/"
             className="rounded-xl bg-black px-5 py-3 font-heading text-sm font-bold text-accent transition-colors active:bg-gray-900"
           >
-            Accueil
+            {t("nav.home")}
           </Link>
         </div>
       </div>
@@ -89,22 +94,22 @@ export default function ReportPage() {
           <button
             onClick={() => router.back()}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors active:bg-gray-100"
-            aria-label="Retour"
+            aria-label={t("report.back")}
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1 className="text-lg font-bold">Signaler un incident</h1>
+          <h1 className="text-lg font-bold">{t("report.title")}</h1>
         </div>
-        <p className="mt-1 text-xs text-muted">{task.title}</p>
+        <p className="mt-1 text-xs text-muted">{localTitle(task)}</p>
       </header>
 
       <main className="flex-1 px-5 py-4 sm:px-8">
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Severity */}
           <div>
-            <label className="mb-2 block font-heading text-sm font-semibold">Gravité</label>
+            <label className="mb-2 block font-heading text-sm font-semibold">{t("report.severity")}</label>
             <div className="flex flex-wrap gap-2">
               {severityOptions.map((opt) => (
                 <button
@@ -117,7 +122,7 @@ export default function ReportPage() {
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
-                  {opt.label}
+                  {t(opt.labelKey)}
                 </button>
               ))}
             </div>
@@ -126,13 +131,13 @@ export default function ReportPage() {
           {/* Description */}
           <div>
             <label htmlFor="desc" className="mb-2 block font-heading text-sm font-semibold">
-              Description
+              {t("report.description")}
             </label>
             <textarea
               id="desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Décrivez la situation observée…"
+              placeholder={t("report.descriptionPlaceholder")}
               rows={4}
               required
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white"
@@ -142,28 +147,28 @@ export default function ReportPage() {
           {/* Reporter */}
           <div>
             <label htmlFor="reporter" className="mb-2 block font-heading text-sm font-semibold">
-              Signalé par
+              {t("report.reporter")}
             </label>
             <input
               id="reporter"
               type="text"
               value={reporter}
               onChange={(e) => setReporter(e.target.value)}
-              placeholder="Votre nom (optionnel)"
+              placeholder={t("report.reporterPlaceholder")}
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white"
             />
           </div>
 
           {/* Timestamp */}
           <div className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-muted">
-            Date et heure : {new Date().toLocaleString("fr-FR")}
+            {t("report.datetime")} {new Date().toLocaleString(locale === "en" ? "en-CA" : "fr-FR")}
           </div>
 
           <button
             type="submit"
             className="w-full rounded-xl bg-red-600 py-3.5 font-heading text-sm font-bold tracking-wide text-white transition-colors hover:bg-red-700 active:bg-red-700"
           >
-            ENVOYER LE SIGNALEMENT
+            {t("report.submit")}
           </button>
         </form>
       </main>
