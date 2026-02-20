@@ -45,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${rubik.variable} ${workSans.variable}`}>
+    <html lang="fr" className={`${rubik.variable} ${workSans.variable}`} style={{ backgroundColor: "#118914" }}>
       <body className="bg-[var(--color-surface)] text-[#111] dark:bg-neutral-950 dark:text-neutral-100">
         <ThemeProvider>
           <I18nProvider>
