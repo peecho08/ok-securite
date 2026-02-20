@@ -115,19 +115,16 @@ export default function TaskPage() {
       const group = checklist.phases.find((g) => g.phase === newlyCompleted);
       if (group) {
         setPhaseToast({ phase: newlyCompleted, title: group.title });
-        try { navigator?.vibrate?.([30, 20, 30]); } catch { /* unsupported */ }
+        haptic();
 
         const completedIdx = checklist.phases.findIndex((g) => g.phase === newlyCompleted);
         const nextPhase = checklist.phases[completedIdx + 1];
         if (nextPhase) {
-          setUnlockedFlash(nextPhase.phase);
-          setTimeout(() => setUnlockedFlash(null), 1200);
-          try { navigator?.vibrate?.([20, 10, 20, 10, 40]); } catch { /* unsupported */ }
           const el = phaseRefs.current.get(nextPhase.phase);
           if (el) {
             setTimeout(() => {
               el.scrollIntoView({ behavior: "smooth", block: "start" });
-            }, 400);
+            }, 300);
           }
         }
       }
@@ -281,7 +278,7 @@ export default function TaskPage() {
           return (
             <section
               key={group.phase}
-              className={`mb-6 scroll-mt-24 transition-all duration-500 ${isLocked ? "opacity-40" : ""} ${unlockedFlash === group.phase ? "animate-phase-unlock" : ""}`}
+              className={`mb-6 scroll-mt-24 transition-opacity duration-300 ${isLocked ? "opacity-40" : ""}`}
               ref={(el) => { if (el) phaseRefs.current.set(group.phase, el); }}
             >
               <div className="mb-3 flex items-center gap-2">
@@ -436,23 +433,16 @@ export default function TaskPage() {
       {/* Phase completion toast */}
       {phaseToast && (
         <div
-          className="fixed inset-x-0 bottom-[120px] z-40 flex justify-center px-5 sm:px-8"
+          className="fixed bottom-[140px] left-1/2 z-40 flex -translate-x-1/2 items-center gap-2.5 rounded-xl bg-green-600 px-5 py-3 text-white shadow-lg animate-fade-in"
           role="status"
           aria-live="polite"
         >
-          <div className="animate-slide-in-bottom flex w-full max-w-3xl items-center gap-4 rounded-2xl border-2 border-green-300 bg-green-50 px-5 py-4 shadow-lg sm:px-8">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-500 text-white">
-              <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-heading text-base font-bold text-green-800">{t("task.phaseComplete")}</p>
-              <p className="text-sm text-green-700">
-                {localPhaseTitle(phaseToast.title)} {t("task.phaseCompleteDetail")}
-              </p>
-            </div>
-          </div>
+          <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          <span className="text-sm font-semibold">
+            {localPhaseTitle(phaseToast.title)} — {t("task.phaseCompleteDetail")}
+          </span>
         </div>
       )}
 
