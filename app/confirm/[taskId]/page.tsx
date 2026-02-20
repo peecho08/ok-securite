@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { checklists } from "@/data/checklists";
+import { checklistItemsEn, phaseTitlesEn } from "@/data/checklists-en";
 import { tasks } from "@/data/tasks";
 import { addHistory, clearProgress, loadProgress } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
-import { AlertTriangle } from "lucide-react";
+import { Download } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 
 export default function ConfirmPage() {
@@ -20,24 +21,27 @@ export default function ConfirmPage() {
   const allItems = checklist?.phases.flatMap((p) => p.items) ?? [];
   const items = allItems.length;
 
-  const [checkedCount, setCheckedCount] = useState(0);
   const [progressLoaded, setProgressLoaded] = useState(false);
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const saved = loadProgress(taskId as string);
-    setCheckedCount(saved.length);
+    const ids = loadProgress(taskId as string);
+    setCheckedIds(new Set(ids));
     setProgressLoaded(true);
   }, [taskId]);
 
   const workerName = searchParams.get("worker") || "";
 
   const task = tasks.find((t) => t.id === taskId);
-  const allDone = items > 0 && checkedCount === items;
   const [saved, setSaved] = useState(false);
   const [notified, setNotified] = useState(false);
 
   const localTitle = (task: (typeof tasks)[number]) =>
     locale === "en" && task.titleEn ? task.titleEn : task.title;
+  const localItemLabel = (item: { id: string; label: string }) =>
+    locale === "en" && checklistItemsEn[item.id] ? checklistItemsEn[item.id].label : item.label;
+  const localPhaseTitle = (title: string) =>
+    locale === "en" && phaseTitlesEn[title] ? phaseTitlesEn[title] : title;
 
   const now = useMemo(() => new Date(), []);
   const dateLocale = locale === "en" ? "en-CA" : "fr-FR";
@@ -49,6 +53,83 @@ export default function ConfirmPage() {
   });
   const time = now.toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" });
 
+  const generatePdf = useCallback(async () => {
+    if (!task || !checklist) return;
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    const contentW = pageW - margin * 2;
+    let y = 20;
+
+    const addPage = () => { doc.addPage(); y = 20; };
+    const checkSpace = (needed: number) => { if (y + needed > 275) addPage(); };
+
+    doc.setFillColor(17, 137, 20);
+    doc.rect(0, 0, pageW, 40, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.text("OK Chantier", margin, 18);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(localTitle(task), margin, 28);
+    doc.setFontSize(9);
+    doc.text(`${timestamp} — ${time}`, margin, 35);
+    y = 50;
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    if (workerName) {
+      doc.setFont("helvetica", "bold");
+      doc.text(`${t("confirm.worker")}: `, margin, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(workerName, margin + 30, y);
+      y += 7;
+    }
+    doc.setFont("helvetica", "bold");
+    doc.text(`${t("confirm.status")}: `, margin, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${t("confirm.statusComplete")}  (${items}/${items})`, margin + 30, y);
+    y += 12;
+
+    for (const phase of checklist.phases) {
+      checkSpace(16);
+      doc.setFillColor(245, 245, 245);
+      doc.rect(margin, y - 4, contentW, 8, "F");
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(60, 60, 60);
+      doc.text(localPhaseTitle(phase.title), margin + 2, y + 1);
+      y += 10;
+
+      for (const item of phase.items) {
+        const label = localItemLabel(item);
+        const lines = doc.splitTextToSize(label, contentW - 12);
+        checkSpace(lines.length * 5 + 3);
+
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(17, 137, 20);
+        doc.text("\u2713", margin + 1, y);
+        doc.setTextColor(50, 50, 50);
+        if (item.critical) doc.setFont("helvetica", "bold");
+        doc.text(lines, margin + 8, y);
+        y += lines.length * 5 + 2;
+      }
+      y += 4;
+    }
+
+    checkSpace(20);
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text(t("task.source"), margin, y + 6);
+
+    const filename = `ok-chantier-${taskId}-${now.toISOString().slice(0, 10)}.pdf`;
+    doc.save(filename);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [task, checklist, checkedIds, items, workerName, timestamp, time, taskId, now, locale, t]);
+
   useEffect(() => {
     if (!task || saved || !progressLoaded) return;
     addHistory({
@@ -56,13 +137,13 @@ export default function ConfirmPage() {
       taskTitle: locale === "en" && task.titleEn ? task.titleEn : task.title,
       taskIcon: task.icon,
       workerName,
-      checkedCount,
+      checkedCount: items,
       totalCount: items,
       completedAt: now.toISOString(),
     });
-    if (allDone) clearProgress(taskId as string);
+    clearProgress(taskId as string);
     setSaved(true);
-  }, [task, taskId, workerName, checkedCount, items, allDone, now, saved, progressLoaded, locale]);
+  }, [task, taskId, workerName, items, now, saved, progressLoaded, locale]);
 
   if (!task) {
     return (
@@ -78,27 +159,19 @@ export default function ConfirmPage() {
   return (
     <div className="flex min-h-dvh flex-col dark:bg-neutral-900">
       <main className="flex flex-1 flex-col items-center justify-center px-5 py-10 text-center sm:px-8">
-        <div
-          className={`flex h-48 w-48 items-center justify-center rounded-full sm:h-56 sm:w-56 ${
-            allDone ? "animate-stamp bg-green-100" : "bg-amber-100"
-          }`}
-        >
-          {allDone ? (
-            <Image
-              src="/ok.svg"
-              alt="OK"
-              width={94}
-              height={49}
-              className="h-20 w-auto sm:h-24"
-            />
-          ) : (
-            <AlertTriangle className="h-20 w-20 text-amber-600 sm:h-24 sm:w-24" />
-          )}
+        <div className="flex h-48 w-48 animate-stamp items-center justify-center rounded-full bg-green-100 sm:h-56 sm:w-56">
+          <Image
+            src="/ok.svg"
+            alt="OK"
+            width={94}
+            height={49}
+            className="h-20 w-auto sm:h-24"
+          />
         </div>
 
         <div className="animate-confirm-content">
           <h1 className="mt-6 text-2xl font-bold">
-            {allDone ? t("confirm.complete") : t("confirm.incomplete")}
+            {t("confirm.complete")}
           </h1>
 
           <div className="mt-3 flex items-center justify-center gap-2 text-muted">
@@ -107,7 +180,6 @@ export default function ConfirmPage() {
           </div>
         </div>
 
-        {/* Summary card */}
         <div className="animate-confirm-card mt-8 w-full max-w-md rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-800">
           {workerName && (
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -118,17 +190,13 @@ export default function ConfirmPage() {
           <div className={`flex items-center justify-between ${workerName ? "border-b border-gray-100 py-3" : "border-b border-gray-100 pb-3"}`}>
             <span className="text-sm text-muted">{t("confirm.pointsChecked")}</span>
             <span className="font-heading font-bold">
-              {checkedCount} / {items}
+              {items} / {items}
             </span>
           </div>
           <div className="flex items-center justify-between border-b border-gray-100 py-3">
             <span className="text-sm text-muted">{t("confirm.status")}</span>
-            <span
-              className={`font-heading rounded-md px-2 py-0.5 text-xs font-semibold ${
-                allDone ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
-              }`}
-            >
-              {allDone ? t("confirm.statusComplete") : t("confirm.statusIncomplete")}
+            <span className="font-heading rounded-md bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800">
+              {t("confirm.statusComplete")}
             </span>
           </div>
           <div className="flex items-center justify-between pt-3">
@@ -141,23 +209,21 @@ export default function ConfirmPage() {
           </div>
         </div>
 
-        {allDone && (
-          <p className="animate-confirm-card mt-4 text-sm text-muted">
-            {t("confirm.wellDone")}
-          </p>
-        )}
+        <p className="animate-confirm-card mt-4 text-sm text-muted">
+          {t("confirm.wellDone")}
+        </p>
       </main>
 
       <div className="animate-confirm-footer border-t border-gray-100 px-5 py-4 dark:border-neutral-800 sm:px-8">
-        {allDone && !notified && (
+        {!notified && (
           <button
             onClick={async () => {
               const taskTitle = localTitle(task);
               const summary = [
                 t("confirm.shareChecklist").replace("{task}", taskTitle),
                 workerName ? t("confirm.shareWorker").replace("{name}", workerName) : "",
-                t("confirm.sharePoints").replace("{checked}", String(checkedCount)).replace("{total}", String(items)),
-                `${timestamp} à ${time}`,
+                t("confirm.sharePoints").replace("{checked}", String(items)).replace("{total}", String(items)),
+                `${timestamp} — ${time}`,
                 "",
                 t("confirm.shareVia"),
               ].filter(Boolean).join("\n");
@@ -170,7 +236,7 @@ export default function ConfirmPage() {
                   setNotified(true);
                 }
               } catch {
-                setNotified(true);
+                /* user cancelled share — do nothing */
               }
             }}
             className="mb-3 w-full rounded-xl bg-[#118914] py-3.5 font-heading text-sm font-bold tracking-wide text-white transition-colors hover:bg-[#0e7511] active:bg-[#0e7511]"
@@ -186,20 +252,19 @@ export default function ConfirmPage() {
             {t("confirm.notified")}
           </div>
         )}
-        <div className="flex gap-3">
-          <Link
-            href="/"
-            className="block flex-1 rounded-xl border-2 border-black py-3.5 text-center font-heading text-sm font-bold transition-colors active:bg-gray-50 dark:border-neutral-300 dark:text-neutral-100"
-          >
-            {t("nav.home")}
-          </Link>
-          <Link
-            href="/history"
-            className="block flex-1 rounded-xl border-2 border-gray-300 py-3.5 text-center font-heading text-sm font-bold text-gray-600 transition-colors active:bg-gray-50"
-          >
-            {t("nav.history")}
-          </Link>
-        </div>
+        <button
+          onClick={generatePdf}
+          className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-gray-800 py-3.5 font-heading text-sm font-bold tracking-wide transition-colors active:bg-gray-100 dark:border-neutral-300 dark:text-neutral-100 dark:active:bg-neutral-700"
+        >
+          <Download className="h-4 w-4" />
+          {t("confirm.downloadPdf")}
+        </button>
+        <Link
+          href="/"
+          className="block w-full py-3.5 text-center text-sm font-medium text-gray-500 transition-colors active:text-gray-700 dark:text-neutral-400 dark:active:text-neutral-200"
+        >
+          {t("nav.home")}
+        </Link>
       </div>
     </div>
   );

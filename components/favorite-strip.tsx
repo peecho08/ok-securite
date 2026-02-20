@@ -37,7 +37,7 @@ export function FavoriteStrip({ tasks: tasksProp, onEdit }: FavoriteStripProps) 
             <Link
               key={task.id}
               href={`/tasks/${task.id}`}
-              className="flex min-h-[48px] shrink-0 items-center gap-2.5 rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300 hover:bg-gray-50 active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600"
+              className="flex min-h-[48px] shrink-0 items-center gap-2.5 rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-400 active:border-gray-500 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-500 dark:active:border-neutral-400"
             >
               <TaskIcon taskId={task.id} className="h-5 w-5 text-gray-500" />
               <span className="font-heading text-sm font-semibold">{localTitle(task, locale)}</span>

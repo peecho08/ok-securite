@@ -28,8 +28,11 @@ const fr: Record<string, string> = {
   // ── Menu ────────────────────────────────────────────────
   "menu.worker": "Travailleur",
   "menu.history": "Historique",
+  "menu.dashboard": "Tableau de bord",
   "menu.wellbeing": "Bien-être",
+  "menu.report": "Signaler un incident",
   "menu.editFavorites": "Modifier mes favoris",
+  "menu.theme": "Mode sombre / clair",
   "menu.restartOnboarding": "Recommencer l'accueil",
   "menu.language": "English",
 
@@ -43,6 +46,12 @@ const fr: Record<string, string> = {
   "onboarding.searchPlaceholder": "Rechercher une tâche…",
   "onboarding.noResults": "Aucune tâche trouvée",
   "onboarding.taskCount": "{count} tâche{s} sélectionnée{s}",
+  "onboarding.feature1Title": "55 tâches · 7 catégories",
+  "onboarding.feature1Desc": "Du béton à la toiture — checklists basées sur le Code de sécurité CNESST.",
+  "onboarding.feature2Title": "3 phases par tâche",
+  "onboarding.feature2Desc": "Avant, pendant et après — glissez vers la droite pour cocher rapidement.",
+  "onboarding.feature3Title": "Fonctionne hors ligne",
+  "onboarding.feature3Desc": "Vos checklists et votre progression sont sauvegardées localement — aucun internet requis.",
   "onboarding.confirm": "C\u2019EST PARTI",
   "onboarding.selectMin": "Sélectionnez au moins 1 tâche",
 
@@ -62,16 +71,20 @@ const fr: Record<string, string> = {
   "task.undo": "ANNULER",
   "task.phaseComplete": "Bravo !",
   "task.phaseCompleteDetail": "terminé",
+  "task.criticalWarningTitle": "Points critiques manquants",
+  "task.criticalWarningCount": "{count} point(s) critique(s) non coché(s)",
+  "task.criticalWarningBack": "Revenir",
+  "task.criticalWarningContinue": "Continuer quand même",
   "task.source": "Source : CNESST / Code de sécurité pour les travaux de construction",
 
   // ── Confirm ─────────────────────────────────────────────
   "confirm.complete": "Checklist complétée",
-  "confirm.incomplete": "Checklist incomplète",
+
   "confirm.worker": "Travailleur",
   "confirm.pointsChecked": "Points vérifiés",
   "confirm.status": "Statut",
   "confirm.statusComplete": "COMPLET",
-  "confirm.statusIncomplete": "INCOMPLET",
+
   "confirm.date": "Date",
   "confirm.wellDone": "Bien joué. Prends soin de toi.",
   "confirm.notify": "NOTIFIER MON SUPERVISEUR",
@@ -81,6 +94,8 @@ const fr: Record<string, string> = {
   "confirm.shareWorker": "Travailleur : {name}",
   "confirm.sharePoints": "{checked}/{total} points vérifiés",
   "confirm.shareVia": "Envoyé via OK Chantier",
+  "confirm.downloadPdf": "TÉLÉCHARGER EN PDF",
+
 
   // ── Report ──────────────────────────────────────────────
   "report.title": "Signaler un incident",
@@ -128,6 +143,23 @@ const fr: Record<string, string> = {
   "wellbeing.tip2": "Fatigué = moins vigilant. Un bon 7-8 h, c'est un EPI comme les autres.",
   "wellbeing.tip3Title": "Surveille tes chums",
   "wellbeing.tip3": "Un gars qui parle plus, qui s'isole, qui perd patience — demande-lui comment ça va. Ça peut tout changer.",
+
+  // ── Dashboard ─────────────────────────────────────────────
+  "dashboard.title": "Tableau de bord",
+  "dashboard.completedTotal": "Inspections complétées",
+  "dashboard.completedWeek": "Cette semaine",
+  "dashboard.complianceRate": "Taux de conformité",
+  "dashboard.criticalRate": "Points critiques OK",
+  "dashboard.weeklyActivity": "Activité de la semaine",
+  "dashboard.you": "vous",
+  "dashboard.topWorkers": "Meilleurs travailleurs",
+  "dashboard.byCategory": "Par catégorie",
+  "dashboard.recentActivity": "Activité récente",
+  "dashboard.noData": "Aucune donnée",
+  "dashboard.noDataHint": "Complétez des checklists pour voir vos statistiques ici.",
+  "dashboard.streak": "Série en cours",
+  "dashboard.streakDays": "jour{s} consécutif{s}",
+  "dashboard.avgScore": "Score moyen",
 
   // ── Footer ──────────────────────────────────────────────
   "footer.msg1": "Restez vigilant. Chaque geste compte.",
@@ -183,8 +215,11 @@ const en: Record<string, string> = {
   // ── Menu ────────────────────────────────────────────────
   "menu.worker": "Worker",
   "menu.history": "History",
+  "menu.dashboard": "Dashboard",
   "menu.wellbeing": "Well-being",
+  "menu.report": "Report an incident",
   "menu.editFavorites": "Edit my favorites",
+  "menu.theme": "Dark / Light mode",
   "menu.restartOnboarding": "Restart welcome",
   "menu.language": "Français",
 
@@ -198,6 +233,12 @@ const en: Record<string, string> = {
   "onboarding.searchPlaceholder": "Search for a task…",
   "onboarding.noResults": "No tasks found",
   "onboarding.taskCount": "{count} task{s} selected",
+  "onboarding.feature1Title": "55 tasks · 7 categories",
+  "onboarding.feature1Desc": "From concrete to roofing — checklists based on CNESST safety standards.",
+  "onboarding.feature2Title": "3 phases per task",
+  "onboarding.feature2Desc": "Before, during and after — swipe right to check items quickly.",
+  "onboarding.feature3Title": "Works offline",
+  "onboarding.feature3Desc": "Your checklists and progress are saved locally — no internet needed.",
   "onboarding.confirm": "LET\u2019S GO",
   "onboarding.selectMin": "Select at least 1 task",
 
@@ -217,16 +258,20 @@ const en: Record<string, string> = {
   "task.undo": "UNDO",
   "task.phaseComplete": "Well done!",
   "task.phaseCompleteDetail": "completed",
+  "task.criticalWarningTitle": "Missing critical items",
+  "task.criticalWarningCount": "{count} critical item(s) unchecked",
+  "task.criticalWarningBack": "Go back",
+  "task.criticalWarningContinue": "Continue anyway",
   "task.source": "Source: CNESST / Construction Safety Code",
 
   // ── Confirm ─────────────────────────────────────────────
   "confirm.complete": "Checklist completed",
-  "confirm.incomplete": "Checklist incomplete",
+
   "confirm.worker": "Worker",
   "confirm.pointsChecked": "Items checked",
   "confirm.status": "Status",
   "confirm.statusComplete": "COMPLETE",
-  "confirm.statusIncomplete": "INCOMPLETE",
+
   "confirm.date": "Date",
   "confirm.wellDone": "Well done. Take care of yourself.",
   "confirm.notify": "NOTIFY MY SUPERVISOR",
@@ -236,6 +281,8 @@ const en: Record<string, string> = {
   "confirm.shareWorker": "Worker: {name}",
   "confirm.sharePoints": "{checked}/{total} items checked",
   "confirm.shareVia": "Sent via OK Chantier",
+  "confirm.downloadPdf": "DOWNLOAD AS PDF",
+
 
   // ── Report ──────────────────────────────────────────────
   "report.title": "Report an incident",
@@ -283,6 +330,23 @@ const en: Record<string, string> = {
   "wellbeing.tip2": "Tired = less alert. A solid 7–8 hours is PPE like any other.",
   "wellbeing.tip3Title": "Watch out for your buddies",
   "wellbeing.tip3": "A guy who goes quiet, isolates himself, loses patience — ask him how he\u2019s doing. It can change everything.",
+
+  // ── Dashboard ─────────────────────────────────────────────
+  "dashboard.title": "Dashboard",
+  "dashboard.completedTotal": "Inspections completed",
+  "dashboard.completedWeek": "This week",
+  "dashboard.complianceRate": "Compliance rate",
+  "dashboard.criticalRate": "Critical items OK",
+  "dashboard.weeklyActivity": "This week\u2019s activity",
+  "dashboard.you": "you",
+  "dashboard.topWorkers": "Top workers",
+  "dashboard.byCategory": "By category",
+  "dashboard.recentActivity": "Recent activity",
+  "dashboard.noData": "No data",
+  "dashboard.noDataHint": "Complete checklists to see your stats here.",
+  "dashboard.streak": "Current streak",
+  "dashboard.streakDays": "consecutive day{s}",
+  "dashboard.avgScore": "Average score",
 
   // ── Footer ──────────────────────────────────────────────
   "footer.msg1": "Stay alert. Every action counts.",

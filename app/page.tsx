@@ -5,7 +5,7 @@ import { tasks } from "@/data/tasks";
 import { type TaskCategory } from "@/types";
 import { useLocale } from "@/lib/i18n";
 import { localCatLabel, localTitle, normalize } from "@/lib/locale-helpers";
-import { clearProgress, getActiveTaskProgress, getFavorites, getWorkerName, hasFavorites } from "@/lib/storage";
+import { clearProgress, getActiveTaskProgress, getFavorites, getHistory, getWorkerName, hasFavorites, isDemoSeeded, seedDemoData } from "@/lib/storage";
 import { checklists } from "@/data/checklists";
 import { AppHeader } from "@/components/app-header";
 import { SearchBar } from "@/components/search-bar";
@@ -37,6 +37,9 @@ export default function HomePage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (!isDemoSeeded()) {
+      seedDemoData();
+    }
     setFavoriteIds(getFavorites());
     setActiveProgress(getActiveTaskProgress());
     setWorkerNameState(getWorkerName());

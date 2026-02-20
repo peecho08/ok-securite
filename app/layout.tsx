@@ -6,6 +6,7 @@ import { PasswordGate } from "@/components/password-gate";
 import { OfflineIndicator } from "@/components/offline-indicator";
 import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/lib/i18n";
+import { SplashScreen } from "@/components/splash-screen";
 
 const rubik = Rubik({
   subsets: ["latin", "latin-ext"],
@@ -50,9 +51,11 @@ export default function RootLayout({
         <ThemeProvider>
           <I18nProvider>
           <OfflineIndicator />
+          <SplashScreen>
           <div className="mx-auto min-h-dvh w-full max-w-3xl bg-white shadow-sm dark:bg-neutral-900 dark:shadow-none">
             <PasswordGate>{children}</PasswordGate>
           </div>
+          </SplashScreen>
           <PwaRegister />
           </I18nProvider>
         </ThemeProvider>

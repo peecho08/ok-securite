@@ -8,6 +8,7 @@ import { localCatLabel, localTitle, normalize } from "@/lib/locale-helpers";
 import { setFavorites, getWorkerName, setWorkerName } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
 import { useLocale } from "@/lib/i18n";
+import { CheckCircle, Layers, WifiOff } from "lucide-react";
 
 const categoryOrder: TaskCategory[] = [
   "gros-oeuvre",
@@ -80,43 +81,74 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
   const count = selected.size;
   const canConfirm = count >= MIN_FAVORITES;
 
+  const features = [
+    { icon: CheckCircle, titleKey: "onboarding.feature1Title", descKey: "onboarding.feature1Desc", color: "bg-green-100 text-green-700" },
+    { icon: Layers, titleKey: "onboarding.feature2Title", descKey: "onboarding.feature2Desc", color: "bg-green-100 text-green-700" },
+    { icon: WifiOff, titleKey: "onboarding.feature3Title", descKey: "onboarding.feature3Desc", color: "bg-green-100 text-green-700" },
+  ];
+
   if (step === "welcome") {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-white">
-        <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-          <Image
-            src="/logo.svg"
-            alt="OK Chantier"
-            width={188}
-            height={48}
-            className="h-14 w-auto"
-            priority
-          />
+      <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white text-gray-900">
+        <div className="flex flex-1 flex-col items-center justify-center px-8 py-12 text-center">
+          <div className="animate-scale-in">
+            <Image
+              src="/logo.svg"
+              alt="OK Chantier"
+              width={188}
+              height={48}
+              className="h-14 w-auto"
+              priority
+            />
+          </div>
 
-          <h1 className="mt-8 font-heading text-2xl font-bold">
+          <h1 className="mt-8 animate-slide-in-up font-heading text-2xl font-bold text-black">
             {name.trim() ? `${t("onboarding.hello")} ${name.trim().split(" ")[0]}` : t("onboarding.hello")} !
           </h1>
-          <p className="mt-2 max-w-sm text-base text-gray-500">
+          <p className="mt-2 max-w-sm animate-slide-in-up text-base text-gray-500" style={{ animationDelay: "0.1s" }}>
             {t("onboarding.subtitle")}
           </p>
+
+          <div className="mt-8 flex w-full max-w-sm flex-col gap-3">
+            {features.map((feat, i) => {
+              const Icon = feat.icon;
+              return (
+                <div
+                  key={feat.titleKey}
+                  className="flex items-start gap-3.5 rounded-xl border border-gray-100 bg-gray-50/50 p-4 text-left animate-slide-in-up"
+                  style={{ animationDelay: `${0.15 + i * 0.1}s` }}
+                >
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${feat.color}`}>
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-heading text-sm font-bold text-gray-800">{t(feat.titleKey)}</p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-gray-500">{t(feat.descKey)}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={t("onboarding.namePlaceholder")}
-            className="mt-8 w-full max-w-xs rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-center text-base outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white"
+            className="mt-8 w-full max-w-xs rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-center text-base text-black outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white animate-slide-in-up"
+            style={{ animationDelay: "0.45s" }}
           />
 
           <button
             onClick={handleStart}
-            className="mt-6 w-full max-w-xs rounded-xl bg-[#118914] py-4 font-heading text-base font-bold tracking-wide text-white transition-colors hover:bg-[#0e7511] active:bg-[#0e7511]"
+            className="mt-6 w-full max-w-xs rounded-xl bg-[#118914] py-4 font-heading text-base font-bold tracking-wide text-white transition-colors hover:bg-[#0e7511] active:bg-[#0e7511] animate-slide-in-up"
+            style={{ animationDelay: "0.55s" }}
           >
             {t("onboarding.start")}
           </button>
 
         </div>
-        <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-1.5">
+        <div className="pb-8 flex flex-col items-center gap-1.5">
           <span className="text-sm text-gray-400">{t("nav.poweredBy")}</span>
           <Image
             src="/cnesst-logo.svg"
@@ -131,7 +163,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
   }
 
   return (
-    <div className={`fixed inset-0 z-50 flex flex-col bg-white ${exiting ? "animate-fade-out-up" : ""}`}>
+    <div className={`fixed inset-0 z-50 flex flex-col bg-white text-gray-900 ${exiting ? "animate-fade-out-up" : ""}`}>
       <div className="bg-[#118914] px-5 pb-4 pt-8 sm:px-8">
         <div className="mx-auto max-w-3xl">
           {!skipWelcome && (
@@ -211,7 +243,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
                           >
                             <TaskIcon taskId={task.id} className="h-4.5 w-4.5" />
                           </span>
-                          <span className="min-w-0 text-sm font-semibold leading-tight">
+                          <span className="min-w-0 text-sm font-semibold leading-tight text-gray-900">
                             {localTitle(task, locale)}
                           </span>
                         </button>

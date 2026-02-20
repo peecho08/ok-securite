@@ -191,3 +191,112 @@ export function clearHistory() {
     localStorage.removeItem(HISTORY_KEY);
   } catch { /* ignore */ }
 }
+
+// ── Reports ───────────────────────────────────────────────────────
+
+const REPORTS_KEY = key("reports");
+
+export interface Report {
+  taskId: string;
+  taskTitle: string;
+  severity: string;
+  description: string;
+  reporter: string;
+  timestamp: string;
+}
+
+export function getReports(): Report[] {
+  try {
+    const raw = localStorage.getItem(REPORTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function getReportCount(): number {
+  return getReports().length;
+}
+
+// ── Seed demo data ────────────────────────────────────────────────
+
+const DEMO_SEEDED_KEY = key("demo-seeded");
+const DEMO_VERSION = "2";
+
+export function isDemoSeeded(): boolean {
+  try {
+    return localStorage.getItem(DEMO_SEEDED_KEY) === DEMO_VERSION;
+  } catch {
+    return false;
+  }
+}
+
+export function seedDemoData() {
+  const demoTasks = [
+    { id: "coffrage", title: "Coffrage", icon: "🪵" },
+    { id: "coulage-beton", title: "Coulage béton", icon: "🧱" },
+    { id: "terrassement", title: "Terrassement / Excavation", icon: "⛏️" },
+    { id: "ferraillage", title: "Ferraillage / Armature", icon: "🔩" },
+    { id: "echafaudage", title: "Échafaudage", icon: "🏗️" },
+    { id: "electricite", title: "Électricité", icon: "⚡" },
+    { id: "soudage", title: "Soudage / Coupage", icon: "🔥" },
+    { id: "peinture", title: "Peinture", icon: "🖌️" },
+    { id: "demolition", title: "Démolition", icon: "🔨" },
+    { id: "maconnerie", title: "Maçonnerie / Briquetage", icon: "🧱" },
+    { id: "etancheite", title: "Étanchéité", icon: "💧" },
+    { id: "carrelage", title: "Carrelage / Céramique", icon: "🔲" },
+  ];
+
+  const currentUser = getWorkerName() || "Claude";
+  const otherWorkers = [
+    "Marc-Antoine", "Stéphane", "Jean-Pierre", "Luc", "Patrick",
+    "Éric", "François", "Mathieu", "Sébastien",
+  ];
+  const now = Date.now();
+  const DAY = 86400000;
+
+  const entries: HistoryEntry[] = [];
+
+  // Current user: most entries (spread over recent days)
+  for (let d = 0; d < 8; d++) {
+    const count = d === 0 ? 3 : d < 3 ? 2 : 1;
+    for (let j = 0; j < count; j++) {
+      const t = demoTasks[(d * 3 + j) % demoTasks.length];
+      const total = 10 + Math.floor(Math.random() * 10);
+      const hour = 7 + j * 3 + Math.floor(Math.random() * 2);
+      const date = new Date(now - d * DAY);
+      date.setHours(hour, Math.floor(Math.random() * 60), 0, 0);
+      entries.push({
+        taskId: t.id, taskTitle: t.title, taskIcon: t.icon,
+        workerName: currentUser, checkedCount: total, totalCount: total,
+        completedAt: date.toISOString(),
+      });
+    }
+  }
+
+  // Other workers: varying amounts to create a realistic leaderboard
+  const otherCounts = [11, 9, 8, 6, 5, 4, 3, 2, 1];
+  for (let w = 0; w < otherWorkers.length; w++) {
+    const numEntries = otherCounts[w];
+    for (let j = 0; j < numEntries; j++) {
+      const t = demoTasks[(w * 4 + j) % demoTasks.length];
+      const total = 10 + Math.floor(Math.random() * 10);
+      const daysAgo = Math.floor(j * 1.5);
+      const date = new Date(now - daysAgo * DAY);
+      date.setHours(6 + Math.floor(Math.random() * 10), Math.floor(Math.random() * 60), 0, 0);
+      entries.push({
+        taskId: t.id, taskTitle: t.title, taskIcon: t.icon,
+        workerName: otherWorkers[w], checkedCount: total, totalCount: total,
+        completedAt: date.toISOString(),
+      });
+    }
+  }
+
+  try {
+    entries.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+    const existing = getHistory();
+    const merged = [...entries, ...existing].slice(0, MAX_HISTORY);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(merged));
+    localStorage.setItem(DEMO_SEEDED_KEY, DEMO_VERSION);
+  } catch { /* ignore */ }
+}

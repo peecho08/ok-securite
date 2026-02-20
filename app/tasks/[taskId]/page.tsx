@@ -9,6 +9,7 @@ import { checklistItemsEn, phaseTitlesEn } from "@/data/checklists-en";
 import type { Phase } from "@/types";
 import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress } from "@/lib/storage";
 import { useLocale } from "@/lib/i18n";
+import { AlertTriangle } from "lucide-react";
 
 function haptic() {
   try { navigator?.vibrate?.(10); } catch { /* unsupported */ }
@@ -73,6 +74,7 @@ export default function TaskPage() {
   const [phaseToast, setPhaseToast] = useState<{ phase: Phase; title: string } | null>(null);
   const [undoToast, setUndoToast] = useState<string | null>(null);
   const [unlockedFlash, setUnlockedFlash] = useState<Phase | null>(null);
+  const [showCriticalWarning, setShowCriticalWarning] = useState(false);
   const undoTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const userToggledRef = useRef(false);
   const prevCompletedPhasesRef = useRef<Set<Phase>>(new Set());
@@ -138,19 +140,22 @@ export default function TaskPage() {
     return () => clearTimeout(t);
   }, [phaseToast]);
 
-  // Auto-navigate to confirm page when all items checked
+  // Auto-navigate to confirm page when all items checked (with delay for animation)
   useEffect(() => {
     if (!userToggledRef.current) return;
     userToggledRef.current = false;
     const allDone = allItems.length > 0 && checked.size === allItems.length;
     if (!allDone || !taskId) return;
     try { navigator?.vibrate?.([50, 30, 50]); } catch { /* unsupported */ }
-    const params = new URLSearchParams({
-      items: String(allItems.length),
-      checked: String(allItems.length),
-      worker: workerName.trim(),
-    });
-    router.push(`/confirm/${taskId}?${params.toString()}`);
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams({
+        items: String(allItems.length),
+        checked: String(allItems.length),
+        worker: workerName.trim(),
+      });
+      router.push(`/confirm/${taskId}?${params.toString()}`);
+    }, 600);
+    return () => clearTimeout(timer);
   }, [checked, allItems.length, taskId, workerName, router]);
 
   const toggle = useCallback((id: string, wasChecked: boolean) => {
@@ -207,14 +212,23 @@ export default function TaskPage() {
 
   const progress = allItems.length > 0 ? checked.size / allItems.length : 0;
   const allChecked = checked.size === allItems.length && allItems.length > 0;
+  const uncheckedCritical = allItems.filter((i) => i.critical && !checked.has(i.id));
 
-  function handleConfirm() {
+  function navigateToConfirm() {
     const params = new URLSearchParams({
       items: String(allItems.length),
       checked: String(checked.size),
       worker: workerName.trim(),
     });
     router.push(`/confirm/${taskId}?${params.toString()}`);
+  }
+
+  function handleConfirm() {
+    if (uncheckedCritical.length > 0) {
+      setShowCriticalWarning(true);
+      return;
+    }
+    navigateToConfirm();
   }
 
   return (
@@ -333,24 +347,25 @@ export default function TaskPage() {
                             isChecked
                               ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950"
                               : item.critical
-                                ? "border-red-200 bg-red-50/30 hover:border-red-300 hover:bg-red-50 active:bg-red-50 dark:border-red-800 dark:bg-red-950/30"
-                                : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600"
+                                ? "animate-critical-pulse border-red-300 bg-red-50/50 ring-1 ring-red-200 hover:border-red-400 active:border-red-500 dark:border-red-700 dark:bg-red-950/40 dark:ring-red-800 dark:hover:border-red-500 dark:active:border-red-400"
+                                : "border-gray-200 bg-white hover:border-gray-400 active:border-gray-500 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-500 dark:active:border-neutral-400"
                           }`}
                         >
                           <span
                             className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-2 transition-colors ${
-                              isChecked ? "border-green-600 bg-green-600 text-white" : item.critical ? "border-red-400" : "border-gray-300"
+                              isChecked ? "animate-check-fill border-green-600 bg-green-600 text-white" : item.critical ? "border-red-400" : "border-gray-300"
                             }`}
                           >
                             {isChecked && (
-                              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <svg className="h-4 w-4 animate-check-pop" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                               </svg>
                             )}
                           </span>
-                          <span className={`flex min-w-0 flex-1 flex-col items-start gap-0.5 text-base leading-snug ${isChecked ? "text-green-900" : ""}`}>
+                          <span className={`flex min-w-0 flex-1 flex-col items-start gap-0.5 text-base leading-snug ${isChecked ? "text-green-900 dark:text-green-200" : ""}`}>
                             {item.critical && !isChecked && (
-                              <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700">
+                              <span className="flex items-center gap-1 rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700 dark:bg-red-900 dark:text-red-300">
+                                <AlertTriangle className="h-3 w-3" />
                                 {t("task.critical")}
                               </span>
                             )}
@@ -362,7 +377,7 @@ export default function TaskPage() {
                                 e.stopPropagation();
                                 setExpandedInfo(isInfoOpen ? null : item.id);
                               }}
-                              className="mt-0.5 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-500 hover:bg-gray-200 active:bg-gray-300"
+                              className="mt-0.5 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-500 hover:bg-gray-200 active:bg-gray-300"
                             >
                               i
                             </span>
@@ -442,6 +457,50 @@ export default function TaskPage() {
             </p>
           </div>
         </div>
+      )}
+
+      {/* Critical items warning dialog */}
+      {showCriticalWarning && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setShowCriticalWarning(false)} />
+          <div className="fixed inset-x-4 top-1/2 z-50 mx-auto max-w-md -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl dark:bg-neutral-800">
+            <div className="flex items-center gap-3">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
+                <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </span>
+              <div>
+                <h3 className="font-heading text-lg font-bold text-gray-900 dark:text-neutral-100">
+                  {t("task.criticalWarningTitle")}
+                </h3>
+                <p className="text-sm text-muted">
+                  {t("task.criticalWarningCount").replace("{count}", String(uncheckedCritical.length))}
+                </p>
+              </div>
+            </div>
+            <ul className="mt-4 max-h-40 space-y-2 overflow-y-auto">
+              {uncheckedCritical.map((item) => (
+                <li key={item.id} className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950 dark:text-red-300">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  {localItemLabel(item)}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={() => setShowCriticalWarning(false)}
+                className="flex-1 rounded-xl border-2 border-gray-300 py-3 font-heading text-sm font-bold transition-colors active:bg-gray-50 dark:border-neutral-600 dark:text-neutral-100"
+              >
+                {t("task.criticalWarningBack")}
+              </button>
+              <button
+                onClick={() => { setShowCriticalWarning(false); navigateToConfirm(); }}
+                className="flex-1 rounded-xl bg-red-600 py-3 font-heading text-sm font-bold text-white transition-colors hover:bg-red-700 active:bg-red-700"
+              >
+                {t("task.criticalWarningContinue")}
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
     </div>
