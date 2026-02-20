@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { tasks } from "@/data/tasks";
 import { clearHistory, getHistory, type HistoryEntry } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
 import { useLocale } from "@/lib/i18n";
@@ -75,6 +76,10 @@ export default function HistoryPage() {
                 </h2>
                 <div className="space-y-2">
                   {dayEntries.map((entry, i) => {
+                    const taskData = tasks.find((t) => t.id === entry.taskId);
+                    const displayTitle = taskData
+                      ? (locale === "en" && taskData.titleEn ? taskData.titleEn : taskData.title)
+                      : entry.taskTitle;
                     const isComplete = entry.checkedCount === entry.totalCount;
                     const time = new Date(entry.completedAt).toLocaleTimeString(dateLocale, {
                       hour: "2-digit",
@@ -90,7 +95,7 @@ export default function HistoryPage() {
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="font-heading text-sm font-semibold leading-tight">
-                            {entry.taskTitle}
+                            {displayTitle}
                           </p>
                           <p className="mt-0.5 text-xs text-muted">
                             {time}

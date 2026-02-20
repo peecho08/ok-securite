@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { checklists } from "@/data/checklists";
 import { tasks } from "@/data/tasks";
-import { addHistory, clearProgress } from "@/lib/storage";
+import { addHistory, clearProgress, loadProgress } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
 import { AlertTriangle } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
@@ -15,8 +16,19 @@ export default function ConfirmPage() {
   const searchParams = useSearchParams();
   const { locale, t } = useLocale();
 
-  const items = Number(searchParams.get("items")) || 0;
-  const checkedCount = Number(searchParams.get("checked")) || 0;
+  const checklist = checklists[taskId as string];
+  const allItems = checklist?.phases.flatMap((p) => p.items) ?? [];
+  const items = allItems.length;
+
+  const [checkedCount, setCheckedCount] = useState(0);
+  const [progressLoaded, setProgressLoaded] = useState(false);
+
+  useEffect(() => {
+    const saved = loadProgress(taskId as string);
+    setCheckedCount(saved.length);
+    setProgressLoaded(true);
+  }, [taskId]);
+
   const workerName = searchParams.get("worker") || "";
 
   const task = tasks.find((t) => t.id === taskId);
@@ -38,7 +50,7 @@ export default function ConfirmPage() {
   const time = now.toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" });
 
   useEffect(() => {
-    if (!task || saved) return;
+    if (!task || saved || !progressLoaded) return;
     addHistory({
       taskId,
       taskTitle: locale === "en" && task.titleEn ? task.titleEn : task.title,
@@ -48,9 +60,9 @@ export default function ConfirmPage() {
       totalCount: items,
       completedAt: now.toISOString(),
     });
-    if (allDone) clearProgress(taskId);
+    if (allDone) clearProgress(taskId as string);
     setSaved(true);
-  }, [task, taskId, workerName, checkedCount, items, allDone, now, saved, locale]);
+  }, [task, taskId, workerName, checkedCount, items, allDone, now, saved, progressLoaded, locale]);
 
   if (!task) {
     return (

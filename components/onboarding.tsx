@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { tasks } from "@/data/tasks";
-import { categoryLabels, categoryLabelsEn, type TaskCategory } from "@/types";
+import { type TaskCategory } from "@/types";
+import { localCatLabel, localTitle, normalize } from "@/lib/locale-helpers";
 import { setFavorites, getWorkerName, setWorkerName } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
 import { useLocale } from "@/lib/i18n";
@@ -20,10 +21,6 @@ const categoryOrder: TaskCategory[] = [
 
 const MIN_FAVORITES = 1;
 
-function normalize(str: string) {
-  return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
 interface OnboardingProps {
   initial?: string[];
   skipWelcome?: boolean;
@@ -37,11 +34,6 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
   const [selected, setSelected] = useState<Set<string>>(new Set(initial));
   const [search, setSearch] = useState("");
   const [exiting, setExiting] = useState(false);
-
-  const localTitle = (task: (typeof tasks)[number]) =>
-    locale === "en" && task.titleEn ? task.titleEn : task.title;
-  const localCatLabel = (cat: TaskCategory) =>
-    locale === "en" ? categoryLabelsEn[cat] : categoryLabels[cat];
 
   function handleStart() {
     if (name.trim()) setWorkerName(name.trim());
@@ -69,7 +61,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
     const q = normalize(search);
     return categoryOrder.map((cat) => ({
       category: cat,
-      label: locale === "en" ? categoryLabelsEn[cat] : categoryLabels[cat],
+      label: localCatLabel(cat, locale),
       tasks: tasks.filter((task) => {
         if (task.category !== cat) return false;
         if (!q) return true;
@@ -197,7 +189,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
               filteredGrouped.map(({ category, label, tasks: catTasks }) => (
                 <section key={category}>
                   <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400">
-                    {localCatLabel(category)}
+                    {localCatLabel(category, locale)}
                   </h2>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {catTasks.map((task) => {
@@ -220,7 +212,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
                             <TaskIcon taskId={task.id} className="h-4.5 w-4.5" />
                           </span>
                           <span className="min-w-0 text-sm font-semibold leading-tight">
-                            {localTitle(task)}
+                            {localTitle(task, locale)}
                           </span>
                         </button>
                       );
