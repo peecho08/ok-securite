@@ -8,27 +8,36 @@ import { checklists } from "@/data/checklists";
 import { checklistItemsEn, phaseTitlesEn } from "@/data/checklists-en";
 import { tasks } from "@/data/tasks";
 import { addHistory, clearProgress, loadProgress } from "@/lib/storage";
+import { mergePhases } from "@/lib/locale-helpers";
 import { TaskIcon } from "@/components/task-icon";
 import { Download } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
+import { useTheme } from "@/components/theme-provider";
 
 export default function ConfirmPage() {
   const { taskId } = useParams<{ taskId: string }>();
   const searchParams = useSearchParams();
   const { locale, t } = useLocale();
+  const { acqColors } = useTheme();
 
-  const checklist = checklists[taskId as string];
-  const allItems = checklist?.phases.flatMap((p) => p.items) ?? [];
+  const rawChecklist = checklists[taskId as string];
+  const phases = useMemo(() => rawChecklist ? mergePhases(rawChecklist.phases) : [], [rawChecklist]);
+  const allItems = useMemo(() => phases.flatMap((p) => p.items), [phases]);
   const items = allItems.length;
 
   const [progressLoaded, setProgressLoaded] = useState(false);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const [naIds, setNaIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const ids = loadProgress(taskId as string);
-    setCheckedIds(new Set(ids));
+    const data = loadProgress(taskId as string);
+    setCheckedIds(new Set(data.checked));
+    setNaIds(new Set(data.na));
     setProgressLoaded(true);
   }, [taskId]);
+
+  const checkedCount = checkedIds.size;
+  const naCount = naIds.size;
 
   const workerName = searchParams.get("worker") || "";
 
@@ -54,7 +63,7 @@ export default function ConfirmPage() {
   const time = now.toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" });
 
   const generatePdf = useCallback(async () => {
-    if (!task || !checklist) return;
+    if (!task || phases.length === 0) return;
     const { jsPDF } = await import("jspdf");
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pageW = doc.internal.pageSize.getWidth();
@@ -65,7 +74,8 @@ export default function ConfirmPage() {
     const addPage = () => { doc.addPage(); y = 20; };
     const checkSpace = (needed: number) => { if (y + needed > 275) addPage(); };
 
-    doc.setFillColor(17, 137, 20);
+    const brandRgb: [number, number, number] = acqColors ? [248, 164, 27] : [17, 137, 20];
+    doc.setFillColor(...brandRgb);
     doc.rect(0, 0, pageW, 40, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
@@ -90,10 +100,13 @@ export default function ConfirmPage() {
     doc.setFont("helvetica", "bold");
     doc.text(`${t("confirm.status")}: `, margin, y);
     doc.setFont("helvetica", "normal");
-    doc.text(`${t("confirm.statusComplete")}  (${items}/${items})`, margin + 30, y);
+    const statusDetail = naCount > 0
+      ? `${t("confirm.statusComplete")}  (${checkedCount} ${t("confirm.checked")}, ${naCount} ${t("confirm.na")})`
+      : `${t("confirm.statusComplete")}  (${items}/${items})`;
+    doc.text(statusDetail, margin + 30, y);
     y += 12;
 
-    for (const phase of checklist.phases) {
+    for (const phase of phases) {
       checkSpace(16);
       doc.setFillColor(245, 245, 245);
       doc.rect(margin, y - 4, contentW, 8, "F");
@@ -105,16 +118,23 @@ export default function ConfirmPage() {
 
       for (const item of phase.items) {
         const label = localItemLabel(item);
+        const isItemNa = naIds.has(item.id);
         const lines = doc.splitTextToSize(label, contentW - 12);
         checkSpace(lines.length * 5 + 3);
 
         doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
-        doc.setTextColor(17, 137, 20);
-        doc.text("\u2713", margin + 1, y);
-        doc.setTextColor(50, 50, 50);
-        if (item.critical) doc.setFont("helvetica", "bold");
-        doc.text(lines, margin + 8, y);
+        if (isItemNa) {
+          doc.setTextColor(150, 150, 150);
+          doc.text("N/A", margin + 1, y);
+          doc.text(lines, margin + 12, y);
+        } else {
+          doc.setTextColor(...brandRgb);
+          doc.text("\u2713", margin + 1, y);
+          doc.setTextColor(50, 50, 50);
+          if (item.critical) doc.setFont("helvetica", "bold");
+          doc.text(lines, margin + 8, y);
+        }
         y += lines.length * 5 + 2;
       }
       y += 4;
@@ -128,7 +148,7 @@ export default function ConfirmPage() {
     const filename = `ok-chantier-${taskId}-${now.toISOString().slice(0, 10)}.pdf`;
     doc.save(filename);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [task, checklist, checkedIds, items, workerName, timestamp, time, taskId, now, locale, t]);
+  }, [task, phases, checkedIds, naIds, checkedCount, naCount, items, workerName, timestamp, time, taskId, now, locale, t, acqColors]);
 
   useEffect(() => {
     if (!task || saved || !progressLoaded) return;
@@ -190,7 +210,10 @@ export default function ConfirmPage() {
           <div className={`flex items-center justify-between ${workerName ? "border-b border-gray-100 py-3" : "border-b border-gray-100 pb-3"}`}>
             <span className="text-sm text-muted">{t("confirm.pointsChecked")}</span>
             <span className="font-heading font-bold">
-              {items} / {items}
+              {naCount > 0
+                ? `${checkedCount} ${t("confirm.checked")}, ${naCount} ${t("confirm.na")}`
+                : `${items} / ${items}`
+              }
             </span>
           </div>
           <div className="flex items-center justify-between border-b border-gray-100 py-3">
@@ -222,7 +245,9 @@ export default function ConfirmPage() {
               const summary = [
                 t("confirm.shareChecklist").replace("{task}", taskTitle),
                 workerName ? t("confirm.shareWorker").replace("{name}", workerName) : "",
-                t("confirm.sharePoints").replace("{checked}", String(items)).replace("{total}", String(items)),
+                naCount > 0
+                  ? `${checkedCount} ${t("confirm.checked")}, ${naCount} ${t("confirm.na")} / ${items}`
+                  : t("confirm.sharePoints").replace("{checked}", String(items)).replace("{total}", String(items)),
                 `${timestamp} — ${time}`,
                 "",
                 t("confirm.shareVia"),
@@ -239,7 +264,7 @@ export default function ConfirmPage() {
                 /* user cancelled share — do nothing */
               }
             }}
-            className="mb-3 w-full rounded-xl bg-[#118914] py-3.5 font-heading text-sm font-bold tracking-wide text-white transition-colors hover:bg-[#0e7511] active:bg-[#0e7511]"
+            className="mb-3 w-full rounded-xl bg-[var(--color-primary)] py-3.5 font-heading text-sm font-bold tracking-wide text-white transition-colors hover:bg-[var(--color-primary-dark)] active:bg-[var(--color-primary-dark)]"
           >
             {t("confirm.notify")}
           </button>

@@ -7,8 +7,28 @@
   --color-accent-dark: #d4a910;
   --color-surface: #f7f7f7;
   --color-muted: #6b7280;
+  --color-primary: #118914;
+  --color-primary-dark: #0e7511;
+  --color-header: #118914;
   --font-heading: var(--font-rubik), system-ui, sans-serif;
   --font-body: var(--font-work-sans), system-ui, sans-serif;
+}
+
+:root.acq-colors {
+  --color-primary: #F8A41B;
+  --color-primary-dark: #d4890f;
+  --color-header: #1E2324;
+  --color-green-50: #fffbeb;
+  --color-green-100: #fef3c7;
+  --color-green-200: #fde68a;
+  --color-green-300: #fcd34d;
+  --color-green-400: #fbbf24;
+  --color-green-500: #f59e0b;
+  --color-green-600: #d97706;
+  --color-green-700: #b45309;
+  --color-green-800: #92400e;
+  --color-green-900: #78350f;
+  --color-green-950: #451a03;
 }
 
 body {
@@ -16,6 +36,10 @@ body {
   color: #111;
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
+}
+
+:root.acq-colors .acq-logo {
+  filter: brightness(0) saturate(100%) invert(67%) sepia(89%) saturate(1200%) hue-rotate(5deg) brightness(1.05);
 }
 
 .dark body,
@@ -35,7 +59,7 @@ h1, h2, h3, h4, h5, h6 {
   right: 0;
   z-index: 20;
   height: env(safe-area-inset-top, 0px);
-  background-color: #118914;
+  background-color: var(--color-header);
 }
 
 @keyframes fade-in {

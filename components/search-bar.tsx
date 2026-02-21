@@ -50,7 +50,7 @@ export function SearchBar({ query, onQueryChange, pinned }: SearchBarProps) {
   }, [locale, placeholderExamples.length]);
 
   return (
-    <div className={`sticky top-0 z-10 bg-[#118914] px-5 pb-3 sm:px-8 transition-[padding] duration-200 ${pinned ? "pt-3" : "pt-1.5"}`}>
+    <div className={`sticky top-0 z-10 bg-[var(--color-header)] px-5 pb-3 sm:px-8 transition-[padding] duration-200 ${pinned ? "pt-3" : "pt-1.5"}`}>
       <div className="relative">
         <svg
           className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { tasks } from "@/data/tasks";
@@ -8,8 +8,9 @@ import { checklists } from "@/data/checklists";
 import { checklistItemsEn, phaseTitlesEn } from "@/data/checklists-en";
 import type { Phase } from "@/types";
 import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress } from "@/lib/storage";
+import { mergePhases } from "@/lib/locale-helpers";
 import { useLocale } from "@/lib/i18n";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Camera } from "lucide-react";
 
 function haptic() {
   try { navigator?.vibrate?.(10); } catch { /* unsupported */ }
@@ -58,34 +59,41 @@ export default function TaskPage() {
     locale === "en" && task.titleEn ? task.titleEn : task.title;
   const localItemLabel = (item: { id: string; label: string }) =>
     locale === "en" && checklistItemsEn[item.id] ? checklistItemsEn[item.id].label : item.label;
-  const localItemInfo = (item: { id: string; info?: string }) =>
-    locale === "en" && checklistItemsEn[item.id]
-      ? (checklistItemsEn[item.id].info ?? item.info ?? "")
-      : (item.info ?? "");
   const localPhaseTitle = (title: string) =>
     locale === "en" && phaseTitlesEn[title] ? phaseTitlesEn[title] : title;
-  const checklist = checklists[taskId];
-  const allItems = checklist?.phases.flatMap((p) => p.items) ?? [];
+  const rawChecklist = checklists[taskId];
+  const phases = useMemo(() => rawChecklist ? mergePhases(rawChecklist.phases) : [], [rawChecklist]);
+  const allItems = useMemo(() => phases.flatMap((p) => p.items), [phases]);
 
   const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [na, setNa] = useState<Set<string>>(new Set());
   const [collapsed, setCollapsed] = useState<Set<Phase>>(new Set());
-  const [expandedInfo, setExpandedInfo] = useState<string | null>(null);
   const [workerName, setWorkerName] = useState(getWorkerName);
   const [phaseToast, setPhaseToast] = useState<{ phase: Phase; title: string } | null>(null);
-  const [undoToast, setUndoToast] = useState<string | null>(null);
-  const [unlockedFlash, setUnlockedFlash] = useState<Phase | null>(null);
+  const [undoToast, setUndoToast] = useState<{ id: string; was: "checked" | "na" } | null>(null);
   const [showCriticalWarning, setShowCriticalWarning] = useState(false);
+  const [navigatingAway, setNavigatingAway] = useState(false);
+  const [scanState, setScanState] = useState<"idle" | "scanning" | "done">("idle");
+  const [scanPhoto, setScanPhoto] = useState<string | null>(null);
+  const [scanRisks, setScanRisks] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const undoTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const userToggledRef = useRef(false);
   const prevCompletedPhasesRef = useRef<Set<Phase>>(new Set());
   const phaseRefs = useRef<Map<Phase, HTMLElement>>(new Map());
+
+  const isResolved = useCallback((id: string) => checked.has(id) || na.has(id), [checked, na]);
+  const resolvedCount = checked.size + na.size;
 
   // Load or clear progress depending on entry mode
   useEffect(() => {
     if (!taskId) return;
     if (shouldResume) {
       const saved = loadProgress(taskId);
-      if (saved.length > 0) setChecked(new Set(saved));
+      if (saved.checked.length > 0 || saved.na.length > 0) {
+        setChecked(new Set(saved.checked));
+        setNa(new Set(saved.na));
+      }
     } else {
       clearProgress(taskId);
     }
@@ -94,16 +102,16 @@ export default function TaskPage() {
 
   // Persist progress on change
   useEffect(() => {
-    if (!taskId || checked.size === 0) return;
-    saveProgress(taskId, Array.from(checked));
-  }, [taskId, checked]);
+    if (!taskId || (checked.size === 0 && na.size === 0)) return;
+    saveProgress(taskId, { checked: Array.from(checked), na: Array.from(na) });
+  }, [taskId, checked, na]);
 
-  // Auto-collapse phases when fully checked + show phase toast + scroll to next phase
+  // Auto-collapse phases when fully resolved + show phase toast + scroll to next phase
   useEffect(() => {
-    if (!checklist) return;
+    if (phases.length === 0) return;
     const completedPhases = new Set<Phase>();
-    for (const group of checklist.phases) {
-      if (group.items.every((i) => checked.has(i.id))) {
+    for (const group of phases) {
+      if (group.items.every((i) => isResolved(i.id))) {
         completedPhases.add(group.phase);
       }
     }
@@ -114,13 +122,13 @@ export default function TaskPage() {
     setCollapsed(completedPhases);
 
     if (newlyCompleted && userToggledRef.current) {
-      const group = checklist.phases.find((g) => g.phase === newlyCompleted);
+      const group = phases.find((g) => g.phase === newlyCompleted);
       if (group) {
         setPhaseToast({ phase: newlyCompleted, title: group.title });
         haptic();
 
-        const completedIdx = checklist.phases.findIndex((g) => g.phase === newlyCompleted);
-        const nextPhase = checklist.phases[completedIdx + 1];
+        const completedIdx = phases.findIndex((g) => g.phase === newlyCompleted);
+        const nextPhase = phases[completedIdx + 1];
         if (nextPhase) {
           const el = phaseRefs.current.get(nextPhase.phase);
           if (el) {
@@ -131,7 +139,7 @@ export default function TaskPage() {
         }
       }
     }
-  }, [checklist, checked]);
+  }, [phases, checked, na, isResolved]);
 
   // Clear phase toast after delay
   useEffect(() => {
@@ -140,52 +148,79 @@ export default function TaskPage() {
     return () => clearTimeout(t);
   }, [phaseToast]);
 
-  // Auto-navigate to confirm page when all items checked (with delay for animation)
+  // Auto-navigate to confirm page when all items resolved
   useEffect(() => {
     if (!userToggledRef.current) return;
     userToggledRef.current = false;
-    const allDone = allItems.length > 0 && checked.size === allItems.length;
+    const allDone = allItems.length > 0 && resolvedCount === allItems.length;
     if (!allDone || !taskId) return;
     try { navigator?.vibrate?.([50, 30, 50]); } catch { /* unsupported */ }
+    setNavigatingAway(true);
     const timer = setTimeout(() => {
       const params = new URLSearchParams({
         items: String(allItems.length),
-        checked: String(allItems.length),
+        checked: String(checked.size),
+        na: String(na.size),
         worker: workerName.trim(),
       });
       router.push(`/confirm/${taskId}?${params.toString()}`);
-    }, 600);
+    }, 800);
     return () => clearTimeout(timer);
-  }, [checked, allItems.length, taskId, workerName, router]);
+  }, [checked, na, resolvedCount, allItems.length, taskId, workerName, router]);
 
-  const toggle = useCallback((id: string, wasChecked: boolean) => {
+  const toggleCheck = useCallback((id: string) => {
     haptic();
     userToggledRef.current = true;
+    const wasChecked = checked.has(id);
     setChecked((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-    if (wasChecked) {
-      clearTimeout(undoTimerRef.current);
-      setUndoToast(id);
-      undoTimerRef.current = setTimeout(() => setUndoToast(null), 3500);
-    } else {
+    // If checking, remove from N/A
+    if (!wasChecked) {
+      setNa((prev) => { const next = new Set(prev); next.delete(id); return next; });
       clearTimeout(undoTimerRef.current);
       setUndoToast(null);
+    } else {
+      clearTimeout(undoTimerRef.current);
+      setUndoToast({ id, was: "checked" });
+      undoTimerRef.current = setTimeout(() => setUndoToast(null), 3500);
     }
-  }, []);
+  }, [checked]);
+
+  const toggleNa = useCallback((id: string) => {
+    haptic();
+    userToggledRef.current = true;
+    const wasNa = na.has(id);
+    setNa((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+    // If marking N/A, remove from checked
+    if (!wasNa) {
+      setChecked((prev) => { const next = new Set(prev); next.delete(id); return next; });
+      clearTimeout(undoTimerRef.current);
+      setUndoToast(null);
+    } else {
+      clearTimeout(undoTimerRef.current);
+      setUndoToast({ id, was: "na" });
+      undoTimerRef.current = setTimeout(() => setUndoToast(null), 3500);
+    }
+  }, [na]);
 
   const handleUndo = useCallback(() => {
     if (!undoToast) return;
     haptic();
     userToggledRef.current = true;
-    setChecked((prev) => {
-      const next = new Set(prev);
-      next.add(undoToast);
-      return next;
-    });
+    if (undoToast.was === "checked") {
+      setChecked((prev) => { const next = new Set(prev); next.add(undoToast.id); return next; });
+    } else {
+      setNa((prev) => { const next = new Set(prev); next.add(undoToast.id); return next; });
+    }
     clearTimeout(undoTimerRef.current);
     setUndoToast(null);
   }, [undoToast]);
@@ -199,7 +234,36 @@ export default function TaskPage() {
     });
   }, []);
 
-  if (!task || !checklist) {
+  const allFakeRisks = [
+    t("task.scanRisk1"), t("task.scanRisk2"), t("task.scanRisk3"),
+    t("task.scanRisk4"), t("task.scanRisk5"), t("task.scanRisk6"),
+    t("task.scanRisk7"), t("task.scanRisk8"),
+  ];
+
+  function handleScanFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setScanPhoto(url);
+    setScanState("scanning");
+    // Pick 2-4 random risks
+    const shuffled = [...allFakeRisks].sort(() => Math.random() - 0.5);
+    const count = 2 + Math.floor(Math.random() * 3);
+    setTimeout(() => {
+      setScanRisks(shuffled.slice(0, count));
+      setScanState("done");
+    }, 2500);
+    e.target.value = "";
+  }
+
+  function closeScan() {
+    if (scanPhoto) URL.revokeObjectURL(scanPhoto);
+    setScanPhoto(null);
+    setScanRisks([]);
+    setScanState("idle");
+  }
+
+  if (!task || !rawChecklist) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center px-5 text-center">
         <p className="font-heading text-lg font-semibold">{t("task.notFound")}</p>
@@ -210,14 +274,15 @@ export default function TaskPage() {
     );
   }
 
-  const progress = allItems.length > 0 ? checked.size / allItems.length : 0;
-  const allChecked = checked.size === allItems.length && allItems.length > 0;
-  const uncheckedCritical = allItems.filter((i) => i.critical && !checked.has(i.id));
+  const progress = allItems.length > 0 ? resolvedCount / allItems.length : 0;
+  const allResolved = resolvedCount === allItems.length && allItems.length > 0;
+  const uncheckedCritical = allItems.filter((i) => i.critical && !isResolved(i.id));
 
   function navigateToConfirm() {
     const params = new URLSearchParams({
       items: String(allItems.length),
       checked: String(checked.size),
+      na: String(na.size),
       worker: workerName.trim(),
     });
     router.push(`/confirm/${taskId}?${params.toString()}`);
@@ -250,7 +315,7 @@ export default function TaskPage() {
               {localTitle(task)}
             </h1>
           </div>
-          {checked.size > 0 && (
+          {resolvedCount > 0 && (
             <button
               onClick={() => {
                 if (!confirm(t("task.abandonConfirm"))) return;
@@ -274,20 +339,42 @@ export default function TaskPage() {
           />
         </div>
         <p className="mt-1 text-xs text-muted">
-          {checked.size} / {allItems.length} {t("task.verifications")}
+          {resolvedCount} / {allItems.length} {t("task.verifications")}
         </p>
       </header>
 
       {/* Checklist */}
       <main className="flex-1 px-5 py-4 sm:px-8">
-        {checklist.phases.map((group, phaseIdx) => {
-          const checkedInPhase = group.items.filter((i) => checked.has(i.id)).length;
-          const allPhaseChecked = checkedInPhase === group.items.length;
+        {/* AI Scan — top of list */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={handleScanFile}
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="mb-5 flex w-full items-center gap-3.5 rounded-xl border-2 border-blue-200 bg-blue-50 p-4 text-left transition-colors active:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/40"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+            <Camera className="h-5 w-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="font-heading text-sm font-bold text-blue-900 dark:text-blue-200">{t("task.scanPhoto")}</p>
+            <p className="text-xs text-blue-600/70 dark:text-blue-400/70">{t("task.scanHint")}</p>
+          </div>
+        </button>
+
+        {phases.map((group, phaseIdx) => {
+          const resolvedInPhase = group.items.filter((i) => isResolved(i.id)).length;
+          const allPhaseResolved = resolvedInPhase === group.items.length;
           const isCollapsed = collapsed.has(group.phase);
 
-          const isLocked = phaseIdx > 0 && !checklist.phases
+          const isLocked = phaseIdx > 0 && !phases
             .slice(0, phaseIdx)
-            .every((prev) => prev.items.every((i) => checked.has(i.id)));
+            .every((prev) => prev.items.every((i) => isResolved(i.id)));
 
           return (
             <section
@@ -316,9 +403,9 @@ export default function TaskPage() {
                   <h2 className="font-heading text-base font-semibold text-muted">{localPhaseTitle(group.title)}</h2>
                 </button>
 
-                <span className={`flex shrink-0 items-center gap-1.5 text-xs ${allPhaseChecked ? "text-green-600 font-medium" : "text-muted"}`}>
-                  {checkedInPhase}/{group.items.length}
-                  {allPhaseChecked && (
+                <span className={`flex shrink-0 items-center gap-1.5 text-xs ${allPhaseResolved ? "text-green-600 font-medium" : "text-muted"}`}>
+                  {resolvedInPhase}/{group.items.length}
+                  {allPhaseResolved && (
                     <svg className="h-4 w-4 animate-phase-check" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
@@ -338,32 +425,41 @@ export default function TaskPage() {
                     .sort((a, b) => (a.critical && !b.critical ? -1 : !a.critical && b.critical ? 1 : 0))
                     .map((item) => {
                     const isChecked = checked.has(item.id);
-                    const isInfoOpen = expandedInfo === item.id;
+                    const isNa = na.has(item.id);
                     return (
-                      <SwipeItem key={item.id} onSwipe={() => { if (!isChecked) toggle(item.id, false); }}>
-                        <button
-                          onClick={() => toggle(item.id, isChecked)}
-                          className={`flex w-full items-start gap-3.5 rounded-xl border p-4 text-left transition-colors ${
+                      <SwipeItem key={item.id} onSwipe={() => { if (!isChecked && !isNa) toggleCheck(item.id); }}>
+                        <div
+                          className={`flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
                             isChecked
                               ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950"
-                              : item.critical
-                                ? "animate-critical-pulse border-red-300 bg-red-50/50 ring-1 ring-red-200 hover:border-red-400 active:border-red-500 dark:border-red-700 dark:bg-red-950/40 dark:ring-red-800 dark:hover:border-red-500 dark:active:border-red-400"
-                                : "border-gray-200 bg-white hover:border-gray-400 active:border-gray-500 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-500 dark:active:border-neutral-400"
+                              : isNa
+                                ? "border-gray-200 bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800/50"
+                                : item.critical
+                                  ? "animate-critical-pulse border-red-300 bg-red-50/50 ring-1 ring-red-200 hover:border-red-400 dark:border-red-700 dark:bg-red-950/40 dark:ring-red-800"
+                                  : "border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800"
                           }`}
                         >
-                          <span
+                          <button
+                            onClick={() => toggleCheck(item.id)}
                             className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-2 transition-colors ${
-                              isChecked ? "animate-check-fill border-green-600 bg-green-600 text-white" : item.critical ? "border-red-400" : "border-gray-300"
+                              isChecked
+                                ? "animate-check-fill border-green-600 bg-green-600 text-white"
+                                : isNa
+                                  ? "border-gray-300 dark:border-neutral-600"
+                                  : item.critical ? "border-red-400 active:border-green-500" : "border-gray-300 active:border-green-500"
                             }`}
+                            aria-label="Done"
                           >
                             {isChecked && (
                               <svg className="h-4 w-4 animate-check-pop" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                               </svg>
                             )}
-                          </span>
-                          <span className={`flex min-w-0 flex-1 flex-col items-start gap-0.5 text-base leading-snug ${isChecked ? "text-green-900 dark:text-green-200" : ""}`}>
-                            {item.critical && !isChecked && (
+                          </button>
+                          <span className={`flex min-w-0 flex-1 flex-col items-start gap-0.5 text-base leading-snug ${
+                            isChecked ? "text-green-900 dark:text-green-200" : isNa ? "text-gray-400 line-through dark:text-neutral-500" : ""
+                          }`}>
+                            {item.critical && !isChecked && !isNa && (
                               <span className="flex items-center gap-1 rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700 dark:bg-red-900 dark:text-red-300">
                                 <AlertTriangle className="h-3 w-3" />
                                 {t("task.critical")}
@@ -371,23 +467,18 @@ export default function TaskPage() {
                             )}
                             <span>{localItemLabel(item)}</span>
                           </span>
-                          {localItemInfo(item) && (
-                            <span
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setExpandedInfo(isInfoOpen ? null : item.id);
-                              }}
-                              className="mt-0.5 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-500 hover:bg-gray-200 active:bg-gray-300"
-                            >
-                              i
-                            </span>
-                          )}
-                        </button>
-                        {isInfoOpen && localItemInfo(item) && (
-                          <div className="mx-2 mt-1.5 rounded-lg bg-blue-50 px-3.5 py-2.5 text-sm text-blue-800">
-                            {localItemInfo(item)}
-                          </div>
-                        )}
+                          <button
+                            onClick={() => toggleNa(item.id)}
+                            className={`mt-0.5 flex h-9 shrink-0 items-center justify-center rounded-full px-2.5 text-xs font-bold transition-colors ${
+                              isNa
+                                ? "bg-gray-400 text-white dark:bg-neutral-500"
+                                : "bg-gray-100 text-gray-500 hover:bg-gray-200 active:bg-gray-300 dark:bg-neutral-700 dark:text-neutral-400"
+                            }`}
+                            aria-label="N/A"
+                          >
+                            {t("task.na")}
+                          </button>
+                        </div>
                       </SwipeItem>
                     );
                   })}
@@ -413,14 +504,14 @@ export default function TaskPage() {
         />
         <button
           onClick={handleConfirm}
-          disabled={!allChecked}
+          disabled={!allResolved}
           className={`w-full rounded-xl py-3.5 font-heading text-sm font-bold tracking-wide transition-colors ${
-            allChecked
+            allResolved
               ? "bg-black text-accent hover:bg-gray-900 active:bg-gray-900 dark:bg-green-600 dark:text-white dark:hover:bg-green-700"
               : "cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"
           }`}
         >
-          {allChecked ? t("task.validate") : `${allItems.length - checked.size} ${t("task.remaining")}`}
+          {allResolved ? t("task.validate") : `${allItems.length - resolvedCount} ${t("task.remaining")}`}
         </button>
       </div>
 
@@ -431,7 +522,7 @@ export default function TaskPage() {
           role="status"
           aria-live="polite"
         >
-          <span className="text-sm">{t("task.unchecked")}</span>
+          <span className="text-sm">{undoToast.was === "checked" ? t("task.unchecked") : t("task.markedNa")}</span>
           <button
             onClick={handleUndo}
             className="shrink-0 rounded-lg bg-white/20 px-4 py-2 text-sm font-bold transition-colors hover:bg-white/30 active:bg-white/40"
@@ -456,6 +547,20 @@ export default function TaskPage() {
               {localPhaseTitle(phaseToast.title)} — {t("task.phaseCompleteDetail")}
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Completion transition overlay */}
+      {navigatingAway && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white dark:bg-neutral-900 animate-fade-in">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100 dark:bg-green-900 animate-scale-in">
+            <svg className="h-10 w-10 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <p className="mt-4 font-heading text-lg font-bold text-green-700 dark:text-green-400 animate-fade-in" style={{ animationDelay: "150ms" }}>
+            {t("task.allComplete")}
+          </p>
         </div>
       )}
 
@@ -498,6 +603,63 @@ export default function TaskPage() {
               >
                 {t("task.criticalWarningContinue")}
               </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* AI Scan modal */}
+      {scanState !== "idle" && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60" onClick={scanState === "done" ? closeScan : undefined} />
+          <div className="fixed inset-x-4 top-1/2 z-50 mx-auto max-w-md -translate-y-1/2 overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-neutral-800">
+            {scanPhoto && (
+              <div className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={scanPhoto} alt="" className="max-h-56 w-full object-cover" />
+                {scanState === "scanning" && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                    <div className="h-16 w-16 animate-spin rounded-full border-4 border-white/30 border-t-white" />
+                  </div>
+                )}
+                {scanState === "scanning" && (
+                  <div className="absolute inset-x-0 top-1/2 -translate-y-1/2">
+                    <div className="mx-4 h-0.5 animate-pulse bg-green-400 shadow-[0_0_12px_rgba(74,222,128,0.7)]" />
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="p-5">
+              <h3 className="font-heading text-lg font-bold text-gray-900 dark:text-neutral-100">
+                {t("task.scanTitle")}
+              </h3>
+              {scanState === "scanning" && (
+                <p className="mt-2 animate-pulse text-sm text-gray-500">{t("task.scanning")}</p>
+              )}
+              {scanState === "done" && (
+                <div className="mt-3">
+                  <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-green-600">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {t("task.scanDone")}
+                  </p>
+                  <ul className="space-y-2">
+                    {scanRisks.map((risk, i) => (
+                      <li key={i} className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950 dark:text-red-300">
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+                        {risk}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={closeScan}
+                    className="mt-4 w-full rounded-xl bg-black py-3 font-heading text-sm font-bold text-white transition-colors active:bg-gray-800 dark:bg-neutral-600"
+                  >
+                    {t("task.scanClose")}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </>

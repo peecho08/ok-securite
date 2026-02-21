@@ -27,7 +27,7 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
   return (
     <>
       <div
-        className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#118914] transition-opacity duration-500 ${
+        className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--color-primary)] transition-opacity duration-500 ${
           fading ? "opacity-0" : "opacity-100"
         }`}
       >

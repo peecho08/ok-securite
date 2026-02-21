@@ -32,6 +32,7 @@ const fr: Record<string, string> = {
   "menu.wellbeing": "Bien-être",
   "menu.report": "Signaler un incident",
   "menu.editFavorites": "Modifier mes favoris",
+  "menu.acqColors": "Couleurs ACQ",
   "menu.theme": "Mode sombre / clair",
   "menu.restartOnboarding": "Recommencer l'accueil",
   "menu.language": "English",
@@ -48,8 +49,8 @@ const fr: Record<string, string> = {
   "onboarding.taskCount": "{count} tâche{s} sélectionnée{s}",
   "onboarding.feature1Title": "55 tâches · 7 catégories",
   "onboarding.feature1Desc": "Du béton à la toiture — checklists basées sur le Code de sécurité CNESST.",
-  "onboarding.feature2Title": "3 phases par tâche",
-  "onboarding.feature2Desc": "Avant, pendant et après — glissez vers la droite pour cocher rapidement.",
+  "onboarding.feature2Title": "2 phases par tâche",
+  "onboarding.feature2Desc": "Avant et après les travaux — glissez vers la droite pour cocher rapidement.",
   "onboarding.feature3Title": "Fonctionne hors ligne",
   "onboarding.feature3Desc": "Vos checklists et votre progression sont sauvegardées localement — aucun internet requis.",
   "onboarding.confirm": "C\u2019EST PARTI",
@@ -71,10 +72,27 @@ const fr: Record<string, string> = {
   "task.undo": "ANNULER",
   "task.phaseComplete": "Bravo !",
   "task.phaseCompleteDetail": "terminé",
+  "task.allComplete": "Inspection complète !",
   "task.criticalWarningTitle": "Points critiques manquants",
   "task.criticalWarningCount": "{count} point(s) critique(s) non coché(s)",
   "task.criticalWarningBack": "Revenir",
   "task.criticalWarningContinue": "Continuer quand même",
+  "task.na": "N/A",
+  "task.markedNa": "Marqué N/A",
+  "task.scanPhoto": "Analyser une photo",
+  "task.scanTitle": "Analyse IA du chantier",
+  "task.scanning": "Analyse en cours…",
+  "task.scanDone": "Analyse terminée",
+  "task.scanClose": "Fermer",
+  "task.scanHint": "L'IA analyse votre photo pour détecter les risques",
+  "task.scanRisk1": "Travailleur sans casque détecté — zone B",
+  "task.scanRisk2": "Garde-corps manquant côté nord — risque de chute",
+  "task.scanRisk3": "Câble électrique exposé près de la zone de passage",
+  "task.scanRisk4": "Échafaudage non sécurisé — montant manquant",
+  "task.scanRisk5": "Aucun extincteur visible dans la zone de soudage",
+  "task.scanRisk6": "Encombrement excessif — voie d'évacuation obstruée",
+  "task.scanRisk7": "Harnais non attaché — travail en hauteur détecté",
+  "task.scanRisk8": "Signalisation absente — zone de levage active",
   "task.source": "Source : CNESST / Code de sécurité pour les travaux de construction",
 
   // ── Confirm ─────────────────────────────────────────────
@@ -94,6 +112,8 @@ const fr: Record<string, string> = {
   "confirm.shareWorker": "Travailleur : {name}",
   "confirm.sharePoints": "{checked}/{total} points vérifiés",
   "confirm.shareVia": "Envoyé via OK Chantier",
+  "confirm.checked": "Vérifiés",
+  "confirm.na": "N/A",
   "confirm.downloadPdf": "TÉLÉCHARGER EN PDF",
 
 
@@ -181,7 +201,6 @@ const fr: Record<string, string> = {
 
   // ── Phase titles ────────────────────────────────────────
   "phase.avant": "Avant les travaux",
-  "phase.pendant": "Pendant les travaux",
   "phase.fin": "Fin des travaux",
 };
 
@@ -219,6 +238,7 @@ const en: Record<string, string> = {
   "menu.wellbeing": "Well-being",
   "menu.report": "Report an incident",
   "menu.editFavorites": "Edit my favorites",
+  "menu.acqColors": "ACQ Colors",
   "menu.theme": "Dark / Light mode",
   "menu.restartOnboarding": "Restart welcome",
   "menu.language": "Français",
@@ -235,8 +255,8 @@ const en: Record<string, string> = {
   "onboarding.taskCount": "{count} task{s} selected",
   "onboarding.feature1Title": "55 tasks · 7 categories",
   "onboarding.feature1Desc": "From concrete to roofing — checklists based on CNESST safety standards.",
-  "onboarding.feature2Title": "3 phases per task",
-  "onboarding.feature2Desc": "Before, during and after — swipe right to check items quickly.",
+  "onboarding.feature2Title": "2 phases per task",
+  "onboarding.feature2Desc": "Before and after work — swipe right to check items quickly.",
   "onboarding.feature3Title": "Works offline",
   "onboarding.feature3Desc": "Your checklists and progress are saved locally — no internet needed.",
   "onboarding.confirm": "LET\u2019S GO",
@@ -258,10 +278,27 @@ const en: Record<string, string> = {
   "task.undo": "UNDO",
   "task.phaseComplete": "Well done!",
   "task.phaseCompleteDetail": "completed",
+  "task.allComplete": "Inspection complete!",
   "task.criticalWarningTitle": "Missing critical items",
   "task.criticalWarningCount": "{count} critical item(s) unchecked",
   "task.criticalWarningBack": "Go back",
   "task.criticalWarningContinue": "Continue anyway",
+  "task.na": "N/A",
+  "task.markedNa": "Marked N/A",
+  "task.scanPhoto": "Scan a photo",
+  "task.scanTitle": "AI Site Analysis",
+  "task.scanning": "Scanning…",
+  "task.scanDone": "Scan complete",
+  "task.scanClose": "Close",
+  "task.scanHint": "AI analyzes your photo to detect risks",
+  "task.scanRisk1": "Worker without hard hat detected — zone B",
+  "task.scanRisk2": "Missing guardrail on north side — fall risk",
+  "task.scanRisk3": "Exposed electrical cable near walkway",
+  "task.scanRisk4": "Unsecured scaffolding — missing upright",
+  "task.scanRisk5": "No fire extinguisher visible in welding area",
+  "task.scanRisk6": "Excessive clutter — evacuation route blocked",
+  "task.scanRisk7": "Harness not attached — work at height detected",
+  "task.scanRisk8": "Missing signage — active lifting zone",
   "task.source": "Source: CNESST / Construction Safety Code",
 
   // ── Confirm ─────────────────────────────────────────────
@@ -281,6 +318,8 @@ const en: Record<string, string> = {
   "confirm.shareWorker": "Worker: {name}",
   "confirm.sharePoints": "{checked}/{total} items checked",
   "confirm.shareVia": "Sent via OK Chantier",
+  "confirm.checked": "Checked",
+  "confirm.na": "N/A",
   "confirm.downloadPdf": "DOWNLOAD AS PDF",
 
 
@@ -368,7 +407,6 @@ const en: Record<string, string> = {
 
   // ── Phase titles ────────────────────────────────────────
   "phase.avant": "Before work",
-  "phase.pendant": "During work",
   "phase.fin": "After work",
 };
 

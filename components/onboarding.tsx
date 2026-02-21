@@ -141,7 +141,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
 
           <button
             onClick={handleStart}
-            className="mt-4 w-full max-w-xs rounded-xl bg-[#118914] py-3 font-heading text-base font-bold tracking-wide text-white transition-colors hover:bg-[#0e7511] active:bg-[#0e7511] animate-slide-in-up"
+            className="mt-4 w-full max-w-xs rounded-xl bg-[var(--color-primary)] py-3 font-heading text-base font-bold tracking-wide text-white transition-colors hover:bg-[var(--color-primary-dark)] active:bg-[var(--color-primary-dark)] animate-slide-in-up"
             style={{ animationDelay: "0.55s" }}
           >
             {t("onboarding.start")}
@@ -164,7 +164,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
 
   return (
     <div className={`fixed inset-0 z-50 flex flex-col bg-white text-gray-900 ${exiting ? "animate-fade-out-up" : ""}`}>
-      <div className="bg-[#118914] px-5 pb-4 pt-8 sm:px-8">
+      <div className="bg-[var(--color-primary)] px-5 pb-4 pt-8 sm:px-8">
         <div className="mx-auto max-w-3xl">
           {!skipWelcome && (
             <button
@@ -267,7 +267,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
             disabled={!canConfirm}
             className={`w-full rounded-xl py-3.5 font-heading text-sm font-bold tracking-wide transition-colors ${
               canConfirm
-                ? "bg-[#118914] text-white hover:bg-[#0e7511] active:bg-[#0e7511]"
+                ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dark)] active:bg-[var(--color-primary-dark)]"
                 : "cursor-not-allowed bg-gray-200 text-gray-400"
             }`}
           >

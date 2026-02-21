@@ -29,7 +29,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
   // Not yet hydrated — show loading to avoid flash
   if (!ready) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-[#118914]">
+      <div className="flex min-h-dvh items-center justify-center bg-[var(--color-primary)]">
         <div className="h-10 w-10 animate-pulse rounded-full bg-white/30" />
       </div>
     );
@@ -51,7 +51,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#118914] px-6">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--color-primary)] px-6">
       <Image
         src="/logo.svg"
         alt="OK Chantier"
@@ -80,7 +80,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
         </div>
         <button
           type="submit"
-          className="w-full rounded-xl bg-white py-3.5 font-heading text-sm font-bold tracking-wide text-[#118914] transition-colors hover:bg-white/95 active:bg-white/90"
+          className="w-full rounded-xl bg-white py-3.5 font-heading text-sm font-bold tracking-wide text-[var(--color-primary)] transition-colors hover:bg-white/95 active:bg-white/90"
         >
           ENTRER
         </button>

@@ -16,7 +16,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ workerName, onEditFavorites, onRestartOnboarding }: AppHeaderProps) {
   const { locale, setLocale, t } = useLocale();
-  const { theme, toggle: toggleTheme } = useTheme();
+  const { theme, toggle: toggleTheme, acqColors, toggleAcq } = useTheme();
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const [reportCount, setReportCount] = useState(0);
@@ -28,7 +28,7 @@ export function AppHeader({ workerName, onEditFavorites, onRestartOnboarding }: 
   return (
     <>
       <div className="safe-area-green-cover" />
-      <header className="bg-[#118914] px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-4 sm:px-8">
+      <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-4 sm:px-8">
         <div className="flex items-center justify-between gap-4">
           <button
             type="button"
@@ -41,29 +41,46 @@ export function AppHeader({ workerName, onEditFavorites, onRestartOnboarding }: 
               alt="OK Chantier"
               width={188}
               height={48}
-              className="h-[50px] w-auto brightness-0 invert sm:h-10"
+              className="acq-logo h-[50px] w-auto brightness-0 invert sm:h-10"
               priority
             />
           </button>
 
           <div className="relative flex shrink-0 items-center gap-4 sm:gap-3">
-            <a
-              href="https://www.cnesst.gouv.qc.ca/fr"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-end gap-1 transition-opacity hover:opacity-80"
-            >
-              <span className="text-xs text-white/80 underline decoration-white/40 underline-offset-2">
-                {t("nav.poweredBy")}
-              </span>
-              <Image
-                src="/cnesst-logo.svg"
-                alt="CNESST"
-                width={80}
-                height={30}
-                className="h-[19px] w-auto brightness-0 invert"
-              />
-            </a>
+            {acqColors ? (
+              <a
+                href="https://www.acq.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center transition-opacity hover:opacity-80"
+              >
+                <Image
+                  src="/acq-logo.svg"
+                  alt="ACQ"
+                  width={120}
+                  height={40}
+                  className="h-[21px] w-auto brightness-0 invert"
+                />
+              </a>
+            ) : (
+              <a
+                href="https://www.cnesst.gouv.qc.ca/fr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-end gap-1 transition-opacity hover:opacity-80"
+              >
+                <span className="text-xs text-white/80 underline decoration-white/40 underline-offset-2">
+                  {t("nav.poweredBy")}
+                </span>
+                <Image
+                  src="/cnesst-logo.svg"
+                  alt="CNESST"
+                  width={80}
+                  height={30}
+                  className="h-[19px] w-auto brightness-0 invert"
+                />
+              </a>
+            )}
             <button
               onClick={() => setShowMenu((v) => !v)}
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition-colors active:bg-white/40 sm:h-9 sm:w-9"
@@ -152,6 +169,18 @@ export function AppHeader({ workerName, onEditFavorites, onRestartOnboarding }: 
                       </svg>
                       {t("menu.dashboard")}
                     </Link>
+                    <button
+                      onClick={() => { toggleAcq(); setShowMenu(false); }}
+                      className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
+                    >
+                      <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                      </svg>
+                      {t("menu.acqColors")}
+                      {acqColors && (
+                        <span className="ml-auto text-xs font-semibold text-amber-600">ON</span>
+                      )}
+                    </button>
                     <button
                       onClick={() => { toggleTheme(); setShowMenu(false); }}
                       className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"

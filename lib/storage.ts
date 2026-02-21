@@ -6,22 +6,34 @@ function key(...parts: string[]) {
 
 // ── Checklist progress (persists until finished or deleted) ──────
 
+export interface ProgressData {
+  checked: string[];
+  na: string[];
+}
+
 function progressKey(taskId: string) {
   return key("progress", taskId);
 }
 
-export function loadProgress(taskId: string): string[] {
+function parseProgress(raw: string | null): ProgressData {
+  if (!raw) return { checked: [], na: [] };
+  const parsed = JSON.parse(raw);
+  // Backward compat: old format was a flat string[]
+  if (Array.isArray(parsed)) return { checked: parsed, na: [] };
+  return { checked: parsed.checked ?? [], na: parsed.na ?? [] };
+}
+
+export function loadProgress(taskId: string): ProgressData {
   try {
-    const raw = localStorage.getItem(progressKey(taskId));
-    return raw ? JSON.parse(raw) : [];
+    return parseProgress(localStorage.getItem(progressKey(taskId)));
   } catch {
-    return [];
+    return { checked: [], na: [] };
   }
 }
 
-export function saveProgress(taskId: string, checkedIds: string[]) {
+export function saveProgress(taskId: string, data: ProgressData) {
   try {
-    localStorage.setItem(progressKey(taskId), JSON.stringify(checkedIds));
+    localStorage.setItem(progressKey(taskId), JSON.stringify(data));
   } catch { /* quota exceeded — ignore */ }
 }
 
@@ -31,19 +43,18 @@ export function clearProgress(taskId: string) {
   } catch { /* ignore */ }
 }
 
-export function getActiveTaskProgress(): { taskId: string; checkedIds: string[] }[] {
-  const results: { taskId: string; checkedIds: string[] }[] = [];
+export function getActiveTaskProgress(): { taskId: string; checkedIds: string[]; naIds: string[] }[] {
+  const results: { taskId: string; checkedIds: string[]; naIds: string[] }[] = [];
   const prefix = `${PREFIX}:progress:`;
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
       if (k && k.startsWith(prefix)) {
         const taskId = k.slice(prefix.length);
-        if (taskId.includes(":")) continue; // skip legacy date-keyed entries
-        const raw = localStorage.getItem(k);
-        const checkedIds: string[] = raw ? JSON.parse(raw) : [];
-        if (checkedIds.length > 0) {
-          results.push({ taskId, checkedIds });
+        if (taskId.includes(":")) continue;
+        const data = parseProgress(localStorage.getItem(k));
+        if (data.checked.length > 0 || data.na.length > 0) {
+          results.push({ taskId, checkedIds: data.checked, naIds: data.na });
         }
       }
     }
@@ -112,6 +123,25 @@ export function hasFavorites(): boolean {
   } catch {
     return false;
   }
+}
+
+// ── Color mode (ACQ) ─────────────────────────────────────────────
+
+const COLOR_KEY = key("acq-colors");
+
+export function getAcqColors(): boolean {
+  try {
+    return localStorage.getItem(COLOR_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function setAcqColors(on: boolean) {
+  try {
+    if (on) localStorage.setItem(COLOR_KEY, "1");
+    else localStorage.removeItem(COLOR_KEY);
+  } catch { /* ignore */ }
 }
 
 // ── Language ─────────────────────────────────────────────────────

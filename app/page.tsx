@@ -30,7 +30,7 @@ export default function HomePage() {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [editingFavorites, setEditingFavorites] = useState(false);
-  const [activeProgress, setActiveProgress] = useState<{ taskId: string; checkedIds: string[] }[]>([]);
+  const [activeProgress, setActiveProgress] = useState<{ taskId: string; checkedIds: string[]; naIds: string[] }[]>([]);
   const [showTop, setShowTop] = useState(false);
   const [searchPinned, setSearchPinned] = useState(false);
   const [workerName, setWorkerNameState] = useState("");
@@ -74,12 +74,12 @@ export default function HomePage() {
 
   const activeTasks = useMemo(() => {
     return activeProgress
-      .map(({ taskId, checkedIds }) => {
+      .map(({ taskId, checkedIds, naIds }) => {
         const task = tasks.find((t) => t.id === taskId);
         const cl = checklists[taskId];
         if (!task || !cl) return null;
         const total = cl.phases.flatMap((p) => p.items).length;
-        return { task, checked: checkedIds.length, total };
+        return { task, checked: checkedIds.length + naIds.length, total };
       })
       .filter(Boolean) as { task: (typeof tasks)[number]; checked: number; total: number }[];
   }, [activeProgress]);

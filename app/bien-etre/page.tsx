@@ -42,7 +42,7 @@ export default function BienEtrePage() {
 
           <a
             href="tel:18008072433"
-            className="mt-4 flex items-center gap-3 rounded-xl bg-[#118914] px-4 py-3.5 font-heading text-base font-bold text-white transition-colors active:bg-[#0e7511]"
+            className="mt-4 flex items-center gap-3 rounded-xl bg-[var(--color-primary)] px-4 py-3.5 font-heading text-base font-bold text-white transition-colors active:bg-[var(--color-primary-dark)]"
           >
             <Phone className="h-5 w-5 shrink-0" />
             1 800 807-2433

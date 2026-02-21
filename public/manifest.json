@@ -4,8 +4,8 @@
   "description": "Checklist sécurité chantier — rapide et fiable",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#118914",
+  "theme_color": "#118914",
   "orientation": "portrait",
   "icons": [
     {
