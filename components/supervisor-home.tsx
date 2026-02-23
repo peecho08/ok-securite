@@ -5,9 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
-import { getTeamName, getInviteToken, getWorkerName, setActiveRole, getHistory, type HistoryEntry } from "@/lib/storage";
+import { getTeamName, getInviteToken, getWorkerName, setActiveRole, getHistory, resetAllForFreshStart, type HistoryEntry } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
-import { Copy, Check, Users, ClipboardList, ArrowRightLeft, Trophy } from "lucide-react";
+import { Copy, Check, Users, ClipboardList, ArrowRightLeft, Trophy, RotateCcw } from "lucide-react";
 
 export function SupervisorHome() {
   const { locale, setLocale, t } = useLocale();
@@ -109,6 +109,13 @@ export function SupervisorHome() {
               >
                 <ArrowRightLeft className="h-5 w-5 shrink-0 text-gray-400" />
                 {t("menu.switchToWorker")}
+              </button>
+              <button
+                onClick={() => { resetAllForFreshStart(); setShowMenu(false); window.location.href = "/"; }}
+                className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
+              >
+                <RotateCcw className="h-5 w-5 shrink-0 text-gray-400" />
+                {t("menu.freshStart")}
               </button>
               <button
                 onClick={() => { toggleTheme(); setShowMenu(false); }}

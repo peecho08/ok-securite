@@ -5,7 +5,7 @@ import { tasks } from "@/data/tasks";
 import { type TaskCategory } from "@/types";
 import { useLocale } from "@/lib/i18n";
 import { localCatLabel, localTitle, normalize } from "@/lib/locale-helpers";
-import { clearProgress, getActiveTaskProgress, getFavorites, getHistory, getWorkerName, getActiveRole, getRoleChoiceDone, hasFavorites, isDemoSeeded, seedDemoData } from "@/lib/storage";
+import { clearProgress, getActiveTaskProgress, getFavorites, getHistory, getWorkerName, getActiveRole, getRoleChoiceDone, hasFavorites, isDemoSeeded, seedDemoData, resetAllForFreshStart } from "@/lib/storage";
 import { checklists } from "@/data/checklists";
 import { AppHeader } from "@/components/app-header";
 import { SearchBar } from "@/components/search-bar";
@@ -149,7 +149,7 @@ export default function HomePage() {
       <AppHeader
         workerName={workerName}
         onEditFavorites={() => { setEditingFavorites(true); setShowOnboarding(true); }}
-        onRestartOnboarding={() => { setEditingFavorites(false); setShowOnboarding(true); }}
+        onFreshStart={() => { resetAllForFreshStart(); window.location.href = "/"; }}
       />
 
       <SearchBar query={query} onQueryChange={setQuery} pinned={searchPinned} />

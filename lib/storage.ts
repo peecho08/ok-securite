@@ -321,6 +321,23 @@ export function getReportCount(): number {
   return getReports().length;
 }
 
+// ── Fresh start (demo) ────────────────────────────────────────────
+
+/** Clears all app data for a fresh first-time experience. Use for demo. */
+export function resetAllForFreshStart(): void {
+  const s = safeStorage();
+  if (!s) return;
+  const prefix = `${PREFIX}:`;
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < s.length; i++) {
+      const k = s.key(i);
+      if (k && k.startsWith(prefix)) keys.push(k);
+    }
+    keys.forEach((k) => s.removeItem(k));
+  } catch { /* ignore */ }
+}
+
 // ── Seed demo data ────────────────────────────────────────────────
 
 const DEMO_SEEDED_KEY = key("demo-seeded");
