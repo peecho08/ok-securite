@@ -4,6 +4,15 @@ function key(...parts: string[]) {
   return `${PREFIX}:${parts.join(":")}`;
 }
 
+function safeStorage(): Storage | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
 // ── Checklist progress (persists until finished or deleted) ──────
 
 export interface ProgressData {
@@ -24,35 +33,43 @@ function parseProgress(raw: string | null): ProgressData {
 }
 
 export function loadProgress(taskId: string): ProgressData {
+  const s = safeStorage();
+  if (!s) return { checked: [], na: [] };
   try {
-    return parseProgress(localStorage.getItem(progressKey(taskId)));
+    return parseProgress(s.getItem(progressKey(taskId)));
   } catch {
     return { checked: [], na: [] };
   }
 }
 
 export function saveProgress(taskId: string, data: ProgressData) {
+  const s = safeStorage();
+  if (!s) return;
   try {
-    localStorage.setItem(progressKey(taskId), JSON.stringify(data));
+    s.setItem(progressKey(taskId), JSON.stringify(data));
   } catch { /* quota exceeded — ignore */ }
 }
 
 export function clearProgress(taskId: string) {
+  const s = safeStorage();
+  if (!s) return;
   try {
-    localStorage.removeItem(progressKey(taskId));
+    s.removeItem(progressKey(taskId));
   } catch { /* ignore */ }
 }
 
 export function getActiveTaskProgress(): { taskId: string; checkedIds: string[]; naIds: string[] }[] {
   const results: { taskId: string; checkedIds: string[]; naIds: string[] }[] = [];
+  const s = safeStorage();
+  if (!s) return results;
   const prefix = `${PREFIX}:progress:`;
   try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
+    for (let i = 0; i < s.length; i++) {
+      const k = s.key(i);
       if (k && k.startsWith(prefix)) {
         const taskId = k.slice(prefix.length);
         if (taskId.includes(":")) continue;
-        const data = parseProgress(localStorage.getItem(k));
+        const data = parseProgress(s.getItem(k));
         if (data.checked.length > 0 || data.na.length > 0) {
           results.push({ taskId, checkedIds: data.checked, naIds: data.na });
         }
@@ -67,17 +84,12 @@ export function getActiveTaskProgress(): { taskId: string; checkedIds: string[];
 const UNLOCK_KEY = key("unlocked");
 
 export function isUnlocked(): boolean {
-  try {
-    return localStorage.getItem(UNLOCK_KEY) === "1";
-  } catch {
-    return false;
-  }
+  const s = safeStorage();
+  return s ? s.getItem(UNLOCK_KEY) === "1" : false;
 }
 
 export function setUnlocked() {
-  try {
-    localStorage.setItem(UNLOCK_KEY, "1");
-  } catch { /* ignore */ }
+  safeStorage()?.setItem(UNLOCK_KEY, "1");
 }
 
 // ── Worker name ──────────────────────────────────────────────────
@@ -85,17 +97,12 @@ export function setUnlocked() {
 const NAME_KEY = key("worker-name");
 
 export function getWorkerName(): string {
-  try {
-    return localStorage.getItem(NAME_KEY) || "";
-  } catch {
-    return "";
-  }
+  const s = safeStorage();
+  return s ? s.getItem(NAME_KEY) || "" : "";
 }
 
 export function setWorkerName(name: string) {
-  try {
-    localStorage.setItem(NAME_KEY, name);
-  } catch { /* ignore */ }
+  safeStorage()?.setItem(NAME_KEY, name);
 }
 
 // ── Favorites ────────────────────────────────────────────────────
@@ -103,8 +110,10 @@ export function setWorkerName(name: string) {
 const FAVORITES_KEY = key("favorites");
 
 export function getFavorites(): string[] {
+  const s = safeStorage();
+  if (!s) return [];
   try {
-    const raw = localStorage.getItem(FAVORITES_KEY);
+    const raw = s.getItem(FAVORITES_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -112,17 +121,16 @@ export function getFavorites(): string[] {
 }
 
 export function setFavorites(ids: string[]) {
+  const s = safeStorage();
+  if (!s) return;
   try {
-    localStorage.setItem(FAVORITES_KEY, JSON.stringify(ids));
+    s.setItem(FAVORITES_KEY, JSON.stringify(ids));
   } catch { /* ignore */ }
 }
 
 export function hasFavorites(): boolean {
-  try {
-    return localStorage.getItem(FAVORITES_KEY) !== null;
-  } catch {
-    return false;
-  }
+  const s = safeStorage();
+  return s ? s.getItem(FAVORITES_KEY) !== null : false;
 }
 
 // ── Color mode (ACQ) ─────────────────────────────────────────────
@@ -130,17 +138,82 @@ export function hasFavorites(): boolean {
 const COLOR_KEY = key("acq-colors");
 
 export function getAcqColors(): boolean {
-  try {
-    return localStorage.getItem(COLOR_KEY) === "1";
-  } catch {
-    return false;
-  }
+  const s = safeStorage();
+  return s ? s.getItem(COLOR_KEY) !== "0" : true;
 }
 
 export function setAcqColors(on: boolean) {
+  safeStorage()?.setItem(COLOR_KEY, on ? "1" : "0");
+}
+
+// ── Role (Worker / Supervisor) — no real auth, localStorage only ───
+
+export type ActiveRole = "worker" | "supervisor";
+
+const ACTIVE_ROLE_KEY = key("active-role");
+const ROLE_CHOICE_DONE_KEY = key("role-choice-done");
+const SUPERVISOR_ORG_ID_KEY = key("supervisor-org-id");
+const TEAM_NAME_KEY = key("team-name");
+const INVITE_TOKEN_KEY = key("invite-token");
+const DASHBOARD_SECRET_KEY = key("dashboard-secret");
+const WORKER_ORG_ID_KEY = key("worker-org-id");
+
+export function getActiveRole(): ActiveRole {
+  const s = safeStorage();
+  const v = s?.getItem(ACTIVE_ROLE_KEY);
+  return v === "supervisor" ? "supervisor" : "worker";
+}
+
+export function setActiveRole(role: ActiveRole) {
+  safeStorage()?.setItem(ACTIVE_ROLE_KEY, role);
+}
+
+export function getRoleChoiceDone(): boolean {
+  const s = safeStorage();
+  return s ? s.getItem(ROLE_CHOICE_DONE_KEY) === "1" : false;
+}
+
+export function setRoleChoiceDone() {
+  safeStorage()?.setItem(ROLE_CHOICE_DONE_KEY, "1");
+}
+
+export function getSupervisorOrgId(): string | null {
+  return safeStorage()?.getItem(SUPERVISOR_ORG_ID_KEY) ?? null;
+}
+
+export function setSupervisorOrg(orgId: string, teamName: string, inviteToken: string, dashboardSecret: string) {
+  const s = safeStorage();
+  if (!s) return;
   try {
-    if (on) localStorage.setItem(COLOR_KEY, "1");
-    else localStorage.removeItem(COLOR_KEY);
+    s.setItem(SUPERVISOR_ORG_ID_KEY, orgId);
+    s.setItem(TEAM_NAME_KEY, teamName);
+    s.setItem(INVITE_TOKEN_KEY, inviteToken);
+    s.setItem(DASHBOARD_SECRET_KEY, dashboardSecret);
+  } catch { /* ignore */ }
+}
+
+export function getTeamName(): string {
+  return safeStorage()?.getItem(TEAM_NAME_KEY) || "";
+}
+
+export function getInviteToken(): string | null {
+  return safeStorage()?.getItem(INVITE_TOKEN_KEY) ?? null;
+}
+
+export function getDashboardSecret(): string | null {
+  return safeStorage()?.getItem(DASHBOARD_SECRET_KEY) ?? null;
+}
+
+export function getWorkerOrgId(): string | null {
+  return safeStorage()?.getItem(WORKER_ORG_ID_KEY) ?? null;
+}
+
+export function setWorkerOrgId(orgId: string | null) {
+  const s = safeStorage();
+  if (!s) return;
+  try {
+    if (orgId) s.setItem(WORKER_ORG_ID_KEY, orgId);
+    else s.removeItem(WORKER_ORG_ID_KEY);
   } catch { /* ignore */ }
 }
 
@@ -149,17 +222,17 @@ export function setAcqColors(on: boolean) {
 const LANG_KEY = key("lang");
 
 export function getLanguage(): string {
+  const storage = safeStorage();
+  if (!storage) return "fr";
   try {
-    return localStorage.getItem(LANG_KEY) || "fr";
+    return storage.getItem(LANG_KEY) || "fr";
   } catch {
     return "fr";
   }
 }
 
 export function setLanguage(lang: string) {
-  try {
-    localStorage.setItem(LANG_KEY, lang);
-  } catch { /* ignore */ }
+  safeStorage()?.setItem(LANG_KEY, lang);
 }
 
 // ── Recent tasks ─────────────────────────────────────────────────

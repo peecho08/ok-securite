@@ -16,6 +16,19 @@ function haptic() {
   try { navigator?.vibrate?.(10); } catch { /* unsupported */ }
 }
 
+function linkifyPhones(text: string) {
+  const phoneRegex = /(1[\s-]?\d{3}[\s-]\d{3}[\s-]\d{4})/g;
+  const parts = text.split(phoneRegex);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) => {
+    if (phoneRegex.test(part)) {
+      const digits = part.replace(/\D/g, "");
+      return <a key={i} href={`tel:${digits}`} className="font-semibold underline underline-offset-2">{part}</a>;
+    }
+    return part;
+  });
+}
+
 const SWIPE_THRESHOLD = 60;
 
 function useSwipeRight(onSwipe: () => void) {
@@ -59,6 +72,10 @@ export default function TaskPage() {
     locale === "en" && task.titleEn ? task.titleEn : task.title;
   const localItemLabel = (item: { id: string; label: string }) =>
     locale === "en" && checklistItemsEn[item.id] ? checklistItemsEn[item.id].label : item.label;
+  const localItemInfo = (item: { id: string; info?: string }) =>
+    locale === "en" && checklistItemsEn[item.id]
+      ? (checklistItemsEn[item.id].info ?? item.info ?? "")
+      : (item.info ?? "");
   const localPhaseTitle = (title: string) =>
     locale === "en" && phaseTitlesEn[title] ? phaseTitlesEn[title] : title;
   const rawChecklist = checklists[taskId];
@@ -68,6 +85,7 @@ export default function TaskPage() {
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [na, setNa] = useState<Set<string>>(new Set());
   const [collapsed, setCollapsed] = useState<Set<Phase>>(new Set());
+  const [expandedInfo, setExpandedInfo] = useState<string | null>(null);
   const [workerName, setWorkerName] = useState(getWorkerName);
   const [phaseToast, setPhaseToast] = useState<{ phase: Phase; title: string } | null>(null);
   const [undoToast, setUndoToast] = useState<{ id: string; was: "checked" | "na" } | null>(null);
@@ -76,6 +94,7 @@ export default function TaskPage() {
   const [scanState, setScanState] = useState<"idle" | "scanning" | "done">("idle");
   const [scanPhoto, setScanPhoto] = useState<string | null>(null);
   const [scanRisks, setScanRisks] = useState<string[]>([]);
+  const [scanMarkers, setScanMarkers] = useState<{ x: number; y: number }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const undoTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const userToggledRef = useRef(false);
@@ -234,32 +253,68 @@ export default function TaskPage() {
     });
   }, []);
 
+  const DEMO_MODE = true; // flip to false to use real Gemini AI
+
   const allFakeRisks = [
     t("task.scanRisk1"), t("task.scanRisk2"), t("task.scanRisk3"),
     t("task.scanRisk4"), t("task.scanRisk5"), t("task.scanRisk6"),
     t("task.scanRisk7"), t("task.scanRisk8"),
   ];
 
-  function handleScanFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleScanFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
     setScanPhoto(url);
     setScanState("scanning");
-    // Pick 2-4 random risks
-    const shuffled = [...allFakeRisks].sort(() => Math.random() - 0.5);
-    const count = 2 + Math.floor(Math.random() * 3);
-    setTimeout(() => {
-      setScanRisks(shuffled.slice(0, count));
-      setScanState("done");
-    }, 2500);
     e.target.value = "";
+
+    if (DEMO_MODE) {
+      const shuffled = [...allFakeRisks].sort(() => Math.random() - 0.5);
+      const count = 2 + Math.floor(Math.random() * 2); // 2-3 risks
+      const risks = shuffled.slice(0, count);
+      const markers = risks.map(() => ({
+        x: 15 + Math.random() * 70, // keep within 15%-85% to stay visible
+        y: 15 + Math.random() * 60,
+      }));
+      setTimeout(() => {
+        setScanRisks(risks);
+        setScanMarkers(markers);
+        setScanState("done");
+      }, 6000);
+      return;
+    }
+
+    try {
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+
+      const res = await fetch("/api/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64, lang: locale }),
+      });
+
+      const data = await res.json();
+      const realRisks: string[] = data.risks ?? [];
+      setScanRisks(realRisks);
+      setScanMarkers(realRisks.map(() => ({ x: 15 + Math.random() * 70, y: 15 + Math.random() * 60 })));
+      setScanState("done");
+    } catch {
+      setScanRisks([locale === "en" ? "Analysis failed — please try again" : "Analyse échouée — veuillez réessayer"]);
+      setScanMarkers([{ x: 50, y: 40 }]);
+      setScanState("done");
+    }
   }
 
   function closeScan() {
     if (scanPhoto) URL.revokeObjectURL(scanPhoto);
     setScanPhoto(null);
     setScanRisks([]);
+    setScanMarkers([]);
     setScanState("idle");
   }
 
@@ -356,15 +411,19 @@ export default function TaskPage() {
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="mb-5 flex w-full items-center gap-3.5 rounded-xl border-2 border-blue-200 bg-blue-50 p-4 text-left transition-colors active:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/40"
+          className="mb-5 flex w-full items-center gap-3.5 rounded-xl border border-neutral-800 bg-neutral-900 p-4 text-left transition-colors active:bg-neutral-800"
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+          <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-500/15 text-green-500">
             <Camera className="h-5 w-5" />
+            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-neutral-900 bg-green-400" />
           </span>
           <div className="min-w-0">
-            <p className="font-heading text-sm font-bold text-blue-900 dark:text-blue-200">{t("task.scanPhoto")}</p>
-            <p className="text-xs text-blue-600/70 dark:text-blue-400/70">{t("task.scanHint")}</p>
+            <p className="font-heading text-sm font-bold text-white">{t("task.scanPhoto")}</p>
+            <p className="text-xs text-neutral-400">{t("task.scanHint")}</p>
           </div>
+          <svg className="ml-auto h-4 w-4 shrink-0 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
         </button>
 
         {phases.map((group, phaseIdx) => {
@@ -467,18 +526,41 @@ export default function TaskPage() {
                             )}
                             <span>{localItemLabel(item)}</span>
                           </span>
-                          <button
-                            onClick={() => toggleNa(item.id)}
-                            className={`mt-0.5 flex h-9 shrink-0 items-center justify-center rounded-full px-2.5 text-xs font-bold transition-colors ${
-                              isNa
-                                ? "bg-gray-400 text-white dark:bg-neutral-500"
-                                : "bg-gray-100 text-gray-500 hover:bg-gray-200 active:bg-gray-300 dark:bg-neutral-700 dark:text-neutral-400"
-                            }`}
-                            aria-label="N/A"
-                          >
-                            {t("task.na")}
-                          </button>
+                          <div className="flex shrink-0 items-start gap-1.5">
+                            {localItemInfo(item) && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedInfo(expandedInfo === item.id ? null : item.id);
+                                }}
+                                className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                                  expandedInfo === item.id
+                                    ? "bg-gray-200 text-gray-700 dark:bg-neutral-600 dark:text-neutral-200"
+                                    : "bg-gray-100 text-gray-500 hover:bg-gray-200 active:bg-gray-300 dark:bg-neutral-700 dark:text-neutral-400"
+                                }`}
+                                aria-label="Info"
+                              >
+                                i
+                              </button>
+                            )}
+                            <button
+                              onClick={() => toggleNa(item.id)}
+                              className={`mt-0.5 flex h-9 shrink-0 items-center justify-center rounded-full px-2.5 text-xs font-bold transition-colors ${
+                                isNa
+                                  ? "bg-gray-400 text-white dark:bg-neutral-500"
+                                  : "bg-gray-100 text-gray-500 hover:bg-gray-200 active:bg-gray-300 dark:bg-neutral-700 dark:text-neutral-400"
+                              }`}
+                              aria-label="N/A"
+                            >
+                              {t("task.na")}
+                            </button>
+                          </div>
                         </div>
+                        {expandedInfo === item.id && localItemInfo(item) && (
+                          <div className="mx-2 mt-1.5 rounded-lg bg-gray-100 px-3.5 py-2.5 text-sm text-gray-700 dark:bg-neutral-700 dark:text-neutral-300">
+                            {linkifyPhones(localItemInfo(item))}
+                          </div>
+                        )}
                       </SwipeItem>
                     );
                   })}
@@ -608,61 +690,113 @@ export default function TaskPage() {
         </>
       )}
 
-      {/* AI Scan modal */}
+      {/* AI Scan — fullscreen takeover */}
       {scanState !== "idle" && (
-        <>
-          <div className="fixed inset-0 z-50 bg-black/60" onClick={scanState === "done" ? closeScan : undefined} />
-          <div className="fixed inset-x-4 top-1/2 z-50 mx-auto max-w-md -translate-y-1/2 overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-neutral-800">
-            {scanPhoto && (
-              <div className="relative">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={scanPhoto} alt="" className="max-h-56 w-full object-cover" />
-                {scanState === "scanning" && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                    <div className="h-16 w-16 animate-spin rounded-full border-4 border-white/30 border-t-white" />
-                  </div>
-                )}
-                {scanState === "scanning" && (
-                  <div className="absolute inset-x-0 top-1/2 -translate-y-1/2">
-                    <div className="mx-4 h-0.5 animate-pulse bg-green-400 shadow-[0_0_12px_rgba(74,222,128,0.7)]" />
-                  </div>
-                )}
-              </div>
-            )}
-            <div className="p-5">
-              <h3 className="font-heading text-lg font-bold text-gray-900 dark:text-neutral-100">
-                {t("task.scanTitle")}
-              </h3>
+        <div className="fixed inset-0 z-[100] flex flex-col bg-black">
+          {/* Photo fills top portion */}
+          {scanPhoto && (
+            <div className={`relative w-full overflow-hidden ${scanState === "done" ? "flex-shrink-0" : "flex-1"}`} style={scanState === "done" ? { height: "42dvh" } : undefined}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={scanPhoto} alt="" className="h-full w-full object-cover" />
+
               {scanState === "scanning" && (
-                <p className="mt-2 animate-pulse text-sm text-gray-500">{t("task.scanning")}</p>
+                <>
+                  <div className="absolute inset-0 bg-black/30" />
+                  <div className="animate-scan-grid absolute inset-0" />
+
+                  {/* Scanning line */}
+                  <div className="animate-scan-line absolute inset-x-0 h-[2px]" style={{ filter: "drop-shadow(0 0 12px rgba(74,222,128,0.9))" }}>
+                    <div className="h-full w-full bg-green-400" />
+                    <div className="absolute inset-x-0 -bottom-6 h-12 bg-gradient-to-b from-green-400/25 to-transparent" />
+                  </div>
+
+                  {/* Corner brackets */}
+                  <div className="absolute inset-5">
+                    <div className="animate-scan-corner absolute left-0 top-0 h-8 w-8 border-l-2 border-t-2 border-green-400" />
+                    <div className="animate-scan-corner absolute right-0 top-0 h-8 w-8 border-r-2 border-t-2 border-green-400" />
+                    <div className="animate-scan-corner absolute bottom-0 left-0 h-8 w-8 border-b-2 border-l-2 border-green-400" />
+                    <div className="animate-scan-corner absolute bottom-0 right-0 h-8 w-8 border-b-2 border-r-2 border-green-400" />
+                  </div>
+
+                  {/* Center reticle */}
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <div className="animate-scan-pulse-ring h-20 w-20 rounded-full border border-green-400/50" />
+                    <div className="absolute left-1/2 top-1/2 h-1 w-8 -translate-x-1/2 -translate-y-1/2 bg-green-400/60" />
+                    <div className="absolute left-1/2 top-1/2 h-8 w-1 -translate-x-1/2 -translate-y-1/2 bg-green-400/60" />
+                  </div>
+
+                  {/* Top HUD bar */}
+                  <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent px-5 pb-8 pt-[calc(env(safe-area-inset-top)+1rem)]">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
+                      <span className="font-heading text-xs font-bold uppercase tracking-widest text-green-400">{t("task.scanTitle")}</span>
+                    </div>
+                    <span className="font-mono text-[10px] text-green-400/60">AI VISION</span>
+                  </div>
+
+                  {/* Bottom scanning status */}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-5 pb-5 pt-10">
+                    <p className="text-sm text-neutral-300">{t("task.scanning")}</p>
+                    <div className="mt-2 h-1 overflow-hidden rounded-full bg-neutral-700">
+                      <div className="h-full w-2/3 rounded-full bg-green-500" style={{ animation: "scan-line 2s ease-in-out infinite" }} />
+                    </div>
+                  </div>
+                </>
               )}
+
               {scanState === "done" && (
-                <div className="mt-3">
-                  <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-green-600">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    {t("task.scanDone")}
-                  </p>
-                  <ul className="space-y-2">
-                    {scanRisks.map((risk, i) => (
-                      <li key={i} className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950 dark:text-red-300">
-                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
-                        {risk}
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    onClick={closeScan}
-                    className="mt-4 w-full rounded-xl bg-black py-3 font-heading text-sm font-bold text-white transition-colors active:bg-gray-800 dark:bg-neutral-600"
-                  >
-                    {t("task.scanClose")}
-                  </button>
-                </div>
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
+                  {/* Numbered risk markers on photo */}
+                  {scanMarkers.map((m, i) => (
+                    <div
+                      key={i}
+                      className="absolute flex flex-col items-center"
+                      style={{ left: `${m.x}%`, top: `${m.y}%`, transform: "translate(-50%, -50%)" }}
+                    >
+                      <div
+                        className="animate-risk-slide-in flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-bold text-white shadow-lg shadow-red-500/40"
+                        style={{ animationDelay: `${i * 200}ms` }}
+                      >
+                        {i + 1}
+                      </div>
+                      <div className="mt-0.5 h-3 w-0.5 bg-red-400/80" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-red-400/80" />
+                    </div>
+                  ))}
+                </>
               )}
             </div>
-          </div>
-        </>
+          )}
+
+          {/* Results panel — slides up from bottom when done */}
+          {scanState === "done" && (
+            <div className="flex-1 overflow-y-auto px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-5">
+              <p className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-red-400">
+                <AlertTriangle className="h-4 w-4" />
+                {scanRisks.length} {t("task.scanDone")}
+              </p>
+              <ul className="space-y-2.5">
+                {scanRisks.map((risk, i) => (
+                  <li
+                    key={i}
+                    className="animate-risk-slide-in flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-950/40 px-4 py-3 text-[15px] leading-snug text-red-200"
+                    style={{ animationDelay: `${i * 120}ms` }}
+                  >
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-500 text-[11px] font-bold text-white">{i + 1}</span>
+                    {risk}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={closeScan}
+                className="mt-5 w-full rounded-xl bg-green-500 py-3.5 font-heading text-sm font-bold text-black transition-colors active:bg-green-600"
+              >
+                {t("task.scanClose")}
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
     </div>

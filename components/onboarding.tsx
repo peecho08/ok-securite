@@ -2,13 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { tasks } from "@/data/tasks";
 import { type TaskCategory } from "@/types";
 import { localCatLabel, localTitle, normalize } from "@/lib/locale-helpers";
-import { setFavorites, getWorkerName, setWorkerName } from "@/lib/storage";
+import { setFavorites, getWorkerName, setWorkerName, getRoleChoiceDone, setRoleChoiceDone, setActiveRole, setWorkerOrgId } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
 import { useLocale } from "@/lib/i18n";
-import { CheckCircle, Layers, WifiOff } from "lucide-react";
+import { CheckCircle, Zap, Camera, Users, UserPlus } from "lucide-react";
 
 const categoryOrder: TaskCategory[] = [
   "gros-oeuvre",
@@ -28,13 +29,46 @@ interface OnboardingProps {
   onDone: (ids: string[]) => void;
 }
 
+type OnboardingStep = "role" | "join" | "welcome" | "pick";
+
 export function Onboarding({ initial = [], skipWelcome = false, onDone }: OnboardingProps) {
   const { locale, t } = useLocale();
-  const [step, setStep] = useState<"welcome" | "pick">(skipWelcome ? "pick" : "welcome");
+  const router = useRouter();
+  const [step, setStep] = useState<OnboardingStep>(() => {
+    if (skipWelcome) return "pick";
+    if (!getRoleChoiceDone()) return "role";
+    return "welcome";
+  });
   const [name, setName] = useState(getWorkerName);
+  const [joinLink, setJoinLink] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set(initial));
   const [search, setSearch] = useState("");
   const [exiting, setExiting] = useState(false);
+
+  function handleCreateTeam() {
+    setRoleChoiceDone();
+    setActiveRole("supervisor");
+    router.push("/create-team");
+  }
+
+  function handleJoinTeam() {
+    setStep("join");
+  }
+
+  function handleJoinSubmit() {
+    setRoleChoiceDone();
+    setActiveRole("worker");
+    const token = joinLink.trim().replace(/.*\/join\/?/i, "").trim() || "demo-org";
+    setWorkerOrgId(token);
+    setStep("welcome");
+  }
+
+  function handleJoinLater() {
+    setRoleChoiceDone();
+    setActiveRole("worker");
+    setWorkerOrgId(null);
+    setStep("welcome");
+  }
 
   function handleStart() {
     if (name.trim()) setWorkerName(name.trim());
@@ -83,17 +117,107 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
 
   const features = [
     { icon: CheckCircle, titleKey: "onboarding.feature1Title", descKey: "onboarding.feature1Desc", color: "bg-green-100 text-green-700" },
-    { icon: Layers, titleKey: "onboarding.feature2Title", descKey: "onboarding.feature2Desc", color: "bg-green-100 text-green-700" },
-    { icon: WifiOff, titleKey: "onboarding.feature3Title", descKey: "onboarding.feature3Desc", color: "bg-green-100 text-green-700" },
+    { icon: Zap, titleKey: "onboarding.feature2Title", descKey: "onboarding.feature2Desc", color: "bg-green-100 text-green-700" },
+    { icon: Camera, titleKey: "onboarding.feature3Title", descKey: "onboarding.feature3Desc", color: "bg-green-100 text-green-700" },
   ];
+
+  if (step === "role") {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white text-gray-900">
+        <div className="flex flex-1 flex-col items-center justify-center px-8 pb-8 pt-6">
+          <Image src="/logo-black-yellow.svg" alt="OK Chantier" width={188} height={48} className="h-10 w-auto" priority />
+          <h1 className="mt-6 font-heading text-xl font-bold text-black">{t("role.chooseTitle")}</h1>
+          <div className="mt-6 flex w-full max-w-sm flex-col gap-3">
+            <button
+              type="button"
+              onClick={handleCreateTeam}
+              className="flex items-start gap-3 rounded-xl border-2 border-gray-200 bg-gray-50/50 p-4 text-left transition-colors hover:border-[var(--color-primary)] hover:bg-green-50/50 active:bg-green-50"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-700">
+                <Users className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="font-heading font-bold text-gray-900">{t("role.createTeam")}</p>
+                <p className="mt-0.5 text-sm text-gray-500">{t("role.createTeamDesc")}</p>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={handleJoinTeam}
+              className="flex items-start gap-3 rounded-xl border-2 border-gray-200 bg-gray-50/50 p-4 text-left transition-colors hover:border-[var(--color-primary)] hover:bg-green-50/50 active:bg-green-50"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-700">
+                <UserPlus className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="font-heading font-bold text-gray-900">{t("role.joinTeam")}</p>
+                <p className="mt-0.5 text-sm text-gray-500">{t("role.joinTeamDesc")}</p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === "join") {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white text-gray-900">
+        <div className="flex flex-1 flex-col px-8 pb-8 pt-6">
+          <button
+            type="button"
+            onClick={() => setStep("role")}
+            className="mb-4 flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            {t("nav.back")}
+          </button>
+          <h1 className="font-heading text-xl font-bold">{t("joinTeam.title")}</h1>
+          <input
+            type="text"
+            value={joinLink}
+            onChange={(e) => setJoinLink(e.target.value)}
+            placeholder={t("joinTeam.pastePlaceholder")}
+            className="mt-4 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white"
+          />
+          <button
+            type="button"
+            onClick={handleJoinSubmit}
+            className="mt-4 w-full rounded-xl bg-[var(--color-primary)] py-3 font-heading text-base font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)] active:bg-[var(--color-primary-dark)]"
+          >
+            {t("joinTeam.join")}
+          </button>
+          <button
+            type="button"
+            onClick={handleJoinLater}
+            className="mt-3 w-full rounded-xl border border-gray-200 py-3 font-heading text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
+          >
+            {t("role.joinLater")}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (step === "welcome") {
     return (
       <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white text-gray-900">
-        <div className="flex flex-1 flex-col items-center justify-center px-8 py-6 text-center">
+        <div className="flex flex-1 flex-col items-center justify-center px-8 pb-6 pt-2 text-center">
+          <button
+            type="button"
+            onClick={() => setStep("join")}
+            className="absolute left-5 top-6 flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            {t("nav.back")}
+          </button>
           <div className="animate-scale-in">
             <Image
-              src="/logo.svg"
+              src="/logo-black-yellow.svg"
               alt="OK Chantier"
               width={188}
               height={48}
@@ -109,22 +233,19 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
             {t("onboarding.subtitle")}
           </p>
 
-          <div className="mt-5 flex w-full max-w-sm flex-col gap-2">
+          <div className="mt-5 flex w-full max-w-sm gap-2">
             {features.map((feat, i) => {
               const Icon = feat.icon;
               return (
                 <div
                   key={feat.titleKey}
-                  className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-2.5 text-left animate-slide-in-up"
+                  className="flex flex-1 flex-col items-center gap-2 rounded-xl border border-gray-100 bg-gray-50/50 px-2 py-3 text-center animate-slide-in-up"
                   style={{ animationDelay: `${0.15 + i * 0.1}s` }}
                 >
-                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${feat.color}`}>
-                    <Icon className="h-4 w-4" />
+                  <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${feat.color}`}>
+                    <Icon className="h-4.5 w-4.5" />
                   </span>
-                  <div className="min-w-0">
-                    <p className="font-heading text-sm font-bold text-gray-800">{t(feat.titleKey)}</p>
-                    <p className="mt-0.5 text-xs leading-snug text-gray-500">{t(feat.descKey)}</p>
-                  </div>
+                  <p className="font-heading text-xs font-bold leading-tight text-gray-800">{t(feat.titleKey)}</p>
                 </div>
               );
             })}
@@ -135,13 +256,13 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={t("onboarding.namePlaceholder")}
-            className="mt-5 w-full max-w-xs rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-center text-base text-black outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white animate-slide-in-up"
+            className="mt-5 w-full max-w-sm rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-center text-base text-black outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white animate-slide-in-up"
             style={{ animationDelay: "0.45s" }}
           />
 
           <button
             onClick={handleStart}
-            className="mt-4 w-full max-w-xs rounded-xl bg-[var(--color-primary)] py-3 font-heading text-base font-bold tracking-wide text-white transition-colors hover:bg-[var(--color-primary-dark)] active:bg-[var(--color-primary-dark)] animate-slide-in-up"
+            className="mt-4 w-full max-w-sm rounded-xl bg-[var(--color-primary)] py-3 font-heading text-base font-bold tracking-wide text-white transition-colors hover:bg-[var(--color-primary-dark)] active:bg-[var(--color-primary-dark)] animate-slide-in-up"
             style={{ animationDelay: "0.55s" }}
           >
             {t("onboarding.start")}
@@ -149,13 +270,12 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
 
         </div>
         <div className="pb-4 flex flex-col items-center gap-1">
-          <span className="text-xs text-gray-400">{t("nav.poweredBy")}</span>
           <Image
-            src="/cnesst-logo.svg"
-            alt="CNESST"
-            width={100}
-            height={38}
-            className="h-[20px] w-auto"
+            src="/acq-logo.svg"
+            alt="ACQ"
+            width={120}
+            height={40}
+            className="h-[28px] w-auto"
           />
         </div>
       </div>
@@ -164,7 +284,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
 
   return (
     <div className={`fixed inset-0 z-50 flex flex-col bg-white text-gray-900 ${exiting ? "animate-fade-out-up" : ""}`}>
-      <div className="bg-[var(--color-primary)] px-5 pb-4 pt-8 sm:px-8">
+      <div className="bg-[var(--color-header)] px-5 pb-4 pt-8 sm:px-8">
         <div className="mx-auto max-w-3xl">
           {!skipWelcome && (
             <button

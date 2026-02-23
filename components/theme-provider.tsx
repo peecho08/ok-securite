@@ -13,7 +13,7 @@ const STORAGE_KEY = "okchantier_theme";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
-  const [acqColors, setAcqColors] = useState(false);
+  const [acqColors, setAcqColors] = useState(true);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {

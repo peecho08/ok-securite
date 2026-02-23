@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
-import { getReportCount } from "@/lib/storage";
+import { getReportCount, getActiveRole, setActiveRole, getSupervisorOrgId } from "@/lib/storage";
+import { ArrowRightLeft } from "lucide-react";
 
 interface AppHeaderProps {
   workerName: string;
@@ -16,7 +17,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ workerName, onEditFavorites, onRestartOnboarding }: AppHeaderProps) {
   const { locale, setLocale, t } = useLocale();
-  const { theme, toggle: toggleTheme, acqColors, toggleAcq } = useTheme();
+  const { theme, toggle: toggleTheme, acqColors } = useTheme();
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const [reportCount, setReportCount] = useState(0);
@@ -41,7 +42,7 @@ export function AppHeader({ workerName, onEditFavorites, onRestartOnboarding }: 
               alt="OK Chantier"
               width={188}
               height={48}
-              className="acq-logo h-[50px] w-auto brightness-0 invert sm:h-10"
+              className="acq-logo h-[40px] w-auto brightness-0 invert sm:h-8"
               priority
             />
           </button>
@@ -59,7 +60,7 @@ export function AppHeader({ workerName, onEditFavorites, onRestartOnboarding }: 
                   alt="ACQ"
                   width={120}
                   height={40}
-                  className="h-[21px] w-auto brightness-0 invert"
+                  className="h-[19px] w-auto brightness-0 invert"
                 />
               </a>
             ) : (
@@ -93,9 +94,9 @@ export function AppHeader({ workerName, onEditFavorites, onRestartOnboarding }: 
 
             {showMenu && (
               <>
-                <div className="fixed inset-0 z-40 bg-black/30 sm:bg-transparent" onClick={() => setShowMenu(false)} aria-hidden />
+                <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setShowMenu(false)} aria-hidden />
                 <div
-                  className="fixed inset-x-0 bottom-0 z-50 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] dark:border-neutral-700 dark:bg-neutral-800 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:max-h-none sm:w-56 sm:rounded-xl sm:rounded-t-none sm:border sm:border-t-0 sm:shadow-xl"
+                  className="fixed inset-x-0 bottom-0 z-50 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] dark:border-neutral-700 dark:bg-neutral-800"
                   onTouchStart={(e) => {
                     (e.currentTarget as HTMLElement).dataset.touchY = String(e.touches[0].clientY);
                   }}
@@ -105,14 +106,53 @@ export function AppHeader({ workerName, onEditFavorites, onRestartOnboarding }: 
                     if (dy > 60) setShowMenu(false);
                   }}
                 >
-                  <div className="mx-auto mb-2 mt-3 h-1 w-12 rounded-full bg-gray-200 sm:hidden" aria-hidden />
-                  {workerName && (
-                    <div className="border-b border-gray-100 px-5 py-4 dark:border-neutral-700 sm:px-4 sm:py-3">
-                      <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100 sm:text-sm">{workerName}</p>
-                      <p className="text-sm text-gray-400 sm:text-xs">{t("menu.worker")}</p>
-                    </div>
+                  <div className="mx-auto mb-2 mt-3 h-1 w-12 rounded-full bg-gray-200" aria-hidden />
+                  <div className="border-b border-gray-100 px-5 py-4 dark:border-neutral-700">
+                    <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{workerName || (getActiveRole() === "supervisor" ? t("menu.supervisor") : t("menu.worker"))}</p>
+                    <p className="text-sm text-gray-400">{getActiveRole() === "supervisor" ? t("menu.supervisor") : t("menu.worker")}</p>
+                  </div>
+                  {acqColors && (
+                    <a
+                      href="https://www.acq.org/formations/repertoire-des-cours/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setShowMenu(false)}
+                      className="mx-4 mt-3 mb-2 flex items-center gap-3 rounded-xl bg-amber-50 p-4 transition-colors active:bg-amber-100 dark:bg-amber-950/40"
+                    >
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-white">
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-heading text-sm font-bold text-amber-900 dark:text-amber-200">{t("menu.acqFormations")}</p>
+                        <p className="text-xs text-amber-700 dark:text-amber-400">{t("menu.acqFormationsDesc")}</p>
+                      </div>
+                      <svg className="h-4 w-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </a>
                   )}
                   <div className="py-2 pb-[env(safe-area-inset-bottom)] sm:py-1 sm:pb-0">
+                    {getActiveRole() === "supervisor" ? (
+                      <button
+                        type="button"
+                        onClick={() => { setActiveRole("worker"); setShowMenu(false); router.push("/"); }}
+                        className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
+                      >
+                        <ArrowRightLeft className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" />
+                        {t("menu.switchToWorker")}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => { setActiveRole("supervisor"); setShowMenu(false); window.location.href = "/"; }}
+                        className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
+                      >
+                        <ArrowRightLeft className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" />
+                        {t("menu.switchToSupervisor")}
+                      </button>
+                    )}
                     <Link
                       href="/history"
                       onClick={() => setShowMenu(false)}
@@ -169,18 +209,6 @@ export function AppHeader({ workerName, onEditFavorites, onRestartOnboarding }: 
                       </svg>
                       {t("menu.dashboard")}
                     </Link>
-                    <button
-                      onClick={() => { toggleAcq(); setShowMenu(false); }}
-                      className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
-                    >
-                      <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                      </svg>
-                      {t("menu.acqColors")}
-                      {acqColors && (
-                        <span className="ml-auto text-xs font-semibold text-amber-600">ON</span>
-                      )}
-                    </button>
                     <button
                       onClick={() => { toggleTheme(); setShowMenu(false); }}
                       className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"

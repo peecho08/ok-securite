@@ -5,7 +5,7 @@ import { tasks } from "@/data/tasks";
 import { type TaskCategory } from "@/types";
 import { useLocale } from "@/lib/i18n";
 import { localCatLabel, localTitle, normalize } from "@/lib/locale-helpers";
-import { clearProgress, getActiveTaskProgress, getFavorites, getHistory, getWorkerName, hasFavorites, isDemoSeeded, seedDemoData } from "@/lib/storage";
+import { clearProgress, getActiveTaskProgress, getFavorites, getHistory, getWorkerName, getActiveRole, getRoleChoiceDone, hasFavorites, isDemoSeeded, seedDemoData } from "@/lib/storage";
 import { checklists } from "@/data/checklists";
 import { AppHeader } from "@/components/app-header";
 import { SearchBar } from "@/components/search-bar";
@@ -13,6 +13,7 @@ import { ActiveTasks } from "@/components/active-tasks";
 import { FavoriteStrip } from "@/components/favorite-strip";
 import { TaskList } from "@/components/task-list";
 import { Onboarding } from "@/components/onboarding";
+import { SupervisorHome } from "@/components/supervisor-home";
 
 const categoryOrder: TaskCategory[] = [
   "gros-oeuvre",
@@ -35,6 +36,7 @@ export default function HomePage() {
   const [searchPinned, setSearchPinned] = useState(false);
   const [workerName, setWorkerNameState] = useState("");
   const [ready, setReady] = useState(false);
+  const [isSupervisor, setIsSupervisor] = useState(false);
 
   useEffect(() => {
     if (!isDemoSeeded()) {
@@ -43,7 +45,10 @@ export default function HomePage() {
     setFavoriteIds(getFavorites());
     setActiveProgress(getActiveTaskProgress());
     setWorkerNameState(getWorkerName());
-    if (!hasFavorites()) setShowOnboarding(true);
+    const roleDone = getRoleChoiceDone();
+    const supervisorMode = getActiveRole() === "supervisor";
+    setIsSupervisor(supervisorMode);
+    if (!roleDone || (!hasFavorites() && !supervisorMode)) setShowOnboarding(true);
     setReady(true);
   }, []);
 
@@ -134,6 +139,10 @@ export default function HomePage() {
     clearProgress(taskId);
     setActiveProgress((prev) => prev.filter((p) => p.taskId !== taskId));
   }, [t]);
+
+  if (ready && isSupervisor && !showOnboarding) {
+    return <SupervisorHome />;
+  }
 
   return (
     <div className="flex min-h-dvh flex-col">

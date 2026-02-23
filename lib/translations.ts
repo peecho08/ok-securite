@@ -32,10 +32,38 @@ const fr: Record<string, string> = {
   "menu.wellbeing": "Bien-être",
   "menu.report": "Signaler un incident",
   "menu.editFavorites": "Modifier mes favoris",
-  "menu.acqColors": "Couleurs ACQ",
+  "menu.acqColors": "Version CNESST",
+  "menu.acqFormations": "Formations ACQ",
+  "menu.acqFormationsDesc": "Cours pour entrepreneurs en construction",
   "menu.theme": "Mode sombre / clair",
   "menu.restartOnboarding": "Recommencer l'accueil",
   "menu.language": "English",
+  "menu.switchToSupervisor": "Expérience superviseur",
+  "menu.switchToWorker": "Utiliser comme travailleur",
+  "menu.supervisor": "Superviseur",
+
+  // ── Role choice ─────────────────────────────────────────
+  "role.chooseTitle": "Vous êtes…",
+  "role.createTeam": "Créer une équipe",
+  "role.createTeamDesc": "Superviseur ou propriétaire — invitez vos travailleurs et voyez les complétions.",
+  "role.joinTeam": "Rejoindre une équipe",
+  "role.joinTeamDesc": "Travailleur — utilisez le lien envoyé par votre superviseur.",
+  "role.joinLater": "Rejoindre plus tard",
+
+  // ── Create team ──────────────────────────────────────────
+  "createTeam.title": "Nommez votre équipe",
+  "createTeam.namePlaceholder": "Ex. Chantiers ABC",
+  "createTeam.create": "CRÉER L'ÉQUIPE",
+  "createTeam.inviteLink": "Lien d'invitation",
+  "createTeam.dashboardLink": "Tableau de bord",
+  "createTeam.copy": "Copier",
+  "createTeam.copied": "Copié",
+
+  // ── Join team ────────────────────────────────────────────
+  "joinTeam.title": "Rejoindre une équipe",
+  "joinTeam.pastePlaceholder": "Collez le lien d'invitation",
+  "joinTeam.join": "REJOINDRE",
+  "joinTeam.joining": "Rejoignant l'équipe…",
 
   // ── Onboarding ──────────────────────────────────────────
   "onboarding.hello": "Bonjour",
@@ -49,10 +77,10 @@ const fr: Record<string, string> = {
   "onboarding.taskCount": "{count} tâche{s} sélectionnée{s}",
   "onboarding.feature1Title": "55 tâches · 7 catégories",
   "onboarding.feature1Desc": "Du béton à la toiture — checklists basées sur le Code de sécurité CNESST.",
-  "onboarding.feature2Title": "2 phases par tâche",
+  "onboarding.feature2Title": "Rapide et simple",
   "onboarding.feature2Desc": "Avant et après les travaux — glissez vers la droite pour cocher rapidement.",
-  "onboarding.feature3Title": "Fonctionne hors ligne",
-  "onboarding.feature3Desc": "Vos checklists et votre progression sont sauvegardées localement — aucun internet requis.",
+  "onboarding.feature3Title": "Analyse des risques par IA",
+  "onboarding.feature3Desc": "Prenez une photo du chantier et l'IA identifie les risques potentiels.",
   "onboarding.confirm": "C\u2019EST PARTI",
   "onboarding.selectMin": "Sélectionnez au moins 1 tâche",
 
@@ -79,7 +107,7 @@ const fr: Record<string, string> = {
   "task.criticalWarningContinue": "Continuer quand même",
   "task.na": "N/A",
   "task.markedNa": "Marqué N/A",
-  "task.scanPhoto": "Analyser une photo",
+  "task.scanPhoto": "Analyser le chantier",
   "task.scanTitle": "Analyse IA du chantier",
   "task.scanning": "Analyse en cours…",
   "task.scanDone": "Analyse terminée",
@@ -181,6 +209,15 @@ const fr: Record<string, string> = {
   "dashboard.streakDays": "jour{s} consécutif{s}",
   "dashboard.avgScore": "Score moyen",
 
+  // ── Supervisor home ──────────────────────────────────────
+  "supervisor.today": "Aujourd'hui",
+  "supervisor.workers": "Travailleurs",
+  "supervisor.noActivity": "Aucune activité encore. Les complétions de votre équipe apparaîtront ici.",
+  "supervisor.manageTeam": "Gérer l'équipe",
+  "supervisor.defaultTeamName": "Mon équipe",
+  "supervisor.leaderboard": "Classement de l'équipe",
+  "supervisor.completions": "complétions",
+
   // ── Footer ──────────────────────────────────────────────
   "footer.msg1": "Restez vigilant. Chaque geste compte.",
   "footer.msg2": "Prends soin de toi.",
@@ -238,10 +275,38 @@ const en: Record<string, string> = {
   "menu.wellbeing": "Well-being",
   "menu.report": "Report an incident",
   "menu.editFavorites": "Edit my favorites",
-  "menu.acqColors": "ACQ Colors",
+  "menu.acqColors": "CNESST Version",
+  "menu.acqFormations": "ACQ Formations",
+  "menu.acqFormationsDesc": "Courses for construction entrepreneurs",
   "menu.theme": "Dark / Light mode",
   "menu.restartOnboarding": "Restart welcome",
   "menu.language": "Français",
+  "menu.switchToSupervisor": "Supervisor Experience",
+  "menu.switchToWorker": "Use as worker",
+  "menu.supervisor": "Supervisor",
+
+  // ── Role choice ─────────────────────────────────────────
+  "role.chooseTitle": "You are…",
+  "role.createTeam": "Create a team",
+  "role.createTeamDesc": "Supervisor or owner — invite workers and see completions.",
+  "role.joinTeam": "Join a team",
+  "role.joinTeamDesc": "Worker — use the link sent by your supervisor.",
+  "role.joinLater": "Join later",
+
+  // ── Create team ──────────────────────────────────────────
+  "createTeam.title": "Name your team",
+  "createTeam.namePlaceholder": "e.g. ABC Construction",
+  "createTeam.create": "CREATE TEAM",
+  "createTeam.inviteLink": "Invite link",
+  "createTeam.dashboardLink": "Dashboard",
+  "createTeam.copy": "Copy",
+  "createTeam.copied": "Copied",
+
+  // ── Join team ────────────────────────────────────────────
+  "joinTeam.title": "Join a team",
+  "joinTeam.pastePlaceholder": "Paste invite link",
+  "joinTeam.join": "JOIN",
+  "joinTeam.joining": "Joining team…",
 
   // ── Onboarding ──────────────────────────────────────────
   "onboarding.hello": "Hello",
@@ -255,10 +320,10 @@ const en: Record<string, string> = {
   "onboarding.taskCount": "{count} task{s} selected",
   "onboarding.feature1Title": "55 tasks · 7 categories",
   "onboarding.feature1Desc": "From concrete to roofing — checklists based on CNESST safety standards.",
-  "onboarding.feature2Title": "2 phases per task",
+  "onboarding.feature2Title": "Fast and simple",
   "onboarding.feature2Desc": "Before and after work — swipe right to check items quickly.",
-  "onboarding.feature3Title": "Works offline",
-  "onboarding.feature3Desc": "Your checklists and progress are saved locally — no internet needed.",
+  "onboarding.feature3Title": "AI Risk Analysis",
+  "onboarding.feature3Desc": "Take a photo of the site and AI identifies potential risks.",
   "onboarding.confirm": "LET\u2019S GO",
   "onboarding.selectMin": "Select at least 1 task",
 
@@ -285,7 +350,7 @@ const en: Record<string, string> = {
   "task.criticalWarningContinue": "Continue anyway",
   "task.na": "N/A",
   "task.markedNa": "Marked N/A",
-  "task.scanPhoto": "Scan a photo",
+  "task.scanPhoto": "Analyze the job site",
   "task.scanTitle": "AI Site Analysis",
   "task.scanning": "Scanning…",
   "task.scanDone": "Scan complete",
@@ -386,6 +451,15 @@ const en: Record<string, string> = {
   "dashboard.streak": "Current streak",
   "dashboard.streakDays": "consecutive day{s}",
   "dashboard.avgScore": "Average score",
+
+  // ── Supervisor home ──────────────────────────────────────
+  "supervisor.today": "Today",
+  "supervisor.workers": "Workers",
+  "supervisor.noActivity": "No activity yet. Your team's completions will appear here.",
+  "supervisor.manageTeam": "Manage team",
+  "supervisor.defaultTeamName": "My team",
+  "supervisor.leaderboard": "Team leaderboard",
+  "supervisor.completions": "completions",
 
   // ── Footer ──────────────────────────────────────────────
   "footer.msg1": "Stay alert. Every action counts.",

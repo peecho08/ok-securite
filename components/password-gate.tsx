@@ -51,13 +51,13 @@ export function PasswordGate({ children }: PasswordGateProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--color-primary)] px-6">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--color-header)] px-6">
       <Image
         src="/logo.svg"
         alt="OK Chantier"
         width={188}
         height={48}
-        className="mb-8 h-12 w-auto brightness-0 invert"
+        className="acq-logo mb-8 h-12 w-auto brightness-0 invert"
       />
       <form onSubmit={handleSubmit} className="w-full max-w-xs space-y-4">
         <div>

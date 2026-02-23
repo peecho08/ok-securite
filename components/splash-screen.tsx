@@ -27,7 +27,7 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
   return (
     <>
       <div
-        className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--color-primary)] transition-opacity duration-500 ${
+        className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--color-header)] transition-opacity duration-500 ${
           fading ? "opacity-0" : "opacity-100"
         }`}
       >
@@ -37,7 +37,7 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
             alt="OK Chantier"
             width={240}
             height={60}
-            className="h-16 w-auto brightness-0 invert sm:h-20"
+            className="acq-logo h-16 w-auto brightness-0 invert sm:h-20"
             priority
           />
         </div>

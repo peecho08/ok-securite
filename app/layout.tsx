@@ -23,7 +23,7 @@ const workSans = Work_Sans({
 export const metadata: Metadata = {
   title: "OK Chantier",
   description: "Checklist sécurité chantier — rapide et fiable",
-  icons: { icon: "/ok.svg", apple: "/ok.svg" },
+  icons: { icon: "/ok-fav-icon.svg", apple: "/ok-fav-icon.svg" },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -45,12 +45,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${rubik.variable} ${workSans.variable}`}>
+    <html lang="fr" className={`${rubik.variable} ${workSans.variable} acq-colors`}>
       <body className="bg-[var(--color-surface)] text-[#111] dark:bg-neutral-950 dark:text-neutral-100">
-        {/* Inline-styled green safe-area cover: renders in first HTML paint, no JS/CSS dependency */}
+        {/* Inline-styled green safe-area cover: matches content column width (max-w-3xl), no full-width header */}
         <div
           aria-hidden="true"
-          style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1, height: 'env(safe-area-inset-top, 0px)', backgroundColor: 'var(--color-header)', pointerEvents: 'none' as const }}
+          style={{ position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '48rem', zIndex: 1, height: 'env(safe-area-inset-top, 0px)', backgroundColor: 'var(--color-header)', pointerEvents: 'none' as const }}
         />
         <ThemeProvider>
           <I18nProvider>
