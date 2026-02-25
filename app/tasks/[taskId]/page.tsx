@@ -400,6 +400,28 @@ export default function TaskPage() {
 
       {/* Checklist */}
       <main className="flex-1 px-5 py-4 sm:px-8">
+        {/* ACQ course banner — Travaux en hauteur only */}
+        {taskId === "travaux-hauteur" && (
+          <a
+            href="https://www.acq.org/formations/repertoire-des-cours/cours/?id=15401&title=Sauvetage%20en%20hauteur%20-%20niveau%201"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-5 flex w-full items-center gap-3 rounded-xl bg-amber-50 p-4 transition-colors active:bg-amber-100 dark:bg-amber-950/40"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-white">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-heading text-sm font-bold text-amber-900 dark:text-amber-200">{t("task.acqCourseHeightTitle")}</p>
+              <p className="text-xs text-amber-700 dark:text-amber-400">{t("task.acqCourseHeightDesc")}</p>
+            </div>
+            <svg className="h-4 w-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        )}
         {/* AI Scan — top of list */}
         <input
           ref={fileInputRef}
@@ -417,11 +439,14 @@ export default function TaskPage() {
             <Camera className="h-5 w-5" />
             <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-neutral-900 bg-green-400" />
           </span>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="font-heading text-sm font-bold text-white">{t("task.scanPhoto")}</p>
             <p className="text-xs text-neutral-400">{t("task.scanHint")}</p>
           </div>
-          <svg className="ml-auto h-4 w-4 shrink-0 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <span className="shrink-0 rounded-full border border-gray-500/50 bg-gray-500/20 px-2 py-0.5 font-heading text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+            Beta
+          </span>
+          <svg className="h-4 w-4 shrink-0 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>

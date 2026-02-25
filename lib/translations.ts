@@ -40,6 +40,7 @@ const fr: Record<string, string> = {
   "menu.freshStart": "Nouveau départ (démo)",
   "menu.language": "English",
   "menu.switchToSupervisor": "Expérience superviseur",
+  "menu.preventionProgram": "Mon programme de prévention",
   "menu.switchToWorker": "Utiliser comme travailleur",
   "menu.supervisor": "Superviseur",
 
@@ -109,6 +110,8 @@ const fr: Record<string, string> = {
   "task.na": "N/A",
   "task.markedNa": "Marqué N/A",
   "task.scanPhoto": "Analyser le chantier",
+  "task.acqCourseHeightTitle": "Sauvetage en hauteur niveau 1 - 27 février",
+  "task.acqCourseHeightDesc": "Formation ACQ — Sherbrooke",
   "task.scanTitle": "Analyse IA du chantier",
   "task.scanning": "Analyse en cours…",
   "task.scanDone": "Analyse terminée",
@@ -284,6 +287,7 @@ const en: Record<string, string> = {
   "menu.freshStart": "Fresh start (demo)",
   "menu.language": "Français",
   "menu.switchToSupervisor": "Supervisor Experience",
+  "menu.preventionProgram": "My prevention program",
   "menu.switchToWorker": "Use as worker",
   "menu.supervisor": "Supervisor",
 
@@ -353,6 +357,8 @@ const en: Record<string, string> = {
   "task.na": "N/A",
   "task.markedNa": "Marked N/A",
   "task.scanPhoto": "Analyze the job site",
+  "task.acqCourseHeightTitle": "Height rescue level 1 - Feb 27",
+  "task.acqCourseHeightDesc": "ACQ training — Sherbrooke",
   "task.scanTitle": "AI Site Analysis",
   "task.scanning": "Scanning…",
   "task.scanDone": "Scan complete",

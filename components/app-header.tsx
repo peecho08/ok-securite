@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
 import { getReportCount, getActiveRole, setActiveRole, getSupervisorOrgId } from "@/lib/storage";
-import { ArrowRightLeft } from "lucide-react";
+import { ClipboardList, ExternalLink } from "lucide-react";
 
 interface AppHeaderProps {
   workerName: string;
@@ -107,9 +107,28 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
                   }}
                 >
                   <div className="mx-auto mb-2 mt-3 h-1 w-12 rounded-full bg-gray-200" aria-hidden />
-                  <div className="border-b border-gray-100 px-5 py-4 dark:border-neutral-700">
-                    <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{workerName || (getActiveRole() === "supervisor" ? t("menu.supervisor") : t("menu.worker"))}</p>
-                    <p className="text-sm text-gray-400">{getActiveRole() === "supervisor" ? t("menu.supervisor") : t("menu.worker")}</p>
+                  <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-neutral-700">
+                    <div className="min-w-0">
+                      <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{workerName || (getActiveRole() === "supervisor" ? t("menu.supervisor") : t("menu.worker"))}</p>
+                      <p className="text-sm text-gray-400">{getActiveRole() === "supervisor" ? t("menu.supervisor") : t("menu.worker")}</p>
+                    </div>
+                    {getActiveRole() === "supervisor" ? (
+                      <button
+                        type="button"
+                        onClick={() => { setActiveRole("worker"); setShowMenu(false); router.push("/"); }}
+                        className="shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                      >
+                        {t("menu.switchToWorker")}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => { setActiveRole("supervisor"); setShowMenu(false); window.location.href = "/"; }}
+                        className="shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                      >
+                        {t("menu.switchToSupervisor")}
+                      </button>
+                    )}
                   </div>
                   {acqColors && (
                     <a
@@ -134,25 +153,21 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
                     </a>
                   )}
                   <div className="py-2 pb-[env(safe-area-inset-bottom)] sm:py-1 sm:pb-0">
-                    {getActiveRole() === "supervisor" ? (
-                      <button
-                        type="button"
-                        onClick={() => { setActiveRole("worker"); setShowMenu(false); router.push("/"); }}
-                        className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
-                      >
-                        <ArrowRightLeft className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" />
-                        {t("menu.switchToWorker")}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => { setActiveRole("supervisor"); setShowMenu(false); window.location.href = "/"; }}
-                        className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
-                      >
-                        <ArrowRightLeft className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" />
-                        {t("menu.switchToSupervisor")}
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowMenu(false);
+                        const url = typeof window !== "undefined" ? `${window.location.origin}/acq-programme-prevention.pdf` : "/acq-programme-prevention.pdf";
+                        window.open(url, "_blank", "noopener,noreferrer");
+                      }}
+                      className="flex min-h-[52px] w-full items-center justify-between gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
+                    >
+                      <span className="flex items-center gap-4 sm:gap-3">
+                        <ClipboardList className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" />
+                        {t("menu.preventionProgram")}
+                      </span>
+                      <ExternalLink className="h-4 w-4 shrink-0 text-gray-400 sm:h-3.5 sm:w-3.5" />
+                    </button>
                     <Link
                       href="/history"
                       onClick={() => setShowMenu(false)}
