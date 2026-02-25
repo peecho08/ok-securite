@@ -53,13 +53,22 @@ const fr: Record<string, string> = {
   "role.joinLater": "Rejoindre plus tard",
 
   // ── Create team ──────────────────────────────────────────
-  "createTeam.title": "Nommez votre équipe",
+  "createTeam.title": "Créer votre équipe",
+  "createTeam.yourName": "Votre nom",
+  "createTeam.yourNamePlaceholder": "Ex. Jean-Pierre Tremblay",
+  "createTeam.yourEmail": "Votre courriel",
+  "createTeam.yourEmailPlaceholder": "Ex. jean@chantiers-abc.ca",
+  "createTeam.companyName": "Nom de la compagnie",
   "createTeam.namePlaceholder": "Ex. Chantiers ABC",
+  "createTeam.preventionUpload": "Programme de prévention (optionnel)",
+  "createTeam.preventionUploadHint": "Téléversez un PDF pour le rendre accessible à votre équipe",
+  "createTeam.preventionUploaded": "Fichier ajouté",
   "createTeam.create": "CRÉER L'ÉQUIPE",
   "createTeam.inviteLink": "Lien d'invitation",
   "createTeam.dashboardLink": "Tableau de bord",
   "createTeam.copy": "Copier",
   "createTeam.copied": "Copié",
+  "createTeam.done": "COMPLÉTER",
 
   // ── Join team ────────────────────────────────────────────
   "joinTeam.title": "Rejoindre une équipe",
@@ -219,6 +228,10 @@ const fr: Record<string, string> = {
   "supervisor.noActivity": "Aucune activité encore. Les complétions de votre équipe apparaîtront ici.",
   "supervisor.manageTeam": "Gérer l'équipe",
   "supervisor.defaultTeamName": "Mon équipe",
+  "supervisor.shareText": "Texto",
+  "supervisor.shareEmail": "Courriel",
+  "supervisor.inviteMessage": "Rejoignez notre équipe sur OK Chantier :",
+  "supervisor.inviteEmailSubject": "Invitation OK Chantier",
   "supervisor.leaderboard": "Classement de l'équipe",
   "supervisor.completions": "complétions",
 
@@ -300,13 +313,22 @@ const en: Record<string, string> = {
   "role.joinLater": "Join later",
 
   // ── Create team ──────────────────────────────────────────
-  "createTeam.title": "Name your team",
+  "createTeam.title": "Create your team",
+  "createTeam.yourName": "Your name",
+  "createTeam.yourNamePlaceholder": "e.g. Jean-Pierre Tremblay",
+  "createTeam.yourEmail": "Your email",
+  "createTeam.yourEmailPlaceholder": "e.g. jean@abc-construction.ca",
+  "createTeam.companyName": "Company name",
   "createTeam.namePlaceholder": "e.g. ABC Construction",
+  "createTeam.preventionUpload": "Prevention program (optional)",
+  "createTeam.preventionUploadHint": "Upload a PDF to make it accessible to your team",
+  "createTeam.preventionUploaded": "File added",
   "createTeam.create": "CREATE TEAM",
   "createTeam.inviteLink": "Invite link",
   "createTeam.dashboardLink": "Dashboard",
   "createTeam.copy": "Copy",
   "createTeam.copied": "Copied",
+  "createTeam.done": "DONE",
 
   // ── Join team ────────────────────────────────────────────
   "joinTeam.title": "Join a team",
@@ -466,6 +488,10 @@ const en: Record<string, string> = {
   "supervisor.noActivity": "No activity yet. Your team's completions will appear here.",
   "supervisor.manageTeam": "Manage team",
   "supervisor.defaultTeamName": "My team",
+  "supervisor.shareText": "Text",
+  "supervisor.shareEmail": "Email",
+  "supervisor.inviteMessage": "Join our team on OK Chantier:",
+  "supervisor.inviteEmailSubject": "OK Chantier Invitation",
   "supervisor.leaderboard": "Team leaderboard",
   "supervisor.completions": "completions",
 

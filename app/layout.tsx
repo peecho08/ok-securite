@@ -7,6 +7,7 @@ import { OfflineIndicator } from "@/components/offline-indicator";
 import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/lib/i18n";
 import { SplashScreen } from "@/components/splash-screen";
+import { Analytics } from "@vercel/analytics/next";
 
 const rubik = Rubik({
   subsets: ["latin", "latin-ext"],
@@ -63,6 +64,7 @@ export default function RootLayout({
           <PwaRegister />
           </I18nProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );

@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
 import { getTeamName, getInviteToken, getWorkerName, setActiveRole, getHistory, resetAllForFreshStart, type HistoryEntry } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
-import { Copy, Check, Users, ClipboardList, Trophy, RotateCcw, ExternalLink } from "lucide-react";
+import { Copy, Check, Users, ClipboardList, RotateCcw, ExternalLink, Mail, MessageSquare } from "lucide-react";
 
 export function SupervisorHome() {
   const { locale, setLocale, t } = useLocale();
@@ -27,18 +27,6 @@ export function SupervisorHome() {
     setHistory(getHistory().slice(0, 15));
     setWorkerNameState(getWorkerName());
   }, [t]);
-
-  const leaderboard = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const e of history) {
-      const name = e.workerName || "—";
-      counts.set(name, (counts.get(name) || 0) + 1);
-    }
-    return [...counts.entries()]
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
-  }, [history]);
 
   function handleCopy() {
     const url = inviteUrl || (typeof window !== "undefined" ? `${window.location.origin}/join/demo-invite-abc123` : "");
@@ -84,8 +72,9 @@ export function SupervisorHome() {
               </svg>
             </button>
         </div>
-        <h1 className="mt-4 font-heading text-2xl font-bold text-white">{teamName}</h1>
-        <p className="mt-0.5 text-sm text-white/60">{t("menu.supervisor")}</p>
+        <h1 className="mt-4 font-heading text-2xl font-bold text-white">{teamName || t("supervisor.myTeam")}</h1>
+        {workerName && <p className="mt-0.5 text-sm text-white/70">{workerName} · {t("menu.supervisor")}</p>}
+        {!workerName && <p className="mt-0.5 text-sm text-white/70">{t("menu.supervisor")}</p>}
       </header>
 
       {/* Profile menu */}
@@ -158,18 +147,37 @@ export function SupervisorHome() {
       )}
 
       <main className="flex-1 px-5 py-5 sm:px-8">
-        {/* Invite link — top of page, quick copy */}
+        {/* Invite link — quick copy + share */}
         <section className="mb-5">
-          <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white py-2.5 pl-3 pr-2 dark:border-neutral-700 dark:bg-neutral-800">
-            <span className="min-w-0 flex-1 truncate text-sm text-gray-600 dark:text-neutral-300">{inviteUrl}</span>
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="flex shrink-0 items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-3 py-2 text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
-            >
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              {copied ? t("createTeam.copied") : t("createTeam.copy")}
-            </button>
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
+            <div className="flex items-center gap-2 p-2.5 pl-3">
+              <span className="min-w-0 flex-1 truncate text-sm text-gray-600 dark:text-neutral-300">{inviteUrl}</span>
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="flex shrink-0 items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-3 py-2 text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? t("createTeam.copied") : t("createTeam.copy")}
+              </button>
+            </div>
+            <div className="flex border-t border-gray-100 dark:border-neutral-700">
+              <a
+                href={`sms:?&body=${encodeURIComponent(`${t("supervisor.inviteMessage")} ${inviteUrl}`)}`}
+                className="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium text-gray-600 transition-colors active:bg-gray-50 dark:text-neutral-300 dark:active:bg-neutral-700"
+              >
+                <MessageSquare className="h-4 w-4 text-gray-400" />
+                {t("supervisor.shareText")}
+              </a>
+              <div className="w-px bg-gray-100 dark:bg-neutral-700" />
+              <a
+                href={`mailto:?subject=${encodeURIComponent(t("supervisor.inviteEmailSubject"))}&body=${encodeURIComponent(`${t("supervisor.inviteMessage")} ${inviteUrl}`)}`}
+                className="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium text-gray-600 transition-colors active:bg-gray-50 dark:text-neutral-300 dark:active:bg-neutral-700"
+              >
+                <Mail className="h-4 w-4 text-gray-400" />
+                {t("supervisor.shareEmail")}
+              </a>
+            </div>
           </div>
         </section>
 
@@ -188,40 +196,6 @@ export function SupervisorHome() {
             <p className="mt-0.5 text-xs text-gray-500">{t("supervisor.workers")}</p>
           </div>
         </div>
-
-        {/* Leaderboard */}
-        {leaderboard.length > 0 && (
-          <section className="mt-6">
-            <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
-              <Trophy className="h-3.5 w-3.5" />
-              {t("supervisor.leaderboard")}
-            </h2>
-            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
-              {leaderboard.map((entry, i) => (
-                <div
-                  key={entry.name}
-                  className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-gray-100 dark:border-neutral-700" : ""}`}
-                >
-                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-heading text-sm font-bold ${
-                    i === 0
-                      ? "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
-                      : i === 1
-                        ? "bg-gray-200 text-gray-600 dark:bg-neutral-600 dark:text-neutral-200"
-                        : i === 2
-                          ? "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300"
-                          : "bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-400"
-                  }`}>
-                    {i + 1}
-                  </span>
-                  <p className="min-w-0 flex-1 truncate font-heading text-sm font-semibold text-gray-800 dark:text-neutral-100">{entry.name}</p>
-                  <span className="shrink-0 text-sm text-gray-500 dark:text-neutral-400">
-                    {entry.count} {t("supervisor.completions")}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
 
         {/* Recent completions */}
         <section className="mt-6">

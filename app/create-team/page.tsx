@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useLocale } from "@/lib/i18n";
-import { setSupervisorOrg, setActiveRole, getTeamName, getInviteToken, getDashboardSecret } from "@/lib/storage";
+import { setSupervisorOrg, setActiveRole, setWorkerName, getTeamName, getInviteToken, getDashboardSecret } from "@/lib/storage";
+import { Upload, Check, Copy, Mail, MessageSquare } from "lucide-react";
 
 function randomId() {
   return Math.random().toString(36).slice(2, 12);
@@ -12,25 +13,37 @@ function randomId() {
 
 export default function CreateTeamPage() {
   const { t } = useLocale();
+  const [supervisorName, setSupervisorName] = useState("");
+  const [supervisorEmail, setSupervisorEmail] = useState("");
   const [teamName, setTeamName] = useState("");
+  const [pdfName, setPdfName] = useState("");
   const [done, setDone] = useState(false);
   const [copied, setCopied] = useState<"invite" | "dashboard" | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const inviteToken = typeof window !== "undefined" ? getInviteToken() : null;
   const dashboardSecret = typeof window !== "undefined" ? getDashboardSecret() : null;
   const savedTeamName = typeof window !== "undefined" ? getTeamName() : "";
   const displayName = savedTeamName || teamName;
 
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supervisorEmail.trim());
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const name = teamName.trim();
-    if (!name) return;
+    if (!name || !isEmailValid) return;
     const orgId = randomId();
     const inv = randomId();
     const dash = randomId();
     setSupervisorOrg(orgId, name, inv, dash);
+    if (supervisorName.trim()) setWorkerName(supervisorName.trim());
     setActiveRole("supervisor");
     setDone(true);
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) setPdfName(file.name);
   }
 
   function copyInviteLink() {
@@ -68,44 +81,41 @@ export default function CreateTeamPage() {
           <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400">
             {t("createTeam.inviteLink")}
           </p>
-          <div className="mt-4 flex gap-2">
-            <input
-              type="text"
-              readOnly
-              value={inviteUrl}
-              className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-600 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
-            />
-            <button
-              type="button"
-              onClick={copyInviteLink}
-              className="rounded-xl bg-[var(--color-primary)] px-4 py-2.5 font-heading text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
-            >
-              {copied === "invite" ? t("createTeam.copied") : t("createTeam.copy")}
-            </button>
-          </div>
-          <p className="mt-6 text-sm font-medium text-gray-700 dark:text-neutral-200">
-            {t("createTeam.dashboardLink")}
-          </p>
-          <div className="mt-2 flex gap-2">
-            <input
-              type="text"
-              readOnly
-              value={dashboardUrl}
-              className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-600 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
-            />
-            <button
-              type="button"
-              onClick={copyDashboardLink}
-              className="rounded-xl bg-[var(--color-primary)] px-4 py-2.5 font-heading text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
-            >
-              {copied === "dashboard" ? t("createTeam.copied") : t("createTeam.copy")}
-            </button>
+          <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
+            <div className="flex items-center gap-2 p-2.5 pl-3">
+              <span className="min-w-0 flex-1 truncate text-sm text-gray-600 dark:text-neutral-300">{inviteUrl}</span>
+              <button
+                type="button"
+                onClick={copyInviteLink}
+                className="flex shrink-0 items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-3 py-2 text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
+              >
+                {copied === "invite" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied === "invite" ? t("createTeam.copied") : t("createTeam.copy")}
+              </button>
+            </div>
+            <div className="flex border-t border-gray-100 dark:border-neutral-700">
+              <a
+                href={`sms:?&body=${encodeURIComponent(`${t("supervisor.inviteMessage")} ${inviteUrl}`)}`}
+                className="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium text-gray-600 transition-colors active:bg-gray-50 dark:text-neutral-300 dark:active:bg-neutral-700"
+              >
+                <MessageSquare className="h-4 w-4 text-gray-400" />
+                {t("supervisor.shareText")}
+              </a>
+              <div className="w-px bg-gray-100 dark:bg-neutral-700" />
+              <a
+                href={`mailto:?subject=${encodeURIComponent(t("supervisor.inviteEmailSubject"))}&body=${encodeURIComponent(`${t("supervisor.inviteMessage")} ${inviteUrl}`)}`}
+                className="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium text-gray-600 transition-colors active:bg-gray-50 dark:text-neutral-300 dark:active:bg-neutral-700"
+              >
+                <Mail className="h-4 w-4 text-gray-400" />
+                {t("supervisor.shareEmail")}
+              </a>
+            </div>
           </div>
           <Link
             href="/"
-            className="mt-8 block w-full rounded-xl border border-gray-200 py-3 text-center font-heading text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-800"
+            className="mt-8 block w-full rounded-xl bg-[var(--color-primary)] py-3.5 text-center font-heading text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
           >
-            {t("nav.home")}
+            {t("createTeam.done")}
           </Link>
         </main>
       </div>
@@ -127,18 +137,85 @@ export default function CreateTeamPage() {
         <h1 className="font-heading text-2xl font-bold text-gray-900 dark:text-neutral-100">
           {t("createTeam.title")}
         </h1>
-        <form onSubmit={handleSubmit} className="mt-6">
-          <input
-            type="text"
-            value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
-            placeholder={t("createTeam.namePlaceholder")}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:placeholder:text-neutral-500 dark:focus:border-[var(--color-primary)]"
-          />
+        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-neutral-300">
+              {t("createTeam.yourName")}
+            </label>
+            <input
+              type="text"
+              value={supervisorName}
+              onChange={(e) => setSupervisorName(e.target.value)}
+              placeholder={t("createTeam.yourNamePlaceholder")}
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:placeholder:text-neutral-500 dark:focus:border-[var(--color-primary)]"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-neutral-300">
+              {t("createTeam.yourEmail")}
+            </label>
+            <input
+              type="email"
+              required
+              value={supervisorEmail}
+              onChange={(e) => setSupervisorEmail(e.target.value)}
+              placeholder={t("createTeam.yourEmailPlaceholder")}
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:placeholder:text-neutral-500 dark:focus:border-[var(--color-primary)]"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-neutral-300">
+              {t("createTeam.companyName")}
+            </label>
+            <input
+              type="text"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              placeholder={t("createTeam.namePlaceholder")}
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:placeholder:text-neutral-500 dark:focus:border-[var(--color-primary)]"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-neutral-300">
+              {t("createTeam.preventionUpload")}
+            </label>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className={`flex w-full items-center gap-3 rounded-xl border-2 border-dashed px-4 py-3.5 text-left transition-colors ${
+                pdfName
+                  ? "border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-950/30"
+                  : "border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-neutral-600 dark:bg-neutral-800"
+              }`}
+            >
+              {pdfName ? (
+                <Check className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400" />
+              ) : (
+                <Upload className="h-5 w-5 shrink-0 text-gray-400" />
+              )}
+              <div className="min-w-0 flex-1">
+                {pdfName ? (
+                  <>
+                    <p className="truncate text-sm font-medium text-green-700 dark:text-green-300">{pdfName}</p>
+                    <p className="text-xs text-green-600/70 dark:text-green-400/60">{t("createTeam.preventionUploaded")}</p>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-400">{t("createTeam.preventionUploadHint")}</p>
+                )}
+              </div>
+            </button>
+          </div>
           <button
             type="submit"
-            disabled={!teamName.trim()}
-            className="mt-6 w-full rounded-xl bg-[var(--color-primary)] py-3.5 font-heading text-base font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)] disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
+            disabled={!teamName.trim() || !isEmailValid}
+            className="mt-2 w-full rounded-xl bg-[var(--color-primary)] py-3.5 font-heading text-base font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)] disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
           >
             {t("createTeam.create")}
           </button>
