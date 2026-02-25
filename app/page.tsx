@@ -9,6 +9,7 @@ import { clearProgress, getActiveTaskProgress, getFavorites, getHistory, getWork
 import { checklists } from "@/data/checklists";
 import { AppHeader } from "@/components/app-header";
 import { SearchBar } from "@/components/search-bar";
+import { MusicPlayer } from "@/components/music-player";
 import { ActiveTasks } from "@/components/active-tasks";
 import { FavoriteStrip } from "@/components/favorite-strip";
 import { TaskList } from "@/components/task-list";
@@ -153,6 +154,7 @@ export default function HomePage() {
       />
 
       <SearchBar query={query} onQueryChange={setQuery} pinned={searchPinned} />
+      <MusicPlayer />
 
       <main className="flex-1 px-5 py-4 dark:bg-neutral-900 sm:px-8">
         {!ready ? (
