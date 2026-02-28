@@ -5,9 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
-import { getTeamName, getInviteToken, getWorkerName, setActiveRole, getHistory, resetAllForFreshStart, type HistoryEntry } from "@/lib/storage";
+import { getTeamName, getInviteToken, getWorkerName, setActiveRole, getHistory, resetAllForFreshStart, isDemoSeeded, seedDemoData, getSites, addSite, removeSite, type HistoryEntry, type ConstructionSite } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
-import { Copy, Check, Users, ClipboardList, RotateCcw, ExternalLink, Mail, MessageSquare } from "lucide-react";
+import { PlaceAutocomplete } from "@/components/address-autocomplete";
+import { Copy, Check, Users, ClipboardList, RotateCcw, ExternalLink, Mail, MessageSquare, MapPin, Plus, Trash2 } from "lucide-react";
 
 export function SupervisorHome() {
   const { locale, setLocale, t } = useLocale();
@@ -18,15 +19,50 @@ export function SupervisorHome() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [workerName, setWorkerNameState] = useState("");
   const [showMenu, setShowMenu] = useState(false);
+  const [sites, setSites] = useState<ConstructionSite[]>([]);
+  const [newSiteName, setNewSiteName] = useState("");
+  const [newSiteAddress, setNewSiteAddress] = useState("");
+  const [newSiteLat, setNewSiteLat] = useState<number | undefined>();
+  const [newSiteLng, setNewSiteLng] = useState<number | undefined>();
+  const [showAddSite, setShowAddSite] = useState(false);
 
   useEffect(() => {
+    if (!isDemoSeeded()) seedDemoData();
     setTeamName(getTeamName() || t("supervisor.defaultTeamName"));
     const token = getInviteToken();
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     setInviteUrl(token ? `${origin}/join/${token}` : `${origin}/join/demo-invite-abc123`);
-    setHistory(getHistory().slice(0, 15));
+    setHistory(getHistory());
     setWorkerNameState(getWorkerName());
+    setSites(getSites());
   }, [t]);
+
+  function handleAddSite() {
+    const name = newSiteName.trim();
+    if (!name) return;
+    const site: ConstructionSite = {
+      id: Math.random().toString(36).slice(2, 12),
+      name,
+      address: newSiteAddress.trim() || undefined,
+      lat: newSiteLat,
+      lng: newSiteLng,
+      active: true,
+      createdAt: new Date().toISOString(),
+    };
+    addSite(site);
+    setSites(getSites());
+    setNewSiteName("");
+    setNewSiteAddress("");
+    setNewSiteLat(undefined);
+    setNewSiteLng(undefined);
+    setShowAddSite(false);
+  }
+
+  function handleRemoveSite(id: string) {
+    removeSite(id);
+    setSites(getSites());
+  }
+
 
   function handleCopy() {
     const url = inviteUrl || (typeof window !== "undefined" ? `${window.location.origin}/join/demo-invite-abc123` : "");
@@ -101,6 +137,14 @@ export function SupervisorHome() {
               </button>
             </div>
             <div className="py-2 pb-[env(safe-area-inset-bottom)]">
+              <Link
+                href="/my-team"
+                onClick={() => setShowMenu(false)}
+                className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
+              >
+                <Users className="h-5 w-5 shrink-0 text-gray-400" />
+                {t("team.title")}
+              </Link>
               <button
                 type="button"
                 onClick={() => {
@@ -115,13 +159,6 @@ export function SupervisorHome() {
                   {t("menu.preventionProgram")}
                 </span>
                 <ExternalLink className="h-4 w-4 shrink-0 text-gray-400" />
-              </button>
-              <button
-                onClick={() => { resetAllForFreshStart(); setShowMenu(false); window.location.href = "/"; }}
-                className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
-              >
-                <RotateCcw className="h-5 w-5 shrink-0 text-gray-400" />
-                {t("menu.freshStart")}
               </button>
               <button
                 onClick={() => { toggleTheme(); setShowMenu(false); }}
@@ -141,6 +178,13 @@ export function SupervisorHome() {
                 <svg className="h-5 w-5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" /></svg>
                 {t("menu.language")}
               </button>
+              <button
+                onClick={() => { resetAllForFreshStart(); setShowMenu(false); window.location.href = "/"; }}
+                className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-400 transition-colors active:bg-gray-100 dark:text-neutral-500 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
+              >
+                <RotateCcw className="h-5 w-5 shrink-0" />
+                {t("menu.freshStart")}
+              </button>
             </div>
           </div>
         </>
@@ -149,6 +193,10 @@ export function SupervisorHome() {
       <main className="flex-1 px-5 py-5 sm:px-8">
         {/* Invite link — quick copy + share */}
         <section className="mb-5">
+          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+            <Users className="h-3.5 w-3.5" />
+            {t("supervisor.inviteTitle")}
+          </h2>
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
             <div className="flex items-center gap-2 p-2.5 pl-3">
               <span className="min-w-0 flex-1 truncate text-sm text-gray-600 dark:text-neutral-300">{inviteUrl}</span>
@@ -181,21 +229,104 @@ export function SupervisorHome() {
           </div>
         </section>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-2xl border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950">
-            <p className="font-heading text-2xl font-bold text-green-700 dark:text-green-400">{history.length}</p>
-            <p className="mt-0.5 text-xs text-green-600/80 dark:text-green-400/70">{t("dashboard.completedTotal")}</p>
-          </div>
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
-            <p className="font-heading text-2xl font-bold text-gray-900 dark:text-neutral-100">{todayCount}</p>
-            <p className="mt-0.5 text-xs text-gray-500">{t("supervisor.today")}</p>
-          </div>
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
-            <p className="font-heading text-2xl font-bold text-gray-900 dark:text-neutral-100">{uniqueWorkers.size}</p>
-            <p className="mt-0.5 text-xs text-gray-500">{t("supervisor.workers")}</p>
-          </div>
-        </div>
+        {/* Construction sites */}
+        <section className="mb-5">
+          
+          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+            <MapPin className="h-3.5 w-3.5" />
+            {t("site.title")}
+          </h2>
+          {showAddSite && (
+            <div className="mb-3 rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-800">
+              <PlaceAutocomplete
+                value={newSiteName}
+                onChange={setNewSiteName}
+                onPlaceSelected={({ name, address, lat, lng }) => {
+                  setNewSiteName(name);
+                  setNewSiteAddress(address);
+                  setNewSiteLat(lat);
+                  setNewSiteLng(lng);
+                }}
+                placeholder={t("site.namePlaceholder")}
+                autoFocus
+                className="mb-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white dark:border-neutral-600 dark:bg-neutral-700 dark:placeholder:text-neutral-500 dark:focus:border-neutral-500 dark:focus:bg-neutral-600"
+                onKeyDown={(e) => { if (e.key === "Enter" && newSiteName.trim()) handleAddSite(); }}
+              />
+              <input
+                type="text"
+                value={newSiteAddress}
+                onChange={(e) => setNewSiteAddress(e.target.value)}
+                placeholder={t("site.addressPlaceholder")}
+                className="mb-3 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white dark:border-neutral-600 dark:bg-neutral-700 dark:placeholder:text-neutral-500 dark:focus:border-neutral-500 dark:focus:bg-neutral-600"
+                onKeyDown={(e) => { if (e.key === "Enter" && newSiteName.trim()) handleAddSite(); }}
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowAddSite(false); setNewSiteName(""); setNewSiteAddress(""); }}
+                  className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                >
+                  {t("nav.back")}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddSite}
+                  disabled={!newSiteName.trim()}
+                  className="flex-1 rounded-lg bg-[var(--color-primary)] py-2 text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
+                >
+                  {t("site.add")}
+                </button>
+              </div>
+            </div>
+          )}
+          {sites.length > 0 && (
+            <div className="space-y-2">
+              {sites.map((site) => {
+                const active = site.active !== false;
+                return (
+                  <div
+                    key={site.id}
+                    className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-800"
+                  >
+                    <Link
+                      href={`/sites/${site.id}`}
+                      className="flex min-w-0 flex-1 items-center gap-3"
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-neutral-700 dark:text-neutral-400">
+                        <MapPin className="h-4 w-4" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-heading text-sm font-semibold leading-tight">{site.name}</p>
+                        {site.address && <p className="mt-0.5 truncate text-xs text-gray-400">{site.address}</p>}
+                      </div>
+                    </Link>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${active ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"}`}>
+                      {active ? t("siteDetail.active") : t("siteDetail.inactive")}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSite(site.id)}
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gray-300 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950 dark:hover:text-red-400"
+                      aria-label={t("site.remove")}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {!showAddSite && (
+            <button
+              type="button"
+              onClick={() => setShowAddSite(true)}
+              className={`flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 bg-white py-4 text-sm text-gray-400 transition-colors hover:border-gray-300 hover:text-gray-500 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600 ${sites.length > 0 ? "mt-2" : ""}`}
+            >
+              <Plus className="h-4 w-4" />
+              {t("site.add")}
+            </button>
+          )}
+        </section>
 
         {/* Recent completions */}
         <section className="mt-6">
@@ -210,24 +341,26 @@ export function SupervisorHome() {
           ) : (
             <div className="space-y-2">
               {history.map((entry, i) => (
-                <div
+                <Link
                   key={`${entry.taskId}-${entry.completedAt}-${i}`}
-                  className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3.5 dark:border-neutral-700 dark:bg-neutral-800"
+                  href={entry.id ? `/history/${entry.id}` : "/history"}
+                  className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-3 transition-colors active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-750"
                 >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300">
-                    <TaskIcon taskId={entry.taskId} className="h-5 w-5" fallback={entry.taskIcon} />
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-neutral-700 dark:text-neutral-400">
+                    <TaskIcon taskId={entry.taskId} className="h-4 w-4" fallback={entry.taskIcon} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="font-heading text-sm font-semibold leading-tight">{entry.taskTitle}</p>
-                    <p className="mt-0.5 text-xs text-gray-400">
-                      {new Date(entry.completedAt).toLocaleDateString(dateLocale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                      {entry.workerName ? ` — ${entry.workerName}` : ""}
+                    <p className="truncate font-heading text-sm font-semibold leading-tight">{entry.taskTitle}</p>
+                    <p className="mt-0.5 truncate text-xs text-gray-400">
+                      {entry.workerName || t("menu.supervisor")}
+                      <span className="mx-1 text-gray-300 dark:text-neutral-600">·</span>
+                      {new Date(entry.completedAt).toLocaleDateString(dateLocale, { day: "numeric", month: "short" })}
                     </p>
                   </div>
-                  <span className="shrink-0 rounded-md bg-green-100 px-2 py-0.5 font-heading text-[10px] font-semibold text-green-800 dark:bg-green-900 dark:text-green-300">
-                    ✓ {entry.checkedCount}/{entry.totalCount}
-                  </span>
-                </div>
+                  <svg className="h-4 w-4 shrink-0 text-gray-300 dark:text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
               ))}
             </div>
           )}

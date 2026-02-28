@@ -80,36 +80,32 @@ export default function HistoryPage() {
                     const displayTitle = taskData
                       ? (locale === "en" && taskData.titleEn ? taskData.titleEn : taskData.title)
                       : entry.taskTitle;
-                    const isComplete = entry.checkedCount === entry.totalCount;
                     const time = new Date(entry.completedAt).toLocaleTimeString(dateLocale, {
                       hour: "2-digit",
                       minute: "2-digit",
                     });
                     return (
-                      <div
+                      <Link
                         key={`${entry.completedAt}-${i}`}
-                        className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3.5 dark:border-neutral-700 dark:bg-neutral-800"
+                        href={entry.id ? `/history/${entry.id}` : "#"}
+                        className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-3 transition-colors active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-750"
                       >
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
-                          <TaskIcon taskId={entry.taskId} className="h-5 w-5" fallback={entry.taskIcon} />
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-neutral-700 dark:text-neutral-400">
+                          <TaskIcon taskId={entry.taskId} className="h-4 w-4" fallback={entry.taskIcon} />
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="font-heading text-sm font-semibold leading-tight">
+                          <p className="truncate font-heading text-sm font-semibold leading-tight">
                             {displayTitle}
                           </p>
-                          <p className="mt-0.5 text-xs text-muted">
+                          <p className="mt-0.5 truncate text-xs text-muted">
                             {time}
                             {entry.workerName && ` — ${entry.workerName}`}
                           </p>
                         </div>
-                        <span
-                          className={`shrink-0 rounded-md px-2 py-0.5 font-heading text-[10px] font-semibold ${
-                            isComplete ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
-                          }`}
-                        >
-                          {entry.checkedCount}/{entry.totalCount}
-                        </span>
-                      </div>
+                        <svg className="h-4 w-4 shrink-0 text-gray-300 dark:text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
                     );
                   })}
                 </div>

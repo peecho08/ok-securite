@@ -46,10 +46,10 @@ const fr: Record<string, string> = {
 
   // ── Role choice ─────────────────────────────────────────
   "role.chooseTitle": "Vous êtes…",
-  "role.createTeam": "Créer une équipe",
-  "role.createTeamDesc": "Superviseur ou propriétaire — invitez vos travailleurs et voyez les complétions.",
-  "role.joinTeam": "Rejoindre une équipe",
-  "role.joinTeamDesc": "Travailleur — utilisez le lien envoyé par votre superviseur.",
+  "role.createTeam": "Un employeur",
+  "role.createTeamDesc": "Invitez vos travailleurs et suivez les complétions.",
+  "role.joinTeam": "Un travailleur",
+  "role.joinTeamDesc": "Utilisez le lien envoyé par votre superviseur.",
   "role.joinLater": "Rejoindre plus tard",
 
   // ── Create team ──────────────────────────────────────────
@@ -146,6 +146,7 @@ const fr: Record<string, string> = {
 
   "confirm.date": "Date",
   "confirm.wellDone": "Bien joué. Prends soin de toi.",
+  "confirm.backToChecklist": "Revenir à la liste",
   "confirm.notify": "NOTIFIER MON SUPERVISEUR",
   "confirm.notified": "Notification envoyée",
   "confirm.shareTitle": "OK Chantier — {task}",
@@ -180,6 +181,15 @@ const fr: Record<string, string> = {
   "history.clearConfirm": "Effacer tout l'historique ?",
   "history.empty": "Aucun historique",
   "history.emptyHint": "Les checklists complétées apparaîtront ici.",
+  "history.detail.worker": "Travailleur",
+  "history.detail.company": "Entreprise",
+  "history.detail.site": "Chantier",
+  "history.detail.date": "Date",
+  "history.detail.status": "Statut",
+  "history.detail.complete": "Complété",
+  "history.detail.checklist": "Checklist complétée",
+  "history.detail.notFound": "Entrée introuvable",
+  "history.detail.allChecked": "Tous les points vérifiés",
 
   // ── Well-being ──────────────────────────────────────────
   "wellbeing.title": "Bien-être",
@@ -230,10 +240,53 @@ const fr: Record<string, string> = {
   "supervisor.defaultTeamName": "Mon équipe",
   "supervisor.shareText": "Texto",
   "supervisor.shareEmail": "Courriel",
+  "supervisor.inviteTitle": "Invitez votre équipe",
   "supervisor.inviteMessage": "Rejoignez notre équipe sur OK Chantier :",
   "supervisor.inviteEmailSubject": "Invitation OK Chantier",
   "supervisor.leaderboard": "Classement de l'équipe",
   "supervisor.completions": "complétions",
+
+  // ── My team ────────────────────────────────────────────
+  "team.title": "Mon équipe",
+  "team.companyInfo": "Informations",
+  "team.companyWebsite": "Site web",
+  "team.companyWebsitePlaceholder": "Ex. www.chantiers-abc.ca",
+  "team.companyLogo": "Logo",
+  "team.changeLogo": "Changer",
+  "team.members": "Membres",
+  "team.noMembers": "Aucun membre encore.",
+  "team.completions": "{count} complétion{s}",
+
+  // ── Construction sites ─────────────────────────────────
+  "site.title": "Chantiers",
+  "site.add": "Ajouter un chantier",
+  "site.namePlaceholder": "Ex. Phase 2 - Tour B",
+  "site.addressPlaceholder": "Adresse (optionnel)",
+  "site.remove": "Retirer",
+  "site.select": "Chantier (optionnel)",
+  "site.none": "Aucun chantier",
+  "site.empty": "Aucun chantier ajouté.",
+  "site.close": "Fermer",
+  "site.reopen": "Rouvrir",
+  "site.closedLabel": "Fermé",
+  "confirm.site": "Chantier",
+  "confirm.location": "Position",
+  "confirm.locationUnavailable": "Position non disponible",
+
+  // ── Site detail ──────────────────────────────────────────
+  "siteDetail.active": "Actif",
+  "siteDetail.inactive": "Inactif",
+  "siteDetail.status": "Statut",
+  "siteDetail.address": "Adresse",
+  "siteDetail.createdAt": "Créé le",
+  "siteDetail.copyAddress": "Copier l'adresse",
+  "siteDetail.copied": "Copié",
+  "siteDetail.openMaps": "Ouvrir dans Maps",
+  "siteDetail.activity": "Activité sur ce chantier",
+  "siteDetail.noActivity": "Aucune activité enregistrée.",
+  "siteDetail.map": "Carte",
+  "siteDetail.delete": "Supprimer ce chantier",
+  "siteDetail.deleteConfirm": "Supprimer ce chantier ?",
 
   // ── Footer ──────────────────────────────────────────────
   "footer.msg1": "Restez vigilant. Chaque geste compte.",
@@ -306,10 +359,10 @@ const en: Record<string, string> = {
 
   // ── Role choice ─────────────────────────────────────────
   "role.chooseTitle": "You are…",
-  "role.createTeam": "Create a team",
-  "role.createTeamDesc": "Supervisor or owner — invite workers and see completions.",
-  "role.joinTeam": "Join a team",
-  "role.joinTeamDesc": "Worker — use the link sent by your supervisor.",
+  "role.createTeam": "An employer",
+  "role.createTeamDesc": "Invite your workers and track completions.",
+  "role.joinTeam": "A worker",
+  "role.joinTeamDesc": "Use the link sent by your supervisor.",
   "role.joinLater": "Join later",
 
   // ── Create team ──────────────────────────────────────────
@@ -406,6 +459,7 @@ const en: Record<string, string> = {
 
   "confirm.date": "Date",
   "confirm.wellDone": "Well done. Take care of yourself.",
+  "confirm.backToChecklist": "Back to checklist",
   "confirm.notify": "NOTIFY MY SUPERVISOR",
   "confirm.notified": "Notification sent",
   "confirm.shareTitle": "OK Chantier — {task}",
@@ -440,6 +494,15 @@ const en: Record<string, string> = {
   "history.clearConfirm": "Clear all history?",
   "history.empty": "No history",
   "history.emptyHint": "Completed checklists will appear here.",
+  "history.detail.worker": "Worker",
+  "history.detail.company": "Company",
+  "history.detail.site": "Site",
+  "history.detail.date": "Date",
+  "history.detail.status": "Status",
+  "history.detail.complete": "Complete",
+  "history.detail.checklist": "Completed checklist",
+  "history.detail.notFound": "Entry not found",
+  "history.detail.allChecked": "All items verified",
 
   // ── Well-being ──────────────────────────────────────────
   "wellbeing.title": "Well-being",
@@ -490,10 +553,53 @@ const en: Record<string, string> = {
   "supervisor.defaultTeamName": "My team",
   "supervisor.shareText": "Text",
   "supervisor.shareEmail": "Email",
+  "supervisor.inviteTitle": "Invite your team",
   "supervisor.inviteMessage": "Join our team on OK Chantier:",
   "supervisor.inviteEmailSubject": "OK Chantier Invitation",
   "supervisor.leaderboard": "Team leaderboard",
   "supervisor.completions": "completions",
+
+  // ── My team ────────────────────────────────────────────
+  "team.title": "My team",
+  "team.companyInfo": "Company info",
+  "team.companyWebsite": "Website",
+  "team.companyWebsitePlaceholder": "e.g. www.abc-construction.ca",
+  "team.companyLogo": "Logo",
+  "team.changeLogo": "Change",
+  "team.members": "Members",
+  "team.noMembers": "No members yet.",
+  "team.completions": "{count} completion{s}",
+
+  // ── Construction sites ─────────────────────────────────
+  "site.title": "Construction sites",
+  "site.add": "Add a site",
+  "site.namePlaceholder": "e.g. Phase 2 - Tower B",
+  "site.addressPlaceholder": "Address (optional)",
+  "site.remove": "Remove",
+  "site.select": "Site (optional)",
+  "site.none": "No site",
+  "site.empty": "No sites added yet.",
+  "site.close": "Close",
+  "site.reopen": "Reopen",
+  "site.closedLabel": "Closed",
+  "confirm.site": "Site",
+  "confirm.location": "Location",
+  "confirm.locationUnavailable": "Location unavailable",
+
+  // ── Site detail ──────────────────────────────────────────
+  "siteDetail.active": "Active",
+  "siteDetail.inactive": "Inactive",
+  "siteDetail.status": "Status",
+  "siteDetail.address": "Address",
+  "siteDetail.createdAt": "Created",
+  "siteDetail.copyAddress": "Copy address",
+  "siteDetail.copied": "Copied",
+  "siteDetail.openMaps": "Open in Maps",
+  "siteDetail.activity": "Activity on this site",
+  "siteDetail.noActivity": "No activity recorded.",
+  "siteDetail.map": "Map",
+  "siteDetail.delete": "Delete this site",
+  "siteDetail.deleteConfirm": "Delete this site?",
 
   // ── Footer ──────────────────────────────────────────────
   "footer.msg1": "Stay alert. Every action counts.",

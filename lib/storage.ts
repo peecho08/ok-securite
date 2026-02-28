@@ -260,13 +260,17 @@ export function addRecentTask(taskId: string) {
 // ── Completed checklists history ─────────────────────────────────
 
 export interface HistoryEntry {
+  id?: string;
   taskId: string;
   taskTitle: string;
   taskIcon: string;
   workerName: string;
+  workerCompany?: string;
   checkedCount: number;
   totalCount: number;
   completedAt: string; // ISO string
+  siteName?: string;
+  location?: string;
 }
 
 const HISTORY_KEY = key("history");
@@ -283,15 +287,110 @@ export function getHistory(): HistoryEntry[] {
 
 export function addHistory(entry: HistoryEntry) {
   try {
+    if (!entry.id) entry.id = Math.random().toString(36).slice(2, 12);
     const history = getHistory();
     history.unshift(entry);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, MAX_HISTORY)));
   } catch { /* ignore */ }
 }
 
+export function getHistoryEntry(id: string): HistoryEntry | null {
+  return getHistory().find((e) => e.id === id) ?? null;
+}
+
 export function clearHistory() {
   try {
     localStorage.removeItem(HISTORY_KEY);
+  } catch { /* ignore */ }
+}
+
+// ── Company info ──────────────────────────────────────────────────
+
+const COMPANY_WEBSITE_KEY = key("company-website");
+const COMPANY_LOGO_KEY = key("company-logo");
+
+export function getCompanyWebsite(): string {
+  return safeStorage()?.getItem(COMPANY_WEBSITE_KEY) || "";
+}
+
+export function setCompanyWebsite(url: string) {
+  const s = safeStorage();
+  if (!s) return;
+  try {
+    if (url) s.setItem(COMPANY_WEBSITE_KEY, url);
+    else s.removeItem(COMPANY_WEBSITE_KEY);
+  } catch { /* ignore */ }
+}
+
+export function getCompanyLogo(): string {
+  return safeStorage()?.getItem(COMPANY_LOGO_KEY) || "";
+}
+
+export function setCompanyLogo(dataUrl: string) {
+  const s = safeStorage();
+  if (!s) return;
+  try {
+    if (dataUrl) s.setItem(COMPANY_LOGO_KEY, dataUrl);
+    else s.removeItem(COMPANY_LOGO_KEY);
+  } catch { /* quota exceeded */ }
+}
+
+// ── Construction sites ────────────────────────────────────────────
+
+export interface ConstructionSite {
+  id: string;
+  name: string;
+  address?: string;
+  lat?: number;
+  lng?: number;
+  active?: boolean;
+  createdAt?: string;
+}
+
+const SITES_KEY = key("construction-sites");
+
+export function getSites(): ConstructionSite[] {
+  const s = safeStorage();
+  if (!s) return [];
+  try {
+    const raw = s.getItem(SITES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addSite(site: ConstructionSite) {
+  const s = safeStorage();
+  if (!s) return;
+  try {
+    const sites = getSites();
+    sites.push(site);
+    s.setItem(SITES_KEY, JSON.stringify(sites));
+  } catch { /* quota exceeded */ }
+}
+
+export function getSite(id: string): ConstructionSite | null {
+  return getSites().find((s) => s.id === id) ?? null;
+}
+
+export function updateSite(id: string, patch: Partial<ConstructionSite>) {
+  const s = safeStorage();
+  if (!s) return;
+  try {
+    const sites = getSites().map((site) =>
+      site.id === id ? { ...site, ...patch } : site
+    );
+    s.setItem(SITES_KEY, JSON.stringify(sites));
+  } catch { /* ignore */ }
+}
+
+export function removeSite(id: string) {
+  const s = safeStorage();
+  if (!s) return;
+  try {
+    const sites = getSites().filter((site) => site.id !== id);
+    s.setItem(SITES_KEY, JSON.stringify(sites));
   } catch { /* ignore */ }
 }
 
@@ -335,13 +434,14 @@ export function resetAllForFreshStart(): void {
       if (k && k.startsWith(prefix)) keys.push(k);
     }
     keys.forEach((k) => s.removeItem(k));
+    s.removeItem("ok-chantier:nda-accepted");
   } catch { /* ignore */ }
 }
 
 // ── Seed demo data ────────────────────────────────────────────────
 
 const DEMO_SEEDED_KEY = key("demo-seeded");
-const DEMO_VERSION = "2";
+const DEMO_VERSION = "5";
 
 export function isDemoSeeded(): boolean {
   try {
@@ -367,7 +467,33 @@ export function seedDemoData() {
     { id: "carrelage", title: "Carrelage / Céramique", icon: "🔲" },
   ];
 
+  const siteNames = [
+    "Résidence Soleil — Québec",
+    "Tour Frontenac — Montréal",
+    "Complexe Desjardins Phase 3 — Lévis",
+    "Pont Laviolette — Trois-Rivières",
+    "Condo Cartier — Gatineau",
+    "Centre Bell Réno — Montréal",
+    "Éco-Quartier Limoilou — Québec",
+    "Hôpital Sacré-Cœur — Chicoutimi",
+    "Place Laurier Expansion — Sainte-Foy",
+    "Usine Rio Tinto — Alma",
+    "Barrage Eastmain — Baie-James",
+    "Marina de Rimouski — Rimouski",
+  ];
+
   const currentUser = getWorkerName() || "Claude";
+  const workerCompanies: Record<string, string> = {
+    "Marc-Antoine": "Pomerleau",
+    "Stéphane": "EBC Inc.",
+    "Jean-Pierre": "Groupe Canam",
+    "Luc": "Broccolini",
+    "Patrick": "Kiewit",
+    "Éric": "Pomerleau",
+    "François": "Construction Longer",
+    "Mathieu": "Eurovia Québec",
+    "Sébastien": "Groupe ABS",
+  };
   const otherWorkers = [
     "Marc-Antoine", "Stéphane", "Jean-Pierre", "Luc", "Patrick",
     "Éric", "François", "Mathieu", "Sébastien",
@@ -387,9 +513,12 @@ export function seedDemoData() {
       const date = new Date(now - d * DAY);
       date.setHours(hour, Math.floor(Math.random() * 60), 0, 0);
       entries.push({
+        id: Math.random().toString(36).slice(2, 12),
         taskId: t.id, taskTitle: t.title, taskIcon: t.icon,
-        workerName: currentUser, checkedCount: total, totalCount: total,
+        workerName: currentUser, workerCompany: "Pomerleau",
+        checkedCount: total, totalCount: total,
         completedAt: date.toISOString(),
+        siteName: siteNames[(d * 3 + j) % siteNames.length],
       });
     }
   }
@@ -405,9 +534,12 @@ export function seedDemoData() {
       const date = new Date(now - daysAgo * DAY);
       date.setHours(6 + Math.floor(Math.random() * 10), Math.floor(Math.random() * 60), 0, 0);
       entries.push({
+        id: Math.random().toString(36).slice(2, 12),
         taskId: t.id, taskTitle: t.title, taskIcon: t.icon,
-        workerName: otherWorkers[w], checkedCount: total, totalCount: total,
+        workerName: otherWorkers[w], workerCompany: workerCompanies[otherWorkers[w]],
+        checkedCount: total, totalCount: total,
         completedAt: date.toISOString(),
+        siteName: siteNames[(w * 4 + j) % siteNames.length],
       });
     }
   }

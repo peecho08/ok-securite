@@ -8,6 +8,7 @@ import { checklists } from "@/data/checklists";
 import { checklistItemsEn, phaseTitlesEn } from "@/data/checklists-en";
 import { tasks } from "@/data/tasks";
 import { addHistory, clearProgress, loadProgress } from "@/lib/storage";
+import { ArrowLeft } from "lucide-react";
 import { mergePhases } from "@/lib/locale-helpers";
 import { TaskIcon } from "@/components/task-icon";
 import { Download } from "lucide-react";
@@ -40,10 +41,50 @@ export default function ConfirmPage() {
   const naCount = naIds.size;
 
   const workerName = searchParams.get("worker") || "";
+  const siteName = searchParams.get("site") || "";
 
   const task = tasks.find((t) => t.id === taskId);
   const [saved, setSaved] = useState(false);
   const [notified, setNotified] = useState(false);
+  const [geoAddress, setGeoAddress] = useState("");
+  const [geoLoading, setGeoLoading] = useState(true);
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setGeoLoading(false);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=18&addressdetails=1`,
+            { headers: { "Accept-Language": locale } },
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const addr = data.address;
+            const parts = [
+              addr?.road,
+              addr?.city || addr?.town || addr?.village,
+            ].filter(Boolean);
+            setGeoAddress(parts.join(", ") || data.display_name?.split(",").slice(0, 3).join(",") || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+          } else {
+            setGeoAddress(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+          }
+        } catch {
+          setGeoAddress(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+        }
+        setGeoLoading(false);
+      },
+      () => { setGeoLoading(false); },
+      { enableHighAccuracy: false, timeout: 8000 },
+    );
+  }, [locale]);
+
+  const locationLabel = siteName || geoAddress;
+  const locationLoading = !siteName && geoLoading;
 
   const localTitle = (task: (typeof tasks)[number]) =>
     locale === "en" && task.titleEn ? task.titleEn : task.title;
@@ -97,6 +138,14 @@ export default function ConfirmPage() {
       doc.text(workerName, margin + 30, y);
       y += 7;
     }
+    if (locationLabel) {
+      const locLabelKey = siteName ? t("confirm.site") : t("confirm.location");
+      doc.setFont("helvetica", "bold");
+      doc.text(`${locLabelKey}: `, margin, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(locationLabel, margin + 30, y);
+      y += 7;
+    }
     doc.setFont("helvetica", "bold");
     doc.text(`${t("confirm.status")}: `, margin, y);
     doc.setFont("helvetica", "normal");
@@ -148,10 +197,10 @@ export default function ConfirmPage() {
     const filename = `ok-chantier-${taskId}-${now.toISOString().slice(0, 10)}.pdf`;
     doc.save(filename);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [task, phases, checkedIds, naIds, checkedCount, naCount, items, workerName, timestamp, time, taskId, now, locale, t, acqColors]);
+  }, [task, phases, checkedIds, naIds, checkedCount, naCount, items, workerName, timestamp, time, taskId, now, locale, t, acqColors, locationLabel, siteName]);
 
   useEffect(() => {
-    if (!task || saved || !progressLoaded) return;
+    if (!task || saved || !progressLoaded || geoLoading) return;
     addHistory({
       taskId,
       taskTitle: locale === "en" && task.titleEn ? task.titleEn : task.title,
@@ -160,10 +209,15 @@ export default function ConfirmPage() {
       checkedCount: items,
       totalCount: items,
       completedAt: now.toISOString(),
+      siteName: siteName || undefined,
+      location: geoAddress || undefined,
     });
-    clearProgress(taskId as string);
     setSaved(true);
-  }, [task, taskId, workerName, items, now, saved, progressLoaded, locale]);
+  }, [task, taskId, workerName, items, now, saved, progressLoaded, locale, siteName, geoAddress, geoLoading]);
+
+  function handleFinish() {
+    clearProgress(taskId as string);
+  }
 
   if (!task) {
     return (
@@ -178,6 +232,15 @@ export default function ConfirmPage() {
 
   return (
     <div className="flex min-h-dvh flex-col dark:bg-neutral-900">
+      <div className="px-5 pt-[calc(env(safe-area-inset-top)+1rem)] sm:px-8">
+        <Link
+          href={`/tasks/${taskId}?resume=1`}
+          className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors active:text-gray-600 dark:text-neutral-500 dark:active:text-neutral-300"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          {t("confirm.backToChecklist")}
+        </Link>
+      </div>
       <main className="flex flex-1 flex-col items-center justify-center px-5 py-10 text-center sm:px-8">
         <div className="flex h-48 w-48 animate-stamp items-center justify-center rounded-full bg-green-100 sm:h-56 sm:w-56">
           <Image
@@ -207,7 +270,19 @@ export default function ConfirmPage() {
               <span className="font-heading font-bold">{workerName}</span>
             </div>
           )}
-          <div className={`flex items-center justify-between ${workerName ? "border-b border-gray-100 py-3" : "border-b border-gray-100 pb-3"}`}>
+          {siteName && (
+            <div className={`flex items-center justify-between border-b border-gray-100 ${workerName ? "py-3" : "pb-3"}`}>
+              <span className="text-sm text-muted">{t("confirm.site")}</span>
+              <span className="max-w-[60%] text-right text-sm font-medium">{siteName}</span>
+            </div>
+          )}
+          {geoAddress && (
+            <div className={`flex items-center justify-between border-b border-gray-100 ${workerName || siteName ? "py-3" : "pb-3"}`}>
+              <span className="text-sm text-muted">{t("confirm.location")}</span>
+              <span className="max-w-[60%] text-right text-sm font-medium">{geoAddress}</span>
+            </div>
+          )}
+          <div className={`flex items-center justify-between ${workerName || siteName || geoAddress ? "border-b border-gray-100 py-3" : "border-b border-gray-100 pb-3"}`}>
             <span className="text-sm text-muted">{t("confirm.pointsChecked")}</span>
             <span className="font-heading font-bold">
               {naCount > 0
@@ -242,9 +317,13 @@ export default function ConfirmPage() {
           <button
             onClick={async () => {
               const taskTitle = localTitle(task);
+              const locLine = locationLabel
+                ? `${siteName ? t("confirm.site") : t("confirm.location")}: ${locationLabel}`
+                : "";
               const summary = [
                 t("confirm.shareChecklist").replace("{task}", taskTitle),
                 workerName ? t("confirm.shareWorker").replace("{name}", workerName) : "",
+                locLine,
                 naCount > 0
                   ? `${checkedCount} ${t("confirm.checked")}, ${naCount} ${t("confirm.na")} / ${items}`
                   : t("confirm.sharePoints").replace("{checked}", String(items)).replace("{total}", String(items)),
@@ -286,6 +365,7 @@ export default function ConfirmPage() {
         </button>
         <Link
           href="/"
+          onClick={handleFinish}
           className="block w-full py-3.5 text-center text-sm font-medium text-gray-500 transition-colors active:text-gray-700 dark:text-neutral-400 dark:active:text-neutral-200"
         >
           {t("nav.home")}

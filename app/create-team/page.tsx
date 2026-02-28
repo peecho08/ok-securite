@@ -75,12 +75,10 @@ export default function CreateTeamPage() {
           </Link>
         </header>
         <main className="flex-1 px-5 py-8">
-          <h1 className="font-heading text-xl font-bold text-gray-900 dark:text-neutral-100">
-            {displayName}
+          <h1 className="font-heading text-2xl font-bold text-gray-900 dark:text-neutral-100">
+            {t("supervisor.inviteTitle")}
           </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400">
-            {t("createTeam.inviteLink")}
-          </p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400">{displayName}</p>
           <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
             <div className="flex items-center gap-2 p-2.5 pl-3">
               <span className="min-w-0 flex-1 truncate text-sm text-gray-600 dark:text-neutral-300">{inviteUrl}</span>

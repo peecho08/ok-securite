@@ -7,6 +7,7 @@ import { OfflineIndicator } from "@/components/offline-indicator";
 import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/lib/i18n";
 import { SplashScreen } from "@/components/splash-screen";
+import { NdaGate } from "@/components/nda-gate";
 import { Analytics } from "@vercel/analytics/next";
 
 const rubik = Rubik({
@@ -55,6 +56,7 @@ export default function RootLayout({
         />
         <ThemeProvider>
           <I18nProvider>
+          <NdaGate>
           <OfflineIndicator />
           <SplashScreen>
           <div className="relative z-[2] mx-auto min-h-dvh w-full max-w-3xl bg-white shadow-sm dark:bg-neutral-900 dark:shadow-none">
@@ -62,6 +64,7 @@ export default function RootLayout({
           </div>
           </SplashScreen>
           <PwaRegister />
+          </NdaGate>
           </I18nProvider>
         </ThemeProvider>
         <Analytics />

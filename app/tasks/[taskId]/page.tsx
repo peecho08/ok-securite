@@ -7,10 +7,10 @@ import { tasks } from "@/data/tasks";
 import { checklists } from "@/data/checklists";
 import { checklistItemsEn, phaseTitlesEn } from "@/data/checklists-en";
 import type { Phase } from "@/types";
-import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress } from "@/lib/storage";
+import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress, getSites, type ConstructionSite } from "@/lib/storage";
 import { mergePhases } from "@/lib/locale-helpers";
 import { useLocale } from "@/lib/i18n";
-import { AlertTriangle, Camera } from "lucide-react";
+import { AlertTriangle, Camera, MapPin } from "lucide-react";
 
 function haptic() {
   try { navigator?.vibrate?.(10); } catch { /* unsupported */ }
@@ -87,16 +87,15 @@ export default function TaskPage() {
   const [collapsed, setCollapsed] = useState<Set<Phase>>(new Set());
   const [expandedInfo, setExpandedInfo] = useState<string | null>(null);
   const [workerName, setWorkerName] = useState(getWorkerName);
+  const [availableSites, setAvailableSites] = useState<ConstructionSite[]>([]);
+  const [selectedSiteId, setSelectedSiteId] = useState("");
   const [phaseToast, setPhaseToast] = useState<{ phase: Phase; title: string } | null>(null);
-  const [undoToast, setUndoToast] = useState<{ id: string; was: "checked" | "na" } | null>(null);
   const [showCriticalWarning, setShowCriticalWarning] = useState(false);
-  const [navigatingAway, setNavigatingAway] = useState(false);
   const [scanState, setScanState] = useState<"idle" | "scanning" | "done">("idle");
   const [scanPhoto, setScanPhoto] = useState<string | null>(null);
   const [scanRisks, setScanRisks] = useState<string[]>([]);
   const [scanMarkers, setScanMarkers] = useState<{ x: number; y: number }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const undoTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const userToggledRef = useRef(false);
   const prevCompletedPhasesRef = useRef<Set<Phase>>(new Set());
   const phaseRefs = useRef<Map<Phase, HTMLElement>>(new Map());
@@ -117,6 +116,7 @@ export default function TaskPage() {
       clearProgress(taskId);
     }
     addRecentTask(taskId);
+    setAvailableSites(getSites());
   }, [taskId, shouldResume]);
 
   // Persist progress on change
@@ -167,26 +167,6 @@ export default function TaskPage() {
     return () => clearTimeout(t);
   }, [phaseToast]);
 
-  // Auto-navigate to confirm page when all items resolved
-  useEffect(() => {
-    if (!userToggledRef.current) return;
-    userToggledRef.current = false;
-    const allDone = allItems.length > 0 && resolvedCount === allItems.length;
-    if (!allDone || !taskId) return;
-    try { navigator?.vibrate?.([50, 30, 50]); } catch { /* unsupported */ }
-    setNavigatingAway(true);
-    const timer = setTimeout(() => {
-      const params = new URLSearchParams({
-        items: String(allItems.length),
-        checked: String(checked.size),
-        na: String(na.size),
-        worker: workerName.trim(),
-      });
-      router.push(`/confirm/${taskId}?${params.toString()}`);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [checked, na, resolvedCount, allItems.length, taskId, workerName, router]);
-
   const toggleCheck = useCallback((id: string) => {
     haptic();
     userToggledRef.current = true;
@@ -200,12 +180,6 @@ export default function TaskPage() {
     // If checking, remove from N/A
     if (!wasChecked) {
       setNa((prev) => { const next = new Set(prev); next.delete(id); return next; });
-      clearTimeout(undoTimerRef.current);
-      setUndoToast(null);
-    } else {
-      clearTimeout(undoTimerRef.current);
-      setUndoToast({ id, was: "checked" });
-      undoTimerRef.current = setTimeout(() => setUndoToast(null), 3500);
     }
   }, [checked]);
 
@@ -222,27 +196,8 @@ export default function TaskPage() {
     // If marking N/A, remove from checked
     if (!wasNa) {
       setChecked((prev) => { const next = new Set(prev); next.delete(id); return next; });
-      clearTimeout(undoTimerRef.current);
-      setUndoToast(null);
-    } else {
-      clearTimeout(undoTimerRef.current);
-      setUndoToast({ id, was: "na" });
-      undoTimerRef.current = setTimeout(() => setUndoToast(null), 3500);
     }
   }, [na]);
-
-  const handleUndo = useCallback(() => {
-    if (!undoToast) return;
-    haptic();
-    userToggledRef.current = true;
-    if (undoToast.was === "checked") {
-      setChecked((prev) => { const next = new Set(prev); next.add(undoToast.id); return next; });
-    } else {
-      setNa((prev) => { const next = new Set(prev); next.add(undoToast.id); return next; });
-    }
-    clearTimeout(undoTimerRef.current);
-    setUndoToast(null);
-  }, [undoToast]);
 
   const togglePhaseCollapse = useCallback((phase: Phase) => {
     setCollapsed((prev) => {
@@ -334,12 +289,14 @@ export default function TaskPage() {
   const uncheckedCritical = allItems.filter((i) => i.critical && !isResolved(i.id));
 
   function navigateToConfirm() {
+    const selectedSite = availableSites.find((s) => s.id === selectedSiteId);
     const params = new URLSearchParams({
       items: String(allItems.length),
       checked: String(checked.size),
       na: String(na.size),
       worker: workerName.trim(),
     });
+    if (selectedSite) params.set("site", selectedSite.name);
     router.push(`/confirm/${taskId}?${params.toString()}`);
   }
 
@@ -400,6 +357,27 @@ export default function TaskPage() {
 
       {/* Checklist */}
       <main className="flex-1 px-5 py-4 sm:px-8">
+        {/* Site picker */}
+        {availableSites.length > 0 && (
+          <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 p-2.5 dark:border-neutral-700 dark:bg-neutral-800">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-gray-400 shadow-sm dark:bg-neutral-700 dark:text-neutral-400">
+              <MapPin className="h-4 w-4" />
+            </span>
+            <select
+              value={selectedSiteId}
+              onChange={(e) => setSelectedSiteId(e.target.value)}
+              className="min-w-0 flex-1 appearance-none bg-transparent text-sm font-medium text-gray-700 outline-none dark:text-neutral-200"
+            >
+              <option value="">{t("site.select")}</option>
+              {availableSites.filter((s) => s.active !== false).map((site) => (
+                <option key={site.id} value={site.id}>
+                  {site.name}{site.address ? ` — ${site.address}` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* ACQ course banner — Travaux en hauteur only */}
         {taskId === "travaux-hauteur" && (
           <a
@@ -422,7 +400,6 @@ export default function TaskPage() {
             </svg>
           </a>
         )}
-        {/* AI Scan — top of list */}
         <input
           ref={fileInputRef}
           type="file"
@@ -433,22 +410,17 @@ export default function TaskPage() {
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="mb-5 flex w-full items-center gap-3.5 rounded-xl border border-neutral-800 bg-neutral-900 p-4 text-left transition-colors active:bg-neutral-800"
+          className="mb-5 flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 text-left transition-colors active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-700"
         >
-          <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-500/15 text-green-500">
-            <Camera className="h-5 w-5" />
-            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-neutral-900 bg-green-400" />
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-400">
+            <Camera className="h-4 w-4" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-heading text-sm font-bold text-white">{t("task.scanPhoto")}</p>
-            <p className="text-xs text-neutral-400">{t("task.scanHint")}</p>
+            <p className="text-sm font-medium text-gray-600 dark:text-neutral-300">{t("task.scanPhoto")}</p>
           </div>
-          <span className="shrink-0 rounded-full border border-gray-500/50 bg-gray-500/20 px-2 py-0.5 font-heading text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+          <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-400 dark:bg-neutral-700 dark:text-neutral-500">
             Beta
           </span>
-          <svg className="h-4 w-4 shrink-0 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
         </button>
 
         {phases.map((group, phaseIdx) => {
@@ -456,34 +428,23 @@ export default function TaskPage() {
           const allPhaseResolved = resolvedInPhase === group.items.length;
           const isCollapsed = collapsed.has(group.phase);
 
-          const isLocked = phaseIdx > 0 && !phases
-            .slice(0, phaseIdx)
-            .every((prev) => prev.items.every((i) => isResolved(i.id)));
-
           return (
             <section
               key={group.phase}
-              className={`mb-6 scroll-mt-36 transition-opacity duration-300 ${isLocked ? "opacity-40" : ""}`}
+              className="mb-6 scroll-mt-36"
               ref={(el) => { if (el) phaseRefs.current.set(group.phase, el); }}
             >
               <div className="mb-3 flex items-center gap-2">
                 <button
-                  onClick={() => !isLocked && togglePhaseCollapse(group.phase)}
-                  className={`flex min-h-[48px] flex-1 items-center gap-2 text-left ${isLocked ? "cursor-not-allowed" : ""}`}
-                  disabled={isLocked}
+                  onClick={() => togglePhaseCollapse(group.phase)}
+                  className="flex min-h-[48px] flex-1 items-center gap-2 text-left"
                 >
-                  {isLocked ? (
-                    <svg className="h-5 w-5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                  ) : (
-                    <svg
-                      className={`h-5 w-5 shrink-0 text-gray-400 transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  )}
+                  <svg
+                    className={`h-5 w-5 shrink-0 text-gray-400 transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
                   <h2 className="font-heading text-base font-semibold text-muted">{localPhaseTitle(group.title)}</h2>
                 </button>
 
@@ -497,13 +458,7 @@ export default function TaskPage() {
                 </span>
               </div>
 
-              {isLocked && (
-                <p className="text-xs text-gray-400">
-                  {t("task.unlockPrevious")}
-                </p>
-              )}
-
-              {!isLocked && !isCollapsed && (
+              {!isCollapsed && (
                 <div className="animate-fade-in grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                   {[...group.items]
                     .sort((a, b) => (a.critical && !b.critical ? -1 : !a.critical && b.critical ? 1 : 0))
@@ -513,18 +468,21 @@ export default function TaskPage() {
                     return (
                       <SwipeItem key={item.id} onSwipe={() => { if (!isChecked && !isNa) toggleCheck(item.id); }}>
                         <div
-                          className={`flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => toggleCheck(item.id)}
+                          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleCheck(item.id); } }}
+                          className={`flex w-full cursor-pointer items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
                             isChecked
                               ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950"
                               : isNa
                                 ? "border-gray-200 bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800/50"
                                 : item.critical
                                   ? "animate-critical-pulse border-red-300 bg-red-50/50 ring-1 ring-red-200 hover:border-red-400 dark:border-red-700 dark:bg-red-950/40 dark:ring-red-800"
-                                  : "border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800"
+                                  : "border-gray-200 bg-white hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-750 dark:active:bg-neutral-700"
                           }`}
                         >
-                          <button
-                            onClick={() => toggleCheck(item.id)}
+                          <div
                             className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-2 transition-colors ${
                               isChecked
                                 ? "animate-check-fill border-green-600 bg-green-600 text-white"
@@ -539,7 +497,7 @@ export default function TaskPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                               </svg>
                             )}
-                          </button>
+                          </div>
                           <span className={`flex min-w-0 flex-1 flex-col items-start gap-0.5 text-base leading-snug ${
                             isChecked ? "text-green-900 dark:text-green-200" : isNa ? "text-gray-400 line-through dark:text-neutral-500" : ""
                           }`}>
@@ -569,7 +527,7 @@ export default function TaskPage() {
                               </button>
                             )}
                             <button
-                              onClick={() => toggleNa(item.id)}
+                              onClick={(e) => { e.stopPropagation(); toggleNa(item.id); }}
                               className={`mt-0.5 flex h-9 shrink-0 items-center justify-center rounded-full px-2.5 text-xs font-bold transition-colors ${
                                 isNa
                                   ? "bg-gray-400 text-white dark:bg-neutral-500"
@@ -602,13 +560,6 @@ export default function TaskPage() {
 
       {/* Sticky CTA */}
       <div className="fixed bottom-0 left-1/2 z-20 w-full max-w-3xl -translate-x-1/2 border-t border-gray-100 bg-white px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
-        <input
-          type="text"
-          value={workerName}
-          onChange={(e) => setWorkerName(e.target.value)}
-          placeholder={t("task.workerName")}
-          className="mb-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:bg-neutral-750"
-        />
         <button
           onClick={handleConfirm}
           disabled={!allResolved}
@@ -622,22 +573,6 @@ export default function TaskPage() {
         </button>
       </div>
 
-      {/* Undo toast */}
-      {undoToast && (
-        <div
-          className="fixed bottom-[140px] left-1/2 z-30 flex w-[calc(100%-2.5rem)] max-w-lg -translate-x-1/2 items-center justify-between gap-3 rounded-xl bg-gray-900 px-5 py-3.5 text-white shadow-lg"
-          role="status"
-          aria-live="polite"
-        >
-          <span className="text-sm">{undoToast.was === "checked" ? t("task.unchecked") : t("task.markedNa")}</span>
-          <button
-            onClick={handleUndo}
-            className="shrink-0 rounded-lg bg-white/20 px-4 py-2 text-sm font-bold transition-colors hover:bg-white/30 active:bg-white/40"
-          >
-            {t("task.undo")}
-          </button>
-        </div>
-      )}
 
       {/* Phase completion toast */}
       {phaseToast && (
@@ -654,20 +589,6 @@ export default function TaskPage() {
               {localPhaseTitle(phaseToast.title)} — {t("task.phaseCompleteDetail")}
             </p>
           </div>
-        </div>
-      )}
-
-      {/* Completion transition overlay */}
-      {navigatingAway && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white dark:bg-neutral-900 animate-fade-in">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100 dark:bg-green-900 animate-scale-in">
-            <svg className="h-10 w-10 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <p className="mt-4 font-heading text-lg font-bold text-green-700 dark:text-green-400 animate-fade-in" style={{ animationDelay: "150ms" }}>
-            {t("task.allComplete")}
-          </p>
         </div>
       )}
 
@@ -718,7 +639,6 @@ export default function TaskPage() {
       {/* AI Scan — fullscreen takeover */}
       {scanState !== "idle" && (
         <div className="fixed inset-0 z-[100] flex flex-col bg-black">
-          {/* Photo fills top portion */}
           {scanPhoto && (
             <div className={`relative w-full overflow-hidden ${scanState === "done" ? "flex-shrink-0" : "flex-1"}`} style={scanState === "done" ? { height: "42dvh" } : undefined}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -728,29 +648,21 @@ export default function TaskPage() {
                 <>
                   <div className="absolute inset-0 bg-black/30" />
                   <div className="animate-scan-grid absolute inset-0" />
-
-                  {/* Scanning line */}
                   <div className="animate-scan-line absolute inset-x-0 h-[2px]" style={{ filter: "drop-shadow(0 0 12px rgba(74,222,128,0.9))" }}>
                     <div className="h-full w-full bg-green-400" />
                     <div className="absolute inset-x-0 -bottom-6 h-12 bg-gradient-to-b from-green-400/25 to-transparent" />
                   </div>
-
-                  {/* Corner brackets */}
                   <div className="absolute inset-5">
                     <div className="animate-scan-corner absolute left-0 top-0 h-8 w-8 border-l-2 border-t-2 border-green-400" />
                     <div className="animate-scan-corner absolute right-0 top-0 h-8 w-8 border-r-2 border-t-2 border-green-400" />
                     <div className="animate-scan-corner absolute bottom-0 left-0 h-8 w-8 border-b-2 border-l-2 border-green-400" />
                     <div className="animate-scan-corner absolute bottom-0 right-0 h-8 w-8 border-b-2 border-r-2 border-green-400" />
                   </div>
-
-                  {/* Center reticle */}
                   <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                     <div className="animate-scan-pulse-ring h-20 w-20 rounded-full border border-green-400/50" />
                     <div className="absolute left-1/2 top-1/2 h-1 w-8 -translate-x-1/2 -translate-y-1/2 bg-green-400/60" />
                     <div className="absolute left-1/2 top-1/2 h-8 w-1 -translate-x-1/2 -translate-y-1/2 bg-green-400/60" />
                   </div>
-
-                  {/* Top HUD bar */}
                   <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent px-5 pb-8 pt-[calc(env(safe-area-inset-top)+1rem)]">
                     <div className="flex items-center gap-2">
                       <div className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
@@ -758,8 +670,6 @@ export default function TaskPage() {
                     </div>
                     <span className="font-mono text-[10px] text-green-400/60">AI VISION</span>
                   </div>
-
-                  {/* Bottom scanning status */}
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-5 pb-5 pt-10">
                     <p className="text-sm text-neutral-300">{t("task.scanning")}</p>
                     <div className="mt-2 h-1 overflow-hidden rounded-full bg-neutral-700">
@@ -772,7 +682,6 @@ export default function TaskPage() {
               {scanState === "done" && (
                 <>
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
-                  {/* Numbered risk markers on photo */}
                   {scanMarkers.map((m, i) => (
                     <div
                       key={i}
@@ -794,7 +703,6 @@ export default function TaskPage() {
             </div>
           )}
 
-          {/* Results panel — slides up from bottom when done */}
           {scanState === "done" && (
             <div className="flex-1 overflow-y-auto px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-5">
               <p className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-red-400">
