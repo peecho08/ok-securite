@@ -3,6 +3,8 @@
 import { useEffect, useRef, useCallback } from "react";
 
 declare global {
+  // eslint-disable-next-line no-var
+  var google: any;
   interface Window {
     __googleMapsCallback?: () => void;
   }
@@ -59,7 +61,7 @@ export function PlaceAutocomplete({
   onKeyDown,
 }: PlaceAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const autocompleteRef = useRef<any>(null);
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   const handlePlaceChanged = useCallback(() => {
