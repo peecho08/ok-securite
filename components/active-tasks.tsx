@@ -19,31 +19,31 @@ export function ActiveTasks({ activeTasks, onAbandon }: ActiveTasksProps) {
       <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted">
         {t("home.ongoing")}
       </h2>
-      <div className="grid grid-cols-2 gap-4 sm:gap-3">
+      <div className="flex flex-col gap-3">
         {activeTasks.map(({ task, checked, total }, i) => (
           <div key={task.id} className="animate-slide-in-up relative" style={{ animationDelay: `${i * 80}ms` }}>
             <Link
               href={`/tasks/${task.id}?resume=1`}
-              className="flex aspect-[4/3] flex-col justify-between gap-4 rounded-2xl border-2 border-green-200 bg-green-50 p-5 transition-colors hover:border-green-300 active:bg-green-100 dark:border-green-800 dark:bg-green-950 dark:hover:border-green-700"
+              className="flex items-center gap-4 rounded-2xl border-2 border-green-200 bg-green-50 p-4 transition-colors hover:border-green-300 active:bg-green-100 dark:border-green-800 dark:bg-green-950 dark:hover:border-green-700"
             >
-              <div className="flex items-start justify-between">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-green-700 shadow-sm dark:bg-green-900 dark:text-green-300">
-                  <TaskIcon taskId={task.id} className="h-6 w-6" />
-                </span>
-              </div>
-              <div className="min-w-0 space-y-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-green-700 shadow-sm dark:bg-green-900 dark:text-green-300">
+                <TaskIcon taskId={task.id} className="h-6 w-6" />
+              </span>
+              <div className="min-w-0 flex-1 space-y-2">
                 <p className="font-heading text-base font-bold leading-tight text-green-900 dark:text-green-200">
                   {localTitle(task, locale)}
                 </p>
-                <div className="h-2 overflow-hidden rounded-full bg-green-200">
-                  <div
-                    className="h-full rounded-full bg-green-600 transition-all"
-                    style={{ width: `${(checked / total) * 100}%` }}
-                  />
+                <div className="flex items-center gap-3">
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-green-200">
+                    <div
+                      className="h-full rounded-full bg-green-600 transition-all"
+                      style={{ width: `${(checked / total) * 100}%` }}
+                    />
+                  </div>
+                  <p className="shrink-0 text-sm font-medium text-green-700 dark:text-green-400">
+                    {checked}/{total}
+                  </p>
                 </div>
-                <p className="text-sm font-medium text-green-700">
-                  {checked}/{total} {t("home.verifications")}
-                </p>
               </div>
             </Link>
             <button

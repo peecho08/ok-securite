@@ -10,7 +10,8 @@ import type { Phase } from "@/types";
 import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress, getSites, type ConstructionSite } from "@/lib/storage";
 import { mergePhases } from "@/lib/locale-helpers";
 import { useLocale } from "@/lib/i18n";
-import { AlertTriangle, Camera, MapPin } from "lucide-react";
+import { getLogoPngDataUrl } from "@/lib/pdf-logo";
+import { AlertTriangle, Camera, Download, MapPin } from "lucide-react";
 
 function haptic() {
   try { navigator?.vibrate?.(10); } catch { /* unsupported */ }
@@ -288,6 +289,129 @@ export default function TaskPage() {
   const allResolved = resolvedCount === allItems.length && allItems.length > 0;
   const uncheckedCritical = allItems.filter((i) => i.critical && !isResolved(i.id));
 
+  const generatePdf = useCallback(async () => {
+    if (!task || phases.length === 0) return;
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    const contentW = pageW - margin * 2;
+    let y = 20;
+
+    const addPage = () => { doc.addPage(); y = 20; };
+    const checkSpace = (needed: number) => { if (y + needed > 275) addPage(); };
+
+    const brandRgb: [number, number, number] = [17, 137, 20];
+    doc.setFillColor(...brandRgb);
+    doc.rect(0, 0, pageW, 40, "F");
+
+    const now = new Date();
+    const dateLocale = locale === "en" ? "en-CA" : "fr-FR";
+    const dateTimeStr = now.toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" }) + " — " + now.toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" });
+
+    try {
+      const logoDataUrl = await getLogoPngDataUrl();
+      const logoH = 16;
+      const logoW = logoH * (468 / 570);
+      doc.addImage(logoDataUrl, "PNG", margin, 4, logoW, logoH);
+      const textX = margin + logoW + 4;
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text("OK Chantier", textX, 18);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text(localTitle(task), textX, 28);
+      doc.setFontSize(9);
+      doc.text(dateTimeStr, textX, 35);
+    } catch {
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text("OK Chantier", margin, 18);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text(localTitle(task), margin, 28);
+      doc.setFontSize(9);
+      doc.text(dateTimeStr, margin, 35);
+    }
+    y = 50;
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    if (workerName) {
+      doc.setFont("helvetica", "bold");
+      doc.text(`${t("confirm.worker")}: `, margin, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(workerName, margin + 30, y);
+      y += 7;
+    }
+    const selectedSite = availableSites.find((s) => s.id === selectedSiteId);
+    if (selectedSite) {
+      doc.setFont("helvetica", "bold");
+      doc.text(`${t("confirm.site")}: `, margin, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(selectedSite.name, margin + 30, y);
+      y += 7;
+    }
+    doc.setFont("helvetica", "bold");
+    doc.text(`${t("confirm.status")}: `, margin, y);
+    doc.setFont("helvetica", "normal");
+    const statusText = na.size > 0
+      ? `${checked.size + na.size}/${allItems.length} (${checked.size} ${t("confirm.checked")}, ${na.size} ${t("confirm.na")})`
+      : `${checked.size}/${allItems.length}`;
+    doc.text(statusText, margin + 30, y);
+    y += 12;
+
+    for (const phase of phases) {
+      checkSpace(16);
+      doc.setFillColor(245, 245, 245);
+      doc.rect(margin, y - 4, contentW, 8, "F");
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(60, 60, 60);
+      doc.text(localPhaseTitle(phase.title), margin + 2, y + 1);
+      y += 10;
+
+      for (const item of phase.items) {
+        const label = localItemLabel(item);
+        const isItemNa = na.has(item.id);
+        const isItemChecked = checked.has(item.id);
+        const lines = doc.splitTextToSize(label, contentW - 12);
+        checkSpace(lines.length * 5 + 3);
+
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        if (isItemNa) {
+          doc.setTextColor(150, 150, 150);
+          doc.text("N/A", margin + 1, y);
+          doc.text(lines, margin + 12, y);
+        } else if (isItemChecked) {
+          doc.setTextColor(...brandRgb);
+          doc.text("\u2713", margin + 1, y);
+          doc.setTextColor(50, 50, 50);
+          if (item.critical) doc.setFont("helvetica", "bold");
+          doc.text(lines, margin + 8, y);
+        } else {
+          doc.setTextColor(200, 200, 200);
+          doc.text("\u25CB", margin + 1, y);
+          doc.setTextColor(100, 100, 100);
+          doc.text(lines, margin + 8, y);
+        }
+        y += lines.length * 5 + 2;
+      }
+      y += 4;
+    }
+
+    checkSpace(20);
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text(t("task.source"), margin, y + 6);
+
+    doc.save(`ok-chantier-${taskId}-${now.toISOString().slice(0, 10)}.pdf`);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [task, phases, checked, na, allItems, workerName, availableSites, selectedSiteId, taskId, locale, t]);
+
   function navigateToConfirm() {
     const selectedSite = availableSites.find((s) => s.id === selectedSiteId);
     const params = new URLSearchParams({
@@ -311,11 +435,11 @@ export default function TaskPage() {
   return (
     <div className="flex min-h-dvh flex-col pb-28 dark:bg-neutral-900">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-gray-100 bg-white px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
+      <header className="sticky top-0 z-10 border-b border-white/10 bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4 text-white sm:px-8">
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="flex h-12 w-12 items-center justify-center rounded-lg text-gray-500 transition-colors active:bg-gray-100"
+            className="flex h-12 w-12 items-center justify-center rounded-lg text-white/70 transition-colors active:bg-white/10"
             aria-label={t("nav.back")}
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -323,7 +447,7 @@ export default function TaskPage() {
             </svg>
           </Link>
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-lg font-bold leading-tight">
+            <h1 className="truncate text-lg font-bold leading-tight text-white">
               {localTitle(task)}
             </h1>
           </div>
@@ -334,7 +458,7 @@ export default function TaskPage() {
                 clearProgress(taskId);
                 router.push("/");
               }}
-              className="flex h-10 items-center gap-1.5 rounded-lg px-3 text-xs text-red-500 transition-colors hover:bg-red-50 active:bg-red-50"
+              className="flex h-10 items-center gap-1.5 rounded-lg px-3 text-xs text-red-300 transition-colors hover:bg-white/10 active:bg-white/10"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6h12z" />
@@ -344,13 +468,13 @@ export default function TaskPage() {
           )}
         </div>
 
-        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-gray-100 dark:bg-neutral-700">
+        <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-white/20">
           <div
-            className="h-full rounded-full bg-green-500 transition-all duration-300"
+            className="h-full rounded-full bg-yellow-400 transition-all duration-300"
             style={{ width: `${progress * 100}%` }}
           />
         </div>
-        <p className="mt-1 text-xs text-muted">
+        <p className="mt-1 text-xs text-white/60">
           {resolvedCount} / {allItems.length} {t("task.verifications")}
         </p>
       </header>
@@ -560,17 +684,31 @@ export default function TaskPage() {
 
       {/* Sticky CTA */}
       <div className="fixed bottom-0 left-1/2 z-20 w-full max-w-3xl -translate-x-1/2 border-t border-gray-100 bg-white px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
-        <button
-          onClick={handleConfirm}
-          disabled={!allResolved}
-          className={`w-full rounded-xl py-3.5 font-heading text-sm font-bold tracking-wide transition-colors ${
-            allResolved
-              ? "bg-black text-accent hover:bg-gray-900 active:bg-gray-900 dark:bg-green-600 dark:text-white dark:hover:bg-green-700"
-              : "cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"
-          }`}
-        >
-          {allResolved ? t("task.validate") : `${allItems.length - resolvedCount} ${t("task.remaining")}`}
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={generatePdf}
+            disabled={resolvedCount === 0}
+            className={`flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-xl transition-colors ${
+              resolvedCount > 0
+                ? "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-200 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
+                : "cursor-not-allowed bg-gray-100 text-gray-300 dark:bg-neutral-800 dark:text-neutral-600"
+            }`}
+            aria-label={t("confirm.downloadPdf")}
+          >
+            <Download className="h-5 w-5" />
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={!allResolved}
+            className={`flex-1 rounded-xl py-3.5 font-heading text-sm font-bold tracking-wide transition-colors ${
+              allResolved
+                ? "bg-black text-accent hover:bg-gray-900 active:bg-gray-900 dark:bg-green-600 dark:text-white dark:hover:bg-green-700"
+                : "cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"
+            }`}
+          >
+            {allResolved ? t("task.validate") : `${allItems.length - resolvedCount} ${t("task.remaining")}`}
+          </button>
+        </div>
       </div>
 
 

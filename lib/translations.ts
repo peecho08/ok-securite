@@ -1,6 +1,7 @@
 const fr: Record<string, string> = {
   // ── Navigation & common ─────────────────────────────────
   "nav.back": "Retour",
+  "nav.cancel": "Annuler",
   "nav.home": "ACCUEIL",
   "nav.history": "HISTORIQUE",
   "nav.refresh": "Rafraîchir la page",
@@ -256,6 +257,8 @@ const fr: Record<string, string> = {
   "team.members": "Membres",
   "team.noMembers": "Aucun membre encore.",
   "team.completions": "{count} complétion{s}",
+  "team.removeMember": "Retirer",
+  "team.removeConfirm": "Retirer {name} de l'équipe ?",
 
   // ── Construction sites ─────────────────────────────────
   "site.title": "Chantiers",
@@ -314,6 +317,7 @@ const fr: Record<string, string> = {
 const en: Record<string, string> = {
   // ── Navigation & common ─────────────────────────────────
   "nav.back": "Back",
+  "nav.cancel": "Cancel",
   "nav.home": "HOME",
   "nav.history": "HISTORY",
   "nav.refresh": "Refresh page",
@@ -569,6 +573,8 @@ const en: Record<string, string> = {
   "team.members": "Members",
   "team.noMembers": "No members yet.",
   "team.completions": "{count} completion{s}",
+  "team.removeMember": "Remove",
+  "team.removeConfirm": "Remove {name} from the team?",
 
   // ── Construction sites ─────────────────────────────────
   "site.title": "Construction sites",

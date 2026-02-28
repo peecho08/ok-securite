@@ -196,6 +196,10 @@ export function getTeamName(): string {
   return safeStorage()?.getItem(TEAM_NAME_KEY) || "";
 }
 
+export function setTeamName(name: string): void {
+  safeStorage()?.setItem(TEAM_NAME_KEY, name);
+}
+
 export function getInviteToken(): string | null {
   return safeStorage()?.getItem(INVITE_TOKEN_KEY) ?? null;
 }
@@ -305,6 +309,22 @@ export function clearHistory() {
 }
 
 // ── Company info ──────────────────────────────────────────────────
+
+const REMOVED_MEMBERS_KEY = key("removed-members");
+
+export function getRemovedMembers(): string[] {
+  try {
+    return JSON.parse(safeStorage()?.getItem(REMOVED_MEMBERS_KEY) || "[]");
+  } catch { return []; }
+}
+
+export function addRemovedMember(name: string): void {
+  const list = getRemovedMembers();
+  if (!list.includes(name)) {
+    list.push(name);
+    safeStorage()?.setItem(REMOVED_MEMBERS_KEY, JSON.stringify(list));
+  }
+}
 
 const COMPANY_WEBSITE_KEY = key("company-website");
 const COMPANY_LOGO_KEY = key("company-logo");

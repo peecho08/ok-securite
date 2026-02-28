@@ -8,6 +8,7 @@ import { checklists } from "@/data/checklists";
 import { checklistItemsEn, phaseTitlesEn } from "@/data/checklists-en";
 import { tasks } from "@/data/tasks";
 import { addHistory, clearProgress, loadProgress } from "@/lib/storage";
+import { getLogoPngDataUrl } from "@/lib/pdf-logo";
 import { ArrowLeft } from "lucide-react";
 import { mergePhases } from "@/lib/locale-helpers";
 import { TaskIcon } from "@/components/task-icon";
@@ -118,15 +119,33 @@ export default function ConfirmPage() {
     const brandRgb: [number, number, number] = acqColors ? [248, 164, 27] : [17, 137, 20];
     doc.setFillColor(...brandRgb);
     doc.rect(0, 0, pageW, 40, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text("OK Chantier", margin, 18);
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
-    doc.text(localTitle(task), margin, 28);
-    doc.setFontSize(9);
-    doc.text(`${timestamp} — ${time}`, margin, 35);
+
+    try {
+      const logoDataUrl = await getLogoPngDataUrl();
+      const logoH = 16;
+      const logoW = logoH * (468 / 570);
+      doc.addImage(logoDataUrl, "PNG", margin, 4, logoW, logoH);
+      const textX = margin + logoW + 4;
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text("OK Chantier", textX, 18);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text(localTitle(task), textX, 28);
+      doc.setFontSize(9);
+      doc.text(`${timestamp} — ${time}`, textX, 35);
+    } catch {
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text("OK Chantier", margin, 18);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text(localTitle(task), margin, 28);
+      doc.setFontSize(9);
+      doc.text(`${timestamp} — ${time}`, margin, 35);
+    }
     y = 50;
 
     doc.setTextColor(0, 0, 0);

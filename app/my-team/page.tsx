@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
 import {
   getTeamName,
+  setTeamName as saveTeamName,
   getInviteToken,
   getWorkerName,
   getHistory,
@@ -12,9 +13,11 @@ import {
   setCompanyWebsite,
   getCompanyLogo,
   setCompanyLogo,
+  getRemovedMembers,
+  addRemovedMember,
   type HistoryEntry,
 } from "@/lib/storage";
-import { Copy, Check, Mail, MessageSquare, Users, Trophy, Globe, ImageIcon } from "lucide-react";
+import { Copy, Check, Mail, MessageSquare, Users, Trophy, Globe, ImageIcon, Trash2 } from "lucide-react";
 
 export default function MyTeamPage() {
   const { locale, t } = useLocale();
@@ -26,6 +29,8 @@ export default function MyTeamPage() {
   const [copied, setCopied] = useState(false);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [workerName, setWorkerName] = useState("");
+  const [removedMembers, setRemovedMembers] = useState<string[]>([]);
+  const [confirmingRemove, setConfirmingRemove] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -34,10 +39,17 @@ export default function MyTeamPage() {
     setLogo(getCompanyLogo());
     setHistory(getHistory());
     setWorkerName(getWorkerName());
+    setRemovedMembers(getRemovedMembers());
     const token = getInviteToken();
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     setInviteUrl(token ? `${origin}/join/${token}` : `${origin}/join/demo-invite-abc123`);
   }, [t]);
+
+  function handleRemoveMember(name: string) {
+    addRemovedMember(name);
+    setRemovedMembers((prev) => [...prev, name]);
+    setConfirmingRemove(null);
+  }
 
   function handleCopy() {
     if (!inviteUrl) return;
@@ -62,7 +74,7 @@ export default function MyTeamPage() {
     reader.readAsDataURL(file);
   }
 
-  const members = buildMembers(history, workerName);
+  const members = buildMembers(history, workerName).filter((m) => !removedMembers.includes(m.name));
 
   return (
     <div className="flex min-h-dvh flex-col bg-white dark:bg-neutral-900">
@@ -110,7 +122,14 @@ export default function MyTeamPage() {
               <div className="min-w-0 flex-1 space-y-3">
                 <div>
                   <p className="text-xs font-medium text-gray-400">{t("createTeam.companyName")}</p>
-                  <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{teamName}</p>
+                  <input
+                    type="text"
+                    value={teamName}
+                    onChange={(e) => setTeamName(e.target.value)}
+                    onBlur={() => saveTeamName(teamName.trim())}
+                    className="w-full border-b border-transparent bg-transparent font-heading text-base font-bold text-gray-900 outline-none transition-colors placeholder:text-gray-300 focus:border-gray-400 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-400"
+                    placeholder={t("supervisor.defaultTeamName")}
+                  />
                 </div>
                 <div>
                   <p className="mb-1 text-xs font-medium text-gray-400">{t("team.companyWebsite")}</p>
@@ -193,15 +212,56 @@ export default function MyTeamPage() {
               {members.map((m) => (
                 <div
                   key={m.name}
-                  className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-800"
+                  className={`overflow-hidden rounded-xl border bg-white dark:bg-neutral-800 transition-colors ${
+                    confirmingRemove === m.name
+                      ? "border-red-200 dark:border-red-800"
+                      : "border-gray-200 dark:border-neutral-700"
+                  }`}
                 >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 font-heading text-xs font-bold text-gray-500 dark:bg-neutral-700 dark:text-neutral-400">
-                    {m.name.charAt(0).toUpperCase()}
-                  </span>
-                  <span className="flex-1 truncate font-heading text-sm font-semibold">{m.name}</span>
-                  <span className="shrink-0 text-xs text-gray-400">
-                    {t("team.completions").replace("{count}", String(m.count)).replace("{s}", m.count !== 1 ? "s" : "")}
-                  </span>
+                  <div className="flex items-center gap-3 p-3">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 font-heading text-xs font-bold text-gray-500 dark:bg-neutral-700 dark:text-neutral-400">
+                      {m.name.charAt(0).toUpperCase()}
+                    </span>
+                    <span className="flex-1 truncate font-heading text-sm font-semibold">{m.name}</span>
+                    <span className="shrink-0 text-xs text-gray-400">
+                      {t("team.completions").replace("{count}", String(m.count)).replace("{s}", m.count !== 1 ? "s" : "")}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingRemove(confirmingRemove === m.name ? null : m.name)}
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors ${
+                        confirmingRemove === m.name
+                          ? "bg-red-100 text-red-500 dark:bg-red-900 dark:text-red-400"
+                          : "text-gray-300 hover:bg-red-50 hover:text-red-500 active:bg-red-100 dark:hover:bg-red-950 dark:hover:text-red-400"
+                      }`}
+                      aria-label={t("team.removeMember")}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  {confirmingRemove === m.name && (
+                    <div className="flex items-center justify-between border-t border-red-100 bg-red-50 px-4 py-2.5 dark:border-red-900 dark:bg-red-950/50">
+                      <span className="text-xs font-medium text-red-600 dark:text-red-400">
+                        {t("team.removeConfirm").replace("{name}", m.name)}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setConfirmingRemove(null)}
+                          className="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-white active:bg-white dark:text-neutral-400 dark:hover:bg-neutral-800"
+                        >
+                          {t("nav.cancel")}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMember(m.name)}
+                          className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-red-700 active:bg-red-700"
+                        >
+                          {t("team.removeMember")}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -209,7 +269,7 @@ export default function MyTeamPage() {
         </section>
 
         {/* Leaderboard */}
-        <Leaderboard workerName={workerName} history={history} />
+        <Leaderboard workerName={workerName} history={history} removedMembers={removedMembers} />
       </main>
     </div>
   );
@@ -226,7 +286,7 @@ function buildMembers(history: HistoryEntry[], currentUser: string) {
     .sort((a, b) => b.count - a.count);
 }
 
-function Leaderboard({ workerName, history }: { workerName: string; history: HistoryEntry[] }) {
+function Leaderboard({ workerName, history, removedMembers }: { workerName: string; history: HistoryEntry[]; removedMembers: string[] }) {
   const { t } = useLocale();
 
   const fallbackWorkers = [
@@ -242,7 +302,7 @@ function Leaderboard({ workerName, history }: { workerName: string; history: His
     { name: "Sébastien", count: 1 },
   ];
 
-  let leaderboard = fallbackWorkers;
+  let leaderboard = fallbackWorkers.filter((w) => !removedMembers.includes(w.name));
 
   if (history.length > 0) {
     const workerCounts = new Map<string, number>();
@@ -251,6 +311,7 @@ function Leaderboard({ workerName, history }: { workerName: string; history: His
       workerCounts.set(name, (workerCounts.get(name) || 0) + 1);
     }
     leaderboard = [...workerCounts.entries()]
+      .filter(([name]) => !removedMembers.includes(name))
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count);
   }

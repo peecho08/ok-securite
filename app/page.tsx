@@ -154,7 +154,6 @@ export default function HomePage() {
       />
 
       <SearchBar query={query} onQueryChange={setQuery} pinned={searchPinned} />
-      <MusicPlayer />
 
       <main className="flex-1 px-5 py-4 dark:bg-neutral-900 sm:px-8">
         {!ready ? (
@@ -169,13 +168,13 @@ export default function HomePage() {
         ) : (
           <>
             {!query && activeTasks.length === 0 && (
-              <section className="mx-auto mb-6 max-w-xs py-6 text-center">
+              <section className="mx-auto mb-5 max-w-xs py-4 text-center">
                 {workerName && (
-                  <p className="mb-3 font-heading text-lg font-semibold text-gray-400">
+                  <p className="mb-2 text-base font-semibold text-gray-400">
                     {t(greeting)}, {workerName}
                   </p>
                 )}
-                <p className="font-heading text-2xl font-bold text-gray-700 dark:text-neutral-200">
+                <p className="font-heading text-xl font-bold text-gray-700 dark:text-neutral-200">
                   &laquo;&nbsp;{t(quoteKey)}&nbsp;&raquo;
                 </p>
                 <p className="mt-1.5 text-sm text-gray-400">
