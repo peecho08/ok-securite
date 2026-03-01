@@ -175,16 +175,6 @@ export default function SiteDetailPage() {
       {/* Header */}
       <div className="safe-area-green-cover" />
       <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-5 sm:px-8">
-        <div className="flex justify-center">
-          <Image
-            src="/logo.svg"
-            alt="OK Chantier"
-            width={110}
-            height={28}
-            className="mb-4 h-5 w-auto brightness-0 invert opacity-30"
-            priority
-          />
-        </div>
         <div className="flex items-center justify-between">
           <Link href="/" className="inline-flex items-center gap-2 text-sm text-white/80 transition-colors active:text-white">
             <ArrowLeft className="h-4 w-4" />
