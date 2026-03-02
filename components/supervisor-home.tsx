@@ -12,7 +12,7 @@ import { Copy, Check, Users, ClipboardList, RotateCcw, ExternalLink, Mail, Messa
 
 export function SupervisorHome() {
   const { locale, setLocale, t } = useLocale();
-  const { theme, toggle: toggleTheme, acqColors } = useTheme();
+  const { theme, toggle: toggleTheme } = useTheme();
   const [teamName, setTeamName] = useState("");
   const [inviteUrl, setInviteUrl] = useState("");
   const [copied, setCopied] = useState(false);
@@ -87,7 +87,7 @@ export function SupervisorHome() {
   return (
     <div className="flex min-h-dvh flex-col dark:bg-neutral-900">
       {/* Header */}
-      <div className="safe-area-green-cover" />
+      <div className="safe-area-header-cover" />
       <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-5 sm:px-8">
         <div className="flex items-center justify-between">
           <Image
@@ -300,7 +300,7 @@ export function SupervisorHome() {
                         {site.address && <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-neutral-400">{site.address}</p>}
                       </div>
                     </Link>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${active ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"}`}>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${active ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary" : "bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"}`}>
                       {active ? t("siteDetail.active") : t("siteDetail.inactive")}
                     </span>
                     <button

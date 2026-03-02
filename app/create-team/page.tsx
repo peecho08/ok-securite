@@ -83,7 +83,7 @@ export default function CreateTeamPage() {
 
     return (
       <div className="flex min-h-dvh flex-col bg-white dark:bg-neutral-900">
-        <div className="safe-area-green-cover" />
+        <div className="safe-area-header-cover" />
         <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4">
           <Link href="/" className="inline-flex items-center gap-2 text-white/90 hover:text-white">
             <Image src="/logo.svg" alt="OK Chantier" width={120} height={32} className="acq-logo h-8 w-auto brightness-0 invert" />
@@ -137,7 +137,7 @@ export default function CreateTeamPage() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-white dark:bg-neutral-900">
-      <div className="safe-area-green-cover" />
+      <div className="safe-area-header-cover" />
       <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4">
         <Link href="/" className="inline-flex items-center gap-2 text-white/90 hover:text-white">
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -182,7 +182,7 @@ export default function CreateTeamPage() {
                   alt=""
                   className="h-8 w-8 rounded-lg object-contain"
                 />
-                <span className="text-xs text-green-600 dark:text-green-400">Logo détecté automatiquement</span>
+                <span className="text-xs text-primary dark:text-primary">Logo détecté automatiquement</span>
               </div>
             )}
           </div>
@@ -214,20 +214,20 @@ export default function CreateTeamPage() {
               onClick={() => fileRef.current?.click()}
               className={`flex w-full items-center gap-3 rounded-xl border-2 border-dashed px-4 py-3.5 text-left transition-colors ${
                 pdfName
-                  ? "border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-950/30"
+                  ? "border-primary/30 bg-primary/5 dark:border-primary/40 dark:bg-primary/10"
                   : "border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-neutral-600 dark:bg-neutral-800"
               }`}
             >
               {pdfName ? (
-                <Check className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400" />
+                <Check className="h-5 w-5 shrink-0 text-primary dark:text-primary" />
               ) : (
                 <Upload className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" />
               )}
               <div className="min-w-0 flex-1">
                 {pdfName ? (
                   <>
-                    <p className="truncate text-sm font-medium text-green-700 dark:text-green-300">{pdfName}</p>
-                    <p className="text-xs text-green-600/70 dark:text-green-400/60">{t("createTeam.preventionUploaded")}</p>
+                    <p className="truncate text-sm font-medium text-primary dark:text-primary">{pdfName}</p>
+                    <p className="text-xs text-primary/70 dark:text-primary/60">{t("createTeam.preventionUploaded")}</p>
                   </>
                 ) : (
                   <p className="text-sm text-gray-500 dark:text-neutral-400">{t("createTeam.preventionUploadHint")}</p>

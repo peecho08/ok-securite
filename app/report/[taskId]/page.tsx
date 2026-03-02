@@ -62,7 +62,7 @@ export default function ReportPage() {
   if (submitted) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center px-5 text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100 text-green-700">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
           <ClipboardCheck className="h-10 w-10" />
         </div>
         <h1 className="mt-6 text-2xl font-bold">{t("report.saved")}</h1>

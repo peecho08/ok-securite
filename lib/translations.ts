@@ -1,4 +1,4 @@
-const fr: Record<string, string> = {
+const fr: Record<string, string | string[]> = {
   // ── Navigation & common ─────────────────────────────────
   "nav.back": "Retour",
   "nav.cancel": "Annuler",
@@ -33,7 +33,6 @@ const fr: Record<string, string> = {
   "menu.wellbeing": "Bien-être",
   "menu.report": "Signaler un incident",
   "menu.editFavorites": "Modifier mes favoris",
-  "menu.acqColors": "Version CNESST",
   "menu.acqFormations": "Formations ACQ",
   "menu.acqFormationsDesc": "Cours pour entrepreneurs en construction",
   "menu.theme": "Mode sombre / clair",
@@ -106,7 +105,7 @@ const fr: Record<string, string> = {
   "task.unlockPrevious": "Complétez l'étape précédente pour débloquer.",
   "task.allChecked": "Tous les points sont cochés",
   "task.workerName": "Nom du travailleur (optionnel)",
-  "task.validate": "VALIDER LA LISTE ✓",
+  "task.validate": "SOUMETTRE LA LISTE",
   "task.remaining": "point(s) restant(s)",
   "task.unchecked": "Point décoché",
   "task.undo": "ANNULER",
@@ -146,7 +145,18 @@ const fr: Record<string, string> = {
   "confirm.statusComplete": "COMPLET",
 
   "confirm.date": "Date",
-  "confirm.wellDone": "Bien joué. Prends soin de toi.",
+  "confirm.wellDone": [
+    "Bien joué. Prends soin de toi.",
+    "Excellent travail. Reste vigilant.",
+    "Check complété. Bonne continuation!",
+    "Parfait. La sécurité, c'est toi.",
+    "Tout est en ordre. Beau boulot!",
+    "Mission accomplie. Garde le cap!",
+    "Solide. Continue comme ça.",
+    "Rien ne t'échappe. Bravo!",
+    "Impeccable. Retourne sur le terrain!",
+    "Checklist bouclée. À toi de jouer!"
+  ],
   "confirm.backToChecklist": "Revenir à la liste",
   "confirm.notify": "NOTIFIER MON SUPERVISEUR",
   "confirm.notified": "Notification envoyée",
@@ -314,7 +324,7 @@ const fr: Record<string, string> = {
   "phase.fin": "Fin des travaux",
 };
 
-const en: Record<string, string> = {
+const en: Record<string, string | string[]> = {
   // ── Navigation & common ─────────────────────────────────
   "nav.back": "Back",
   "nav.cancel": "Cancel",
@@ -349,7 +359,6 @@ const en: Record<string, string> = {
   "menu.wellbeing": "Well-being",
   "menu.report": "Report an incident",
   "menu.editFavorites": "Edit my favorites",
-  "menu.acqColors": "CNESST Version",
   "menu.acqFormations": "ACQ Formations",
   "menu.acqFormationsDesc": "Courses for construction entrepreneurs",
   "menu.theme": "Dark / Light mode",
@@ -422,7 +431,7 @@ const en: Record<string, string> = {
   "task.unlockPrevious": "Complete the previous step to unlock.",
   "task.allChecked": "All items checked",
   "task.workerName": "Worker name (optional)",
-  "task.validate": "VALIDATE CHECKLIST ✓",
+  "task.validate": "SUBMIT CHECKLIST",
   "task.remaining": "item(s) remaining",
   "task.unchecked": "Item unchecked",
   "task.undo": "UNDO",
@@ -462,7 +471,18 @@ const en: Record<string, string> = {
   "confirm.statusComplete": "COMPLETE",
 
   "confirm.date": "Date",
-  "confirm.wellDone": "Well done. Take care of yourself.",
+  "confirm.wellDone": [
+    "Well done. Take care of yourself.",
+    "Great job. Stay safe out there.",
+    "Checklist complete. Keep it up!",
+    "All clear. Nice work!",
+    "Solid effort. Safety first, always.",
+    "Nailed it. Back to the job site!",
+    "Everything checks out. Well done!",
+    "Nothing missed. Stay sharp!",
+    "Perfect run. You've got this!",
+    "All verified. Keep up the good work!"
+  ],
   "confirm.backToChecklist": "Back to checklist",
   "confirm.notify": "NOTIFY MY SUPERVISOR",
   "confirm.notified": "Notification sent",
@@ -630,4 +650,4 @@ const en: Record<string, string> = {
   "phase.fin": "After work",
 };
 
-export const translations: Record<string, Record<string, string>> = { fr, en };
+export const translations: Record<string, Record<string, string | string[]>> = { fr, en };

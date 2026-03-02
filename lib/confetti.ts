@@ -36,10 +36,10 @@ export function fireConfetti() {
 
   const W = window.innerWidth;
   const H = window.innerHeight;
-  const COUNT = 90;
-  const GRAVITY = 0.15;
-  const DRAG = 0.98;
-  const DURATION = 2800;
+  const COUNT = 150;
+  const GRAVITY = 0.14;
+  const DRAG = 0.985;
+  const DURATION = 3500;
 
   const particles: Particle[] = [];
   for (let i = 0; i < COUNT; i++) {

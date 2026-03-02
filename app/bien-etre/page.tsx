@@ -29,14 +29,14 @@ export default function BienEtrePage() {
           {t("wellbeing.intro")}
         </p>
 
-        <section className="mt-8 rounded-2xl border-2 border-green-200 bg-green-50 p-5 dark:border-green-800 dark:bg-green-950">
-          <h2 className="font-heading text-lg font-bold text-green-900">
+        <section className="mt-8 rounded-2xl border-2 border-primary/20 bg-primary/5 p-5 dark:border-primary/25 dark:bg-primary/10">
+          <h2 className="font-heading text-lg font-bold text-primary-dark">
             {t("wellbeing.buildHealthy")}
           </h2>
-          <p className="mt-2 text-sm text-green-800">
+          <p className="mt-2 text-sm text-primary-dark">
             {t("wellbeing.availability")}
           </p>
-          <p className="mt-1 text-sm text-green-700">
+          <p className="mt-1 text-sm text-primary">
             {t("wellbeing.forWorkers")}
           </p>
 
@@ -48,7 +48,7 @@ export default function BienEtrePage() {
             1 800 807-2433
           </a>
 
-          <ul className="mt-4 space-y-1.5 text-sm text-green-800">
+          <ul className="mt-4 space-y-1.5 text-sm text-primary-dark">
             <li>· {t("wellbeing.psychSupport")}</li>
             <li>· {t("wellbeing.stressSleep")}</li>
             <li>· {t("wellbeing.addictions")}</li>

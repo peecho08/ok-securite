@@ -173,7 +173,7 @@ export default function SiteDetailPage() {
   return (
     <div className="flex min-h-dvh flex-col dark:bg-neutral-900">
       {/* Header */}
-      <div className="safe-area-green-cover" />
+      <div className="safe-area-header-cover" />
       <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-5 sm:px-8">
         <div className="flex items-center justify-between">
           <Link href="/" className="inline-flex items-center gap-2 text-sm text-white/80 transition-colors active:text-white">
@@ -224,7 +224,7 @@ export default function SiteDetailPage() {
               className="flex w-full items-center justify-between px-4 py-3.5 text-left transition-colors active:bg-gray-50 dark:active:bg-neutral-700"
             >
               <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{t("siteDetail.status")}</span>
-              <span className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${isActive ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"}`}>
+              <span className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${isActive ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary" : "bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"}`}>
                 {isActive ? t("siteDetail.active") : t("siteDetail.inactive")}
               </span>
             </button>
@@ -307,7 +307,7 @@ export default function SiteDetailPage() {
                       {entry.workerCompany && <span className="text-gray-400 dark:text-neutral-500"> · {entry.workerCompany}</span>}
                     </p>
                   </div>
-                  <span className="shrink-0 rounded-md bg-green-100 px-2 py-0.5 font-heading text-[10px] font-semibold text-green-800 dark:bg-green-900 dark:text-green-300">
+                  <span className="shrink-0 rounded-md bg-primary/10 px-2 py-0.5 font-heading text-[10px] font-semibold text-primary-dark dark:bg-primary/20 dark:text-primary">
                     ✓ {entry.checkedCount}/{entry.totalCount}
                   </span>
                 </div>

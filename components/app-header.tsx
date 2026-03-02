@@ -17,7 +17,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHeaderProps) {
   const { locale, setLocale, t } = useLocale();
-  const { theme, toggle: toggleTheme, acqColors } = useTheme();
+  const { theme, toggle: toggleTheme } = useTheme();
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const [reportCount, setReportCount] = useState(0);
@@ -28,7 +28,7 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
 
   return (
     <>
-      <div className="safe-area-green-cover" />
+      <div className="safe-area-header-cover" />
       <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-4 sm:px-8">
         <div className="flex items-center justify-between gap-4">
           <button
@@ -48,40 +48,20 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
           </button>
 
           <div className="relative flex shrink-0 items-center gap-4 sm:gap-3">
-            {acqColors ? (
-              <a
-                href="https://www.acq.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center transition-opacity hover:opacity-80"
-              >
-                <Image
-                  src="/acq-logo.svg"
-                  alt="ACQ"
-                  width={120}
-                  height={40}
-                  className="h-[19px] w-auto brightness-0 invert"
-                />
-              </a>
-            ) : (
-              <a
-                href="https://www.cnesst.gouv.qc.ca/fr"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-end gap-1 transition-opacity hover:opacity-80"
-              >
-                <span className="text-xs text-white/80 underline decoration-white/40 underline-offset-2">
-                  {t("nav.poweredBy")}
-                </span>
-                <Image
-                  src="/cnesst-logo.svg"
-                  alt="CNESST"
-                  width={80}
-                  height={30}
-                  className="h-[19px] w-auto brightness-0 invert"
-                />
-              </a>
-            )}
+            <a
+              href="https://www.acq.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center transition-opacity hover:opacity-80"
+            >
+              <Image
+                src="/acq-logo.svg"
+                alt="ACQ"
+                width={120}
+                height={40}
+                className="h-[19px] w-auto brightness-0 invert"
+              />
+            </a>
             <button
               onClick={() => setShowMenu((v) => !v)}
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition-colors active:bg-white/40 sm:h-9 sm:w-9"
@@ -130,28 +110,26 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
                       </button>
                     )}
                   </div>
-                  {acqColors && (
-                    <a
-                      href="https://www.acq.org/formations/repertoire-des-cours/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setShowMenu(false)}
-                      className="mx-4 mt-3 mb-2 flex items-center gap-3 rounded-xl bg-amber-50 p-4 transition-colors active:bg-amber-100 dark:bg-amber-950/40"
-                    >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-white">
-                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-heading text-sm font-bold text-amber-900 dark:text-amber-200">{t("menu.acqFormations")}</p>
-                        <p className="text-xs text-amber-700 dark:text-amber-400">{t("menu.acqFormationsDesc")}</p>
-                      </div>
-                      <svg className="h-4 w-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  <a
+                    href="https://www.acq.org/formations/repertoire-des-cours/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setShowMenu(false)}
+                    className="mx-4 mt-3 mb-2 flex items-center gap-3 rounded-xl bg-amber-50 p-4 transition-colors active:bg-amber-100 dark:bg-amber-950/40"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-white">
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                       </svg>
-                    </a>
-                  )}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-heading text-sm font-bold text-amber-900 dark:text-amber-200">{t("menu.acqFormations")}</p>
+                      <p className="text-xs text-amber-700 dark:text-amber-400">{t("menu.acqFormationsDesc")}</p>
+                    </div>
+                    <svg className="h-4 w-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </a>
                   <div className="py-2 pb-[env(safe-area-inset-bottom)] sm:py-1 sm:pb-0">
                     <button
                       type="button"

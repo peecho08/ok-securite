@@ -14,13 +14,13 @@ import { mergePhases } from "@/lib/locale-helpers";
 import { TaskIcon } from "@/components/task-icon";
 import { Download } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
-import { useTheme } from "@/components/theme-provider";
+import { fireConfetti } from "@/lib/confetti";
 
 export default function ConfirmPage() {
   const { taskId } = useParams<{ taskId: string }>();
   const searchParams = useSearchParams();
   const { locale, t } = useLocale();
-  const { acqColors } = useTheme();
+  const wellDoneMsg = useMemo(() => t("confirm.wellDone"), []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const rawChecklist = checklists[taskId as string];
   const phases = useMemo(() => rawChecklist ? mergePhases(rawChecklist.phases) : [], [rawChecklist]);
@@ -116,7 +116,7 @@ export default function ConfirmPage() {
     const addPage = () => { doc.addPage(); y = 20; };
     const checkSpace = (needed: number) => { if (y + needed > 275) addPage(); };
 
-    const brandRgb: [number, number, number] = acqColors ? [248, 164, 27] : [17, 137, 20];
+    const brandRgb: [number, number, number] = [248, 164, 27];
     const headerRgb: [number, number, number] = [30, 35, 36];
     doc.setFillColor(...headerRgb);
     doc.rect(0, 0, pageW, 40, "F");
@@ -213,10 +213,11 @@ export default function ConfirmPage() {
     const filename = `ok-chantier-${taskId}-${now.toISOString().slice(0, 10)}.pdf`;
     doc.save(filename);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [task, phases, checkedIds, naIds, checkedCount, naCount, items, workerName, timestamp, time, taskId, now, locale, t, acqColors, locationLabel, siteName]);
+  }, [task, phases, checkedIds, naIds, checkedCount, naCount, items, workerName, timestamp, time, taskId, now, locale, t, locationLabel, siteName]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
+      fireConfetti();
       try { navigator?.vibrate?.([10, 30, 10, 30, 40]); } catch { /* unsupported */ }
     }, 600);
     return () => clearTimeout(timer);
@@ -265,7 +266,7 @@ export default function ConfirmPage() {
         </Link>
       </div>
       <main className="flex flex-1 flex-col items-center justify-center px-5 py-5 text-center sm:px-8">
-        <div className="flex h-28 w-28 animate-stamp items-center justify-center rounded-full bg-green-100">
+        <div className="flex h-28 w-28 animate-stamp items-center justify-center rounded-full bg-primary/10">
           <Image
             src="/ok.svg"
             alt="OK"
@@ -316,7 +317,7 @@ export default function ConfirmPage() {
           </div>
           <div className="flex items-center justify-between border-b border-gray-100 py-3 dark:border-neutral-700">
             <span className="text-sm text-muted">{t("confirm.status")}</span>
-            <span className="font-heading rounded-md bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800">
+            <span className="font-heading rounded-md bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-dark">
               {t("confirm.statusComplete")}
             </span>
           </div>
@@ -331,7 +332,7 @@ export default function ConfirmPage() {
         </div>
 
         <p className="animate-confirm-card mt-3 text-sm text-muted">
-          {t("confirm.wellDone")}
+          {wellDoneMsg}
         </p>
       </main>
 
@@ -372,7 +373,7 @@ export default function ConfirmPage() {
           </button>
         )}
         {notified && (
-          <div className="mb-2 flex items-center justify-center gap-2 rounded-xl bg-green-50 py-3 text-sm font-medium text-green-700">
+          <div className="mb-2 flex items-center justify-center gap-2 rounded-xl bg-primary/5 py-3 text-sm font-medium text-primary">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>

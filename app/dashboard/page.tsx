@@ -8,8 +8,8 @@ import { TaskIcon } from "@/components/task-icon";
 
 function StatCard({ value, label, accent }: { value: string | number; label: string; accent?: boolean }) {
   return (
-    <div className={`rounded-2xl border p-5 ${accent ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950" : "border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800"}`}>
-      <p className={`font-heading text-3xl font-bold ${accent ? "text-green-700 dark:text-green-400" : "text-gray-900 dark:text-neutral-100"}`}>
+    <div className={`rounded-2xl border p-5 ${accent ? "border-primary/20 bg-primary/5 dark:border-primary/25 dark:bg-primary/10" : "border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800"}`}>
+      <p className={`font-heading text-3xl font-bold ${accent ? "text-primary dark:text-primary" : "text-gray-900 dark:text-neutral-100"}`}>
         {value}
       </p>
       <p className="mt-1 text-sm text-muted">{label}</p>
@@ -117,7 +117,7 @@ export default function DashboardPage() {
                         <div className="flex w-full max-w-[28px] items-end">
                           <div
                             className={`animate-bar-grow w-full rounded-md ${
-                              isToday ? "bg-green-500" : "bg-green-400/60"
+                              isToday ? "bg-primary" : "bg-primary/60"
                             }`}
                             style={{ height: `${pct}%`, animationDelay: `${i * 0.08}s` }}
                           />
@@ -130,7 +130,7 @@ export default function DashboardPage() {
               <div className="mt-2 flex gap-3">
                 {weekDays.map((day, i) => (
                   <div key={i} className="flex-1 text-center">
-                    <span className={`text-[10px] uppercase ${i === 6 ? "font-bold text-green-600" : "text-muted"}`}>
+                    <span className={`text-[10px] uppercase ${i === 6 ? "font-bold text-primary" : "text-muted"}`}>
                       {day.label}
                     </span>
                   </div>
@@ -179,7 +179,7 @@ export default function DashboardPage() {
                     <p className="font-heading text-sm font-semibold leading-tight">{entry.title}</p>
                     <p className="mt-0.5 text-xs text-muted">{entry.time} — {entry.worker}</p>
                   </div>
-                  <span className="shrink-0 rounded-md bg-green-100 px-2 py-0.5 font-heading text-[10px] font-semibold text-green-800">
+                  <span className="shrink-0 rounded-md bg-primary/10 px-2 py-0.5 font-heading text-[10px] font-semibold text-primary-dark">
                     ✓
                   </span>
                 </div>

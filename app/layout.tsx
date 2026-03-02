@@ -63,9 +63,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${rubik.variable} ${workSans.variable} acq-colors`}>
+    <html lang="fr" className={`${rubik.variable} ${workSans.variable}`}>
       <body className="bg-[var(--color-surface)] text-[#111] dark:bg-neutral-950 dark:text-neutral-100">
-        {/* Inline-styled green safe-area cover: matches content column width (max-w-3xl), no full-width header */}
         <div
           aria-hidden="true"
           style={{ position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '48rem', zIndex: 1, height: 'env(safe-area-inset-top, 0px)', backgroundColor: 'var(--color-header)', pointerEvents: 'none' as const }}

@@ -125,7 +125,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
             <button
               type="button"
               onClick={handleCreateTeam}
-              className="flex flex-col items-center gap-2 rounded-xl border-2 border-gray-200 bg-gray-50/50 p-4 text-center transition-colors hover:border-[var(--color-primary)] hover:bg-green-50/50 active:bg-green-50"
+              className="flex flex-col items-center gap-2 rounded-xl border-2 border-gray-200 bg-gray-50/50 p-4 text-center transition-colors hover:border-[var(--color-primary)] hover:bg-primary/5 active:bg-primary/10"
             >
               <p className="font-heading font-bold text-gray-900">{t("role.createTeam")}</p>
               <p className="text-xs text-gray-500">{t("role.createTeamDesc")}</p>
@@ -133,7 +133,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
             <button
               type="button"
               onClick={handleJoinTeam}
-              className="flex flex-col items-center gap-2 rounded-xl border-2 border-gray-200 bg-gray-50/50 p-4 text-center transition-colors hover:border-[var(--color-primary)] hover:bg-green-50/50 active:bg-green-50"
+              className="flex flex-col items-center gap-2 rounded-xl border-2 border-gray-200 bg-gray-50/50 p-4 text-center transition-colors hover:border-[var(--color-primary)] hover:bg-primary/5 active:bg-primary/10"
             >
               <p className="font-heading font-bold text-gray-900">{t("role.joinTeam")}</p>
               <p className="text-xs text-gray-500">{t("role.joinTeamDesc")}</p>
@@ -325,13 +325,13 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
                           onClick={() => toggle(task.id)}
                           className={`flex items-center gap-3 rounded-xl border-2 p-3.5 text-left transition-colors ${
                             isSelected
-                              ? "border-green-500 bg-green-50"
+                              ? "border-primary bg-primary/5"
                               : "border-gray-200 bg-white hover:border-gray-300 active:bg-gray-50"
                           }`}
                         >
                           <span
                             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                              isSelected ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                              isSelected ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-500"
                             }`}
                           >
                             <TaskIcon taskId={task.id} className="h-4.5 w-4.5" />

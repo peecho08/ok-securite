@@ -78,7 +78,7 @@ export default function MyTeamPage() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-white dark:bg-neutral-900">
-      <div className="safe-area-green-cover" />
+      <div className="safe-area-header-cover" />
       <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-5 sm:px-8">
         <Link
           href="/"

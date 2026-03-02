@@ -27,7 +27,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback(
-    (key: string) => translations[locale]?.[key] ?? translations.fr[key] ?? key,
+    (key: string) => {
+      const val = translations[locale]?.[key] ?? translations.fr[key] ?? key;
+      if (Array.isArray(val)) return val[Math.floor(Math.random() * val.length)];
+      return val;
+    },
     [locale],
   );
 

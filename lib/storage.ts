@@ -133,19 +133,6 @@ export function hasFavorites(): boolean {
   return s ? s.getItem(FAVORITES_KEY) !== null : false;
 }
 
-// ── Color mode (ACQ) ─────────────────────────────────────────────
-
-const COLOR_KEY = key("acq-colors");
-
-export function getAcqColors(): boolean {
-  const s = safeStorage();
-  return s ? s.getItem(COLOR_KEY) !== "0" : true;
-}
-
-export function setAcqColors(on: boolean) {
-  safeStorage()?.setItem(COLOR_KEY, on ? "1" : "0");
-}
-
 // ── Role (Worker / Supervisor) — no real auth, localStorage only ───
 
 export type ActiveRole = "worker" | "supervisor";

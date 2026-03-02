@@ -12,7 +12,7 @@ import { mergePhases } from "@/lib/locale-helpers";
 import { useLocale } from "@/lib/i18n";
 import { getLogoPngDataUrl } from "@/lib/pdf-logo";
 import { AlertTriangle, Camera, Download, MapPin } from "lucide-react";
-import { fireConfetti } from "@/lib/confetti";
+
 
 function haptic(pattern: number | number[] = 15) {
   try { navigator?.vibrate?.(pattern); } catch { /* unsupported */ }
@@ -409,7 +409,6 @@ export default function TaskPage() {
   }, [task, phases, checked, na, allItems, workerName, availableSites, selectedSiteId, taskId, locale, t]);
 
   function navigateToConfirm() {
-    fireConfetti();
     const selectedSite = availableSites.find((s) => s.id === selectedSiteId);
     const params = new URLSearchParams({
       items: String(allItems.length),
@@ -569,7 +568,7 @@ export default function TaskPage() {
                   <h2 className="font-heading text-base font-semibold text-muted">{localPhaseTitle(group.title)}</h2>
                 </button>
 
-                <span className={`flex shrink-0 items-center gap-1.5 text-xs ${allPhaseResolved ? "text-green-600 font-medium" : "text-muted"}`}>
+                <span className={`flex shrink-0 items-center gap-1.5 text-xs ${allPhaseResolved ? "text-primary font-medium" : "text-muted"}`}>
                   {resolvedInPhase}/{group.items.length}
                   {allPhaseResolved && (
                     <svg className="h-4 w-4 animate-phase-check" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -595,7 +594,7 @@ export default function TaskPage() {
                           onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleCheck(item.id); } }}
                           className={`flex w-full cursor-pointer items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
                             isChecked
-                              ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950"
+                              ? "border-primary/20 bg-primary/5 dark:border-primary/25 dark:bg-primary/10"
                               : isNa
                                 ? "border-gray-200 bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800/50"
                                 : item.critical
@@ -606,10 +605,10 @@ export default function TaskPage() {
                           <div
                             className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-2 transition-colors ${
                               isChecked
-                                ? "animate-check-fill border-green-600 bg-green-600 text-white"
+                                ? "animate-check-fill border-primary bg-primary text-white"
                                 : isNa
                                   ? "border-gray-300 dark:border-neutral-600"
-                                  : item.critical ? "border-red-400 active:border-green-500" : "border-gray-300 active:border-green-500"
+                                  : item.critical ? "border-red-400 active:border-primary" : "border-gray-300 active:border-primary"
                             }`}
                             aria-label="Done"
                           >
@@ -620,7 +619,7 @@ export default function TaskPage() {
                             )}
                           </div>
                           <span className={`flex min-w-0 flex-1 flex-col items-start gap-0.5 text-base leading-snug ${
-                            isChecked ? "text-green-900 dark:text-green-200" : isNa ? "text-gray-400 line-through dark:text-neutral-500" : ""
+                            isChecked ? "text-primary-dark dark:text-primary" : isNa ? "text-gray-400 line-through dark:text-neutral-500" : ""
                           }`}>
                             {item.critical && !isChecked && !isNa && (
                               <span className="flex items-center gap-1 rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700 dark:bg-red-900 dark:text-red-300">
@@ -686,7 +685,7 @@ export default function TaskPage() {
           disabled={!allResolved}
           className={`w-full rounded-xl py-3.5 font-heading text-sm font-bold tracking-wide transition-colors ${
             allResolved
-              ? "bg-black text-accent hover:bg-gray-900 active:bg-gray-900 dark:bg-green-600 dark:text-white dark:hover:bg-green-700"
+              ? "bg-black text-accent hover:bg-gray-900 active:bg-gray-900 dark:bg-primary dark:text-white dark:hover:bg-primary-dark"
               : "cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"
           }`}
         >
@@ -752,32 +751,32 @@ export default function TaskPage() {
                 <>
                   <div className="absolute inset-0 bg-black/30" />
                   <div className="animate-scan-grid absolute inset-0" />
-                  <div className="animate-scan-line absolute inset-x-0 h-[2px]" style={{ filter: "drop-shadow(0 0 12px rgba(74,222,128,0.9))" }}>
-                    <div className="h-full w-full bg-green-400" />
-                    <div className="absolute inset-x-0 -bottom-6 h-12 bg-gradient-to-b from-green-400/25 to-transparent" />
+                  <div className="animate-scan-line absolute inset-x-0 h-[2px]" style={{ filter: "drop-shadow(0 0 12px rgba(251,191,36,0.9))" }}>
+                    <div className="h-full w-full bg-amber-400" />
+                    <div className="absolute inset-x-0 -bottom-6 h-12 bg-gradient-to-b from-amber-400/25 to-transparent" />
                   </div>
                   <div className="absolute inset-5">
-                    <div className="animate-scan-corner absolute left-0 top-0 h-8 w-8 border-l-2 border-t-2 border-green-400" />
-                    <div className="animate-scan-corner absolute right-0 top-0 h-8 w-8 border-r-2 border-t-2 border-green-400" />
-                    <div className="animate-scan-corner absolute bottom-0 left-0 h-8 w-8 border-b-2 border-l-2 border-green-400" />
-                    <div className="animate-scan-corner absolute bottom-0 right-0 h-8 w-8 border-b-2 border-r-2 border-green-400" />
+                    <div className="animate-scan-corner absolute left-0 top-0 h-8 w-8 border-l-2 border-t-2 border-amber-400" />
+                    <div className="animate-scan-corner absolute right-0 top-0 h-8 w-8 border-r-2 border-t-2 border-amber-400" />
+                    <div className="animate-scan-corner absolute bottom-0 left-0 h-8 w-8 border-b-2 border-l-2 border-amber-400" />
+                    <div className="animate-scan-corner absolute bottom-0 right-0 h-8 w-8 border-b-2 border-r-2 border-amber-400" />
                   </div>
                   <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <div className="animate-scan-pulse-ring h-20 w-20 rounded-full border border-green-400/50" />
-                    <div className="absolute left-1/2 top-1/2 h-1 w-8 -translate-x-1/2 -translate-y-1/2 bg-green-400/60" />
-                    <div className="absolute left-1/2 top-1/2 h-8 w-1 -translate-x-1/2 -translate-y-1/2 bg-green-400/60" />
+                    <div className="animate-scan-pulse-ring h-20 w-20 rounded-full border border-amber-400/50" />
+                    <div className="absolute left-1/2 top-1/2 h-1 w-8 -translate-x-1/2 -translate-y-1/2 bg-amber-400/60" />
+                    <div className="absolute left-1/2 top-1/2 h-8 w-1 -translate-x-1/2 -translate-y-1/2 bg-amber-400/60" />
                   </div>
                   <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent px-5 pb-8 pt-[calc(env(safe-area-inset-top)+1rem)]">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
-                      <span className="font-heading text-xs font-bold uppercase tracking-widest text-green-400">{t("task.scanTitle")}</span>
+                      <div className="h-2 w-2 animate-pulse rounded-full bg-amber-400" />
+                      <span className="font-heading text-xs font-bold uppercase tracking-widest text-amber-400">{t("task.scanTitle")}</span>
                     </div>
-                    <span className="font-mono text-[10px] text-green-400/60">AI VISION</span>
+                    <span className="font-mono text-[10px] text-amber-400/60">AI VISION</span>
                   </div>
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-5 pb-5 pt-10">
                     <p className="text-sm text-neutral-300">{t("task.scanning")}</p>
                     <div className="mt-2 h-1 overflow-hidden rounded-full bg-neutral-700">
-                      <div className="h-full w-2/3 rounded-full bg-green-500" style={{ animation: "scan-line 2s ease-in-out infinite" }} />
+                      <div className="h-full w-2/3 rounded-full bg-amber-500" style={{ animation: "scan-line 2s ease-in-out infinite" }} />
                     </div>
                   </div>
                 </>
@@ -827,7 +826,7 @@ export default function TaskPage() {
               </ul>
               <button
                 onClick={closeScan}
-                className="mt-5 w-full rounded-xl bg-green-500 py-3.5 font-heading text-sm font-bold text-black transition-colors active:bg-green-600"
+                className="mt-5 w-full rounded-xl bg-primary py-3.5 font-heading text-sm font-bold text-black transition-colors active:bg-primary-dark"
               >
                 {t("task.scanClose")}
               </button>

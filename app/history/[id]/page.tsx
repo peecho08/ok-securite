@@ -133,7 +133,7 @@ export default function HistoryDetailPage() {
             <span className="text-sm text-muted">
               {t("history.detail.status")}
             </span>
-            <span className="rounded-md bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800 dark:bg-green-900 dark:text-green-300">
+            <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-dark dark:bg-primary/20 dark:text-primary">
               {entry.checkedCount}/{entry.totalCount}
             </span>
           </div>
@@ -154,10 +154,10 @@ export default function HistoryDetailPage() {
                   {group.items.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-start gap-2.5 rounded-lg bg-green-50 px-3 py-2 dark:bg-green-950/40"
+                      className="flex items-start gap-2.5 rounded-lg bg-primary/5 px-3 py-2 dark:bg-primary/10"
                     >
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
-                      <span className="text-sm text-green-900 dark:text-green-200">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary dark:text-primary" />
+                      <span className="text-sm text-primary-dark dark:text-primary">
                         {localItemLabel(item)}
                       </span>
                     </div>
