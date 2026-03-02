@@ -482,19 +482,32 @@ export function getReportCount(): number {
 
 // ── Fresh start (demo) ────────────────────────────────────────────
 
-/** Clears all app data for a fresh first-time experience. Use for demo. */
+/** Clears worker/demo data for a fresh presentation, keeping employer config. */
 export function resetAllForFreshStart(): void {
   const s = safeStorage();
   if (!s) return;
   const prefix = `${PREFIX}:`;
+  const preserve = new Set([
+    key("team-tasks"),
+    key("construction-sites"),
+    key("team-name"),
+    key("supervisor-org-id"),
+    key("invite-token"),
+    key("dashboard-secret"),
+    key("worker-name"),
+    key("company-website"),
+    key("company-logo"),
+    key("lang"),
+    key("unlocked"),
+    key("last-site-id"),
+  ]);
   try {
     const keys: string[] = [];
     for (let i = 0; i < s.length; i++) {
       const k = s.key(i);
-      if (k && k.startsWith(prefix)) keys.push(k);
+      if (k && k.startsWith(prefix) && !preserve.has(k)) keys.push(k);
     }
     keys.forEach((k) => s.removeItem(k));
-    s.removeItem("ok-chantier:nda-accepted");
   } catch { /* ignore */ }
 }
 

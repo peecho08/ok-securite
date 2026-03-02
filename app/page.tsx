@@ -195,7 +195,7 @@ export default function HomePage() {
                 <TaskList grouped={teamGrouped} />
                 <button
                   onClick={() => setShowAllTasks((v) => !v)}
-                  className="mx-auto mb-4 mt-2 flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-500 shadow-sm transition-colors hover:border-gray-400 hover:text-gray-700 active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-500 dark:hover:text-neutral-200"
+                  className="mx-auto mb-4 mt-6 flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-500 shadow-sm transition-colors hover:border-gray-400 hover:text-gray-700 active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-500 dark:hover:text-neutral-200"
                 >
                   {showAllTasks ? t("home.hideAll") : t("home.showAll")}
                   <svg

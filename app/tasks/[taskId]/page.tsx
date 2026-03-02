@@ -7,7 +7,7 @@ import { tasks } from "@/data/tasks";
 import { checklists } from "@/data/checklists";
 import { checklistItemsEn, phaseTitlesEn } from "@/data/checklists-en";
 import type { Phase } from "@/types";
-import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress, getSites, setLastSiteId, type ConstructionSite } from "@/lib/storage";
+import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress, getSites, getLastSiteId, setLastSiteId, type ConstructionSite } from "@/lib/storage";
 import { mergePhases } from "@/lib/locale-helpers";
 import { useLocale } from "@/lib/i18n";
 import { getLogoPngDataUrl } from "@/lib/pdf-logo";
@@ -125,6 +125,10 @@ export default function TaskPage() {
     addRecentTask(taskId);
     const sites = getSites();
     setAvailableSites(sites);
+    const lastId = getLastSiteId();
+    if (lastId && sites.some((s) => s.id === lastId && s.active !== false)) {
+      setSelectedSiteId(lastId);
+    }
   }, [taskId, shouldResume]);
 
   // Persist progress on change

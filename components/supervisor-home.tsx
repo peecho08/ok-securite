@@ -201,6 +201,24 @@ export function SupervisorHome() {
       )}
 
       <main className="flex-1 px-5 py-5 sm:px-8">
+        {/* Quick links */}
+        <section className="mb-5 grid grid-cols-2 gap-3">
+          <Link
+            href="/create-team"
+            className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
+          >
+            <Users className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
+            <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{t("supervisor.manageTeam")}</span>
+          </Link>
+          <Link
+            href="/dashboard"
+            className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
+          >
+            <ClipboardList className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
+            <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{t("menu.dashboard")}</span>
+          </Link>
+        </section>
+
         {/* Invite link — quick copy + share */}
         <section className="mb-5">
           <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
@@ -376,23 +394,6 @@ export function SupervisorHome() {
           )}
         </section>
 
-        {/* Quick links */}
-        <section className="mt-6 grid grid-cols-2 gap-3">
-          <Link
-            href="/create-team"
-            className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
-          >
-            <Users className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
-            <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{t("supervisor.manageTeam")}</span>
-          </Link>
-          <Link
-            href="/dashboard"
-            className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
-          >
-            <ClipboardList className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
-            <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{t("menu.dashboard")}</span>
-          </Link>
-        </section>
       </main>
     </div>
   );
