@@ -59,9 +59,9 @@ export function AppHeader({ workerName, onFreshStart }: AppHeaderProps) {
 
             {showMenu && (
               <>
-                <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setShowMenu(false)} aria-hidden />
+                <div className="fixed inset-0 z-40 animate-fade-in bg-black/30" onClick={() => setShowMenu(false)} aria-hidden />
                 <div
-                  className="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] overflow-y-auto rounded-t-2xl border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] dark:border-neutral-700 dark:bg-neutral-800"
+                  className="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] animate-sheet-up overflow-y-auto rounded-t-2xl border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] dark:border-neutral-700 dark:bg-neutral-800"
                   onTouchStart={(e) => {
                     (e.currentTarget as HTMLElement).dataset.touchY = String(e.touches[0].clientY);
                   }}

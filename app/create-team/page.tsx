@@ -22,6 +22,13 @@ function TaskPicker({ onDone, editMode }: { onDone: () => void; editMode: boolea
     return new Set<string>();
   });
   const [search, setSearch] = useState("");
+  const [pinned, setPinned] = useState(false);
+
+  useEffect(() => {
+    function onScroll() { setPinned(window.scrollY > 20); }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const catLabels = locale === "en" ? categoryLabelsEn : categoryLabels;
   const categories = Object.keys(catLabels) as TaskCategory[];
@@ -54,7 +61,7 @@ function TaskPicker({ onDone, editMode }: { onDone: () => void; editMode: boolea
   return (
     <div className="flex min-h-dvh flex-col dark:bg-neutral-900">
       <div className="safe-area-header-cover" />
-      <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-5 sm:px-8">
+      <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-3 sm:px-8">
         <Link href="/" className="inline-flex items-center gap-2 text-sm text-white/80 transition-colors hover:text-white">
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -68,18 +75,29 @@ function TaskPicker({ onDone, editMode }: { onDone: () => void; editMode: boolea
           {t("createTeam.selectTasksHint")}
         </p>
       </header>
-      <main className="flex-1 px-5 py-5 sm:px-8">
-
-        <div className="relative mt-4">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+      <div className={`sticky top-0 z-10 bg-[var(--color-header)] px-5 pb-3 sm:px-8 transition-[padding] duration-200 ${pinned ? "pt-3" : "pt-1"}`}>
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("onboarding.searchPlaceholder")}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-neutral-500 dark:focus:bg-neutral-700"
+            className="w-full rounded-lg border border-white/30 bg-white/15 py-2.5 pl-10 pr-4 text-sm text-white outline-none placeholder:text-white/50 transition-colors focus:border-white/50 focus:bg-white/20"
           />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
+      </div>
+      <main className="flex-1 px-5 py-5 sm:px-8">
 
         <div className="mt-5 space-y-6 pb-28">
           {categories.map((cat) => {
@@ -90,7 +108,7 @@ function TaskPicker({ onDone, editMode }: { onDone: () => void; editMode: boolea
                 <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
                   {catLabels[cat]}
                 </h2>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid gap-2.5">
                   {catTasks.map((task) => {
                     const isSelected = selected.has(task.id);
                     const title = locale === "en" && task.titleEn ? task.titleEn : task.title;
@@ -99,19 +117,29 @@ function TaskPicker({ onDone, editMode }: { onDone: () => void; editMode: boolea
                         key={task.id}
                         type="button"
                         onClick={() => toggle(task.id)}
-                        className={`flex flex-col items-center gap-1.5 rounded-xl border-2 px-2 py-3 text-center transition-all ${
+                        className={`flex items-center gap-3.5 rounded-xl border-2 p-3.5 text-left transition-all ${
                           isSelected
                             ? "border-[var(--color-primary)] bg-primary/5 dark:border-[var(--color-primary)] dark:bg-primary/10"
                             : "border-gray-200 bg-white hover:border-gray-300 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600"
                         }`}
                       >
-                        <TaskIcon taskId={task.id} className="h-6 w-6" />
-                        <span className={`text-xs font-medium leading-tight ${isSelected ? "text-[var(--color-primary)]" : "text-gray-700 dark:text-neutral-300"}`}>
+                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+                          isSelected
+                            ? "bg-primary/10 text-[var(--color-primary)] dark:bg-primary/20"
+                            : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300"
+                        }`}>
+                          <TaskIcon taskId={task.id} className="h-5 w-5" />
+                        </span>
+                        <span className={`min-w-0 flex-1 text-sm font-semibold leading-tight ${isSelected ? "text-[var(--color-primary)]" : "text-gray-700 dark:text-neutral-300"}`}>
                           {title}
                         </span>
-                        {isSelected && (
-                          <Check className="h-3.5 w-3.5 text-[var(--color-primary)]" />
-                        )}
+                        <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                          isSelected
+                            ? "border-[var(--color-primary)] bg-[var(--color-primary)]"
+                            : "border-gray-300 dark:border-neutral-600"
+                        }`}>
+                          {isSelected && <Check className="h-3 w-3 text-white" />}
+                        </span>
                       </button>
                     );
                   })}
@@ -128,9 +156,20 @@ function TaskPicker({ onDone, editMode }: { onDone: () => void; editMode: boolea
       </main>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-gray-200 bg-white/95 px-5 py-4 backdrop-blur-sm dark:border-neutral-700 dark:bg-neutral-900/95 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-        <p className="mb-2 text-center text-xs text-gray-500 dark:text-neutral-400">
-          {t("createTeam.taskCount").replace("{count}", String(selected.size)).replace("{s}", selected.size > 1 ? "s" : "")}
-        </p>
+        <div className="mb-2 flex items-center justify-center gap-2">
+          <p className="text-center text-xs text-gray-500 dark:text-neutral-400">
+            {t("createTeam.taskCount").replace("{count}", String(selected.size)).replaceAll("{s}", selected.size > 1 ? "s" : "")}
+          </p>
+          {selected.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setSelected(new Set())}
+              className="text-xs font-medium text-red-500 transition-colors hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+            >
+              {t("createTeam.unselectAll")}
+            </button>
+          )}
+        </div>
         <button
           type="button"
           onClick={handleSave}

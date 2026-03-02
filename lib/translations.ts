@@ -76,6 +76,7 @@ const fr: Record<string, string | string[]> = {
   "createTeam.selectTasks": "Tâches de votre entreprise",
   "createTeam.selectTasksHint": "Sélectionnez les tâches que votre équipe effectue.",
   "createTeam.taskCount": "{count} tâche{s} sélectionnée{s}",
+  "createTeam.unselectAll": "Tout désélectionner",
 
   // ── Join team ────────────────────────────────────────────
   "joinTeam.title": "Rejoindre une équipe",
@@ -426,6 +427,7 @@ const en: Record<string, string | string[]> = {
   "createTeam.selectTasks": "Your company's tasks",
   "createTeam.selectTasksHint": "Select the tasks your team performs.",
   "createTeam.taskCount": "{count} task{s} selected",
+  "createTeam.unselectAll": "Unselect all",
 
   // ── Join team ────────────────────────────────────────────
   "joinTeam.title": "Join a team",
