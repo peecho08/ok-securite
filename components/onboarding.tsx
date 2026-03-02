@@ -171,7 +171,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
             value={joinLink}
             onChange={(e) => setJoinLink(e.target.value)}
             placeholder={t("joinTeam.pastePlaceholder")}
-            className="mt-4 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white"
+            className="mt-4 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-700"
           />
           <button
             type="button"
@@ -229,7 +229,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={t("onboarding.namePlaceholder")}
-            className="mt-5 w-full max-w-sm rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-center text-base text-black outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white animate-slide-in-up"
+            className="mt-5 w-full max-w-sm rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-center text-base text-black outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-700 animate-slide-in-up"
             style={{ animationDelay: "0.45s" }}
           />
 

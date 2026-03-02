@@ -122,19 +122,15 @@ export default function ConfirmPage() {
 
     try {
       const logoDataUrl = await getLogoPngDataUrl();
-      const logoH = 16;
-      const logoW = logoH * (468 / 570);
-      doc.addImage(logoDataUrl, "PNG", margin, 4, logoW, logoH);
-      const textX = margin + logoW + 4;
+      const logoH = 10;
+      const logoW = logoH * (2108 / 570);
+      doc.addImage(logoDataUrl, "PNG", margin, 6, logoW, logoH);
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
-      doc.setFont("helvetica", "bold");
-      doc.text("OK Chantier", textX, 18);
       doc.setFontSize(11);
       doc.setFont("helvetica", "normal");
-      doc.text(localTitle(task), textX, 28);
+      doc.text(localTitle(task), margin, 28);
       doc.setFontSize(9);
-      doc.text(`${timestamp} — ${time}`, textX, 35);
+      doc.text(`${timestamp} — ${time}`, margin, 35);
     } catch {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
@@ -260,29 +256,29 @@ export default function ConfirmPage() {
           {t("confirm.backToChecklist")}
         </Link>
       </div>
-      <main className="flex flex-1 flex-col items-center justify-center px-5 py-10 text-center sm:px-8">
-        <div className="flex h-48 w-48 animate-stamp items-center justify-center rounded-full bg-green-100 sm:h-56 sm:w-56">
+      <main className="flex flex-1 flex-col items-center justify-center px-5 py-5 text-center sm:px-8">
+        <div className="flex h-28 w-28 animate-stamp items-center justify-center rounded-full bg-green-100">
           <Image
             src="/ok.svg"
             alt="OK"
             width={94}
             height={49}
-            className="acq-logo h-20 w-auto sm:h-24"
+            className="acq-logo h-12 w-auto"
           />
         </div>
 
         <div className="animate-confirm-content">
-          <h1 className="mt-6 text-2xl font-bold">
+          <h1 className="mt-4 text-xl font-bold">
             {t("confirm.complete")}
           </h1>
 
-          <div className="mt-3 flex items-center justify-center gap-2 text-muted">
-            <TaskIcon taskId={taskId} className="h-5 w-5" />
+          <div className="mt-1.5 flex items-center justify-center gap-2 text-muted">
+            <TaskIcon taskId={taskId} className="h-4 w-4" />
             <span className="text-sm">{localTitle(task)}</span>
           </div>
         </div>
 
-        <div className="animate-confirm-card mt-8 w-full max-w-md rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-800">
+        <div className="animate-confirm-card mt-5 w-full max-w-md rounded-xl border border-gray-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
           {workerName && (
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <span className="text-sm text-muted">{t("confirm.worker")}</span>
@@ -326,12 +322,12 @@ export default function ConfirmPage() {
           </div>
         </div>
 
-        <p className="animate-confirm-card mt-4 text-sm text-muted">
+        <p className="animate-confirm-card mt-3 text-sm text-muted">
           {t("confirm.wellDone")}
         </p>
       </main>
 
-      <div className="animate-confirm-footer border-t border-gray-100 px-5 py-4 dark:border-neutral-800 sm:px-8">
+      <div className="animate-confirm-footer border-t border-gray-100 px-5 py-3 dark:border-neutral-800 sm:px-8">
         {!notified && (
           <button
             onClick={async () => {
@@ -362,13 +358,13 @@ export default function ConfirmPage() {
                 /* user cancelled share — do nothing */
               }
             }}
-            className="mb-3 w-full rounded-xl bg-[var(--color-primary)] py-3.5 font-heading text-sm font-bold tracking-wide text-white transition-colors hover:bg-[var(--color-primary-dark)] active:bg-[var(--color-primary-dark)]"
+            className="mb-2 w-full rounded-xl bg-[var(--color-primary)] py-3 font-heading text-sm font-bold tracking-wide text-white transition-colors hover:bg-[var(--color-primary-dark)] active:bg-[var(--color-primary-dark)]"
           >
             {t("confirm.notify")}
           </button>
         )}
         {notified && (
-          <div className="mb-3 flex items-center justify-center gap-2 rounded-xl bg-green-50 py-3.5 text-sm font-medium text-green-700">
+          <div className="mb-2 flex items-center justify-center gap-2 rounded-xl bg-green-50 py-3 text-sm font-medium text-green-700">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
@@ -377,7 +373,7 @@ export default function ConfirmPage() {
         )}
         <button
           onClick={generatePdf}
-          className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-gray-800 py-3.5 font-heading text-sm font-bold tracking-wide transition-colors active:bg-gray-100 dark:border-neutral-300 dark:text-neutral-100 dark:active:bg-neutral-700"
+          className="mb-2 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-gray-800 py-3 font-heading text-sm font-bold tracking-wide transition-colors active:bg-gray-100 dark:border-neutral-300 dark:text-neutral-100 dark:active:bg-neutral-700"
         >
           <Download className="h-4 w-4" />
           {t("confirm.downloadPdf")}
@@ -385,7 +381,7 @@ export default function ConfirmPage() {
         <Link
           href="/"
           onClick={handleFinish}
-          className="block w-full py-3.5 text-center text-sm font-medium text-gray-500 transition-colors active:text-gray-700 dark:text-neutral-400 dark:active:text-neutral-200"
+          className="block w-full py-3 text-center text-sm font-medium text-gray-500 transition-colors active:text-gray-700 dark:text-neutral-400 dark:active:text-neutral-200"
         >
           {t("nav.home")}
         </Link>

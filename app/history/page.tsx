@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { tasks } from "@/data/tasks";
-import { clearHistory, getHistory, type HistoryEntry } from "@/lib/storage";
+import { clearHistory, getHistory, getWorkerName, getActiveRole, type HistoryEntry } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
 import { useLocale } from "@/lib/i18n";
 
@@ -12,7 +12,14 @@ export default function HistoryPage() {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
 
   useEffect(() => {
-    setEntries(getHistory());
+    const all = getHistory();
+    const role = getActiveRole();
+    if (role === "supervisor") {
+      setEntries(all);
+    } else {
+      const name = getWorkerName();
+      setEntries(name ? all.filter((e) => e.workerName === name) : all);
+    }
   }, []);
 
   const dateLocale = locale === "en" ? "en-CA" : "fr-FR";

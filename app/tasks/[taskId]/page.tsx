@@ -311,19 +311,15 @@ export default function TaskPage() {
 
     try {
       const logoDataUrl = await getLogoPngDataUrl();
-      const logoH = 16;
-      const logoW = logoH * (468 / 570);
-      doc.addImage(logoDataUrl, "PNG", margin, 4, logoW, logoH);
-      const textX = margin + logoW + 4;
+      const logoH = 10;
+      const logoW = logoH * (2108 / 570);
+      doc.addImage(logoDataUrl, "PNG", margin, 6, logoW, logoH);
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
-      doc.setFont("helvetica", "bold");
-      doc.text("OK Chantier", textX, 18);
       doc.setFontSize(11);
       doc.setFont("helvetica", "normal");
-      doc.text(localTitle(task), textX, 28);
+      doc.text(localTitle(task), margin, 28);
       doc.setFontSize(9);
-      doc.text(dateTimeStr, textX, 35);
+      doc.text(dateTimeStr, margin, 35);
     } catch {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
@@ -490,7 +486,7 @@ export default function TaskPage() {
             <select
               value={selectedSiteId}
               onChange={(e) => setSelectedSiteId(e.target.value)}
-              className="min-w-0 flex-1 appearance-none bg-transparent text-sm font-medium text-gray-700 outline-none dark:text-neutral-200"
+              className="min-w-0 flex-1 appearance-none bg-transparent text-sm font-medium text-gray-700 outline-none dark:bg-neutral-800 dark:text-neutral-200 [&>option]:bg-white [&>option]:text-gray-700 dark:[&>option]:bg-neutral-800 dark:[&>option]:text-neutral-200"
             >
               <option value="">{t("site.select")}</option>
               {availableSites.filter((s) => s.active !== false).map((site) => (
@@ -684,31 +680,17 @@ export default function TaskPage() {
 
       {/* Sticky CTA */}
       <div className="fixed bottom-0 left-1/2 z-20 w-full max-w-3xl -translate-x-1/2 border-t border-gray-100 bg-white px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={generatePdf}
-            disabled={resolvedCount === 0}
-            className={`flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-xl transition-colors ${
-              resolvedCount > 0
-                ? "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-200 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
-                : "cursor-not-allowed bg-gray-100 text-gray-300 dark:bg-neutral-800 dark:text-neutral-600"
-            }`}
-            aria-label={t("confirm.downloadPdf")}
-          >
-            <Download className="h-5 w-5" />
-          </button>
-          <button
-            onClick={handleConfirm}
-            disabled={!allResolved}
-            className={`flex-1 rounded-xl py-3.5 font-heading text-sm font-bold tracking-wide transition-colors ${
-              allResolved
-                ? "bg-black text-accent hover:bg-gray-900 active:bg-gray-900 dark:bg-green-600 dark:text-white dark:hover:bg-green-700"
-                : "cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"
-            }`}
-          >
-            {allResolved ? t("task.validate") : `${allItems.length - resolvedCount} ${t("task.remaining")}`}
-          </button>
-        </div>
+        <button
+          onClick={handleConfirm}
+          disabled={!allResolved}
+          className={`w-full rounded-xl py-3.5 font-heading text-sm font-bold tracking-wide transition-colors ${
+            allResolved
+              ? "bg-black text-accent hover:bg-gray-900 active:bg-gray-900 dark:bg-green-600 dark:text-white dark:hover:bg-green-700"
+              : "cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"
+          }`}
+        >
+          {allResolved ? t("task.validate") : `${allItems.length - resolvedCount} ${t("task.remaining")}`}
+        </button>
       </div>
 
 

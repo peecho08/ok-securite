@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useLocale } from "@/lib/i18n";
-import { setSupervisorOrg, setActiveRole, setWorkerName, getTeamName, getInviteToken, getDashboardSecret } from "@/lib/storage";
+import { setSupervisorOrg, setActiveRole, setWorkerName, setCompanyLogo, getTeamName, getInviteToken, getDashboardSecret } from "@/lib/storage";
 import { Upload, Check, Copy, Mail, MessageSquare } from "lucide-react";
 
 function randomId() {
@@ -19,7 +19,21 @@ export default function CreateTeamPage() {
   const [pdfName, setPdfName] = useState("");
   const [done, setDone] = useState(false);
   const [copied, setCopied] = useState<"invite" | "dashboard" | null>(null);
+  const [fetchedLogo, setFetchedLogo] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const match = supervisorEmail.match(/@([^\s@]+\.[^\s@]+)$/);
+    if (!match) { setFetchedLogo(null); return; }
+    const domain = match[1].toLowerCase();
+    const freeProviders = ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "icloud.com", "live.com", "msn.com"];
+    if (freeProviders.includes(domain)) { setFetchedLogo(null); return; }
+    const url = `https://logo.clearbit.com/${domain}`;
+    const img = new window.Image();
+    img.onload = () => setFetchedLogo(url);
+    img.onerror = () => setFetchedLogo(null);
+    img.src = url;
+  }, [supervisorEmail]);
 
   const inviteToken = typeof window !== "undefined" ? getInviteToken() : null;
   const dashboardSecret = typeof window !== "undefined" ? getDashboardSecret() : null;
@@ -37,6 +51,7 @@ export default function CreateTeamPage() {
     const dash = randomId();
     setSupervisorOrg(orgId, name, inv, dash);
     if (supervisorName.trim()) setWorkerName(supervisorName.trim());
+    if (fetchedLogo) setCompanyLogo(fetchedLogo);
     setActiveRole("supervisor");
     setDone(true);
   }
@@ -145,7 +160,7 @@ export default function CreateTeamPage() {
               value={supervisorName}
               onChange={(e) => setSupervisorName(e.target.value)}
               placeholder={t("createTeam.yourNamePlaceholder")}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:placeholder:text-neutral-500 dark:focus:border-[var(--color-primary)]"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-[var(--color-primary)] dark:focus:bg-neutral-700"
             />
           </div>
           <div>
@@ -158,8 +173,18 @@ export default function CreateTeamPage() {
               value={supervisorEmail}
               onChange={(e) => setSupervisorEmail(e.target.value)}
               placeholder={t("createTeam.yourEmailPlaceholder")}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:placeholder:text-neutral-500 dark:focus:border-[var(--color-primary)]"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-[var(--color-primary)] dark:focus:bg-neutral-700"
             />
+            {fetchedLogo && (
+              <div className="mt-2 flex items-center gap-2.5">
+                <img
+                  src={fetchedLogo}
+                  alt=""
+                  className="h-8 w-8 rounded-lg object-contain"
+                />
+                <span className="text-xs text-green-600 dark:text-green-400">Logo détecté automatiquement</span>
+              </div>
+            )}
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-neutral-300">
@@ -170,7 +195,7 @@ export default function CreateTeamPage() {
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
               placeholder={t("createTeam.namePlaceholder")}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:placeholder:text-neutral-500 dark:focus:border-[var(--color-primary)]"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-[var(--color-primary)] dark:focus:bg-neutral-700"
             />
           </div>
           <div>
