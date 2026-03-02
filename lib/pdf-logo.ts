@@ -13,6 +13,9 @@ export async function getLogoPngDataUrl(): Promise<string> {
     const img = new window.Image();
     img.onload = () => {
       ctx.drawImage(img, 0, 0, CANVAS_W * SCALE, CANVAS_H * SCALE);
+      ctx.globalCompositeOperation = "source-in";
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, CANVAS_W * SCALE, CANVAS_H * SCALE);
       URL.revokeObjectURL(img.src);
       resolve(canvas.toDataURL("image/png"));
     };

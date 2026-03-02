@@ -1,7 +1,7 @@
 {
   "name": "OK Chantier — Sécurité",
   "short_name": "OK Chantier",
-  "description": "Checklist sécurité chantier — rapide et fiable",
+  "description": "Liste de vérification sécurité chantier — rapide et fiable",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#118914",

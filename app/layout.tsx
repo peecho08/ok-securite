@@ -24,7 +24,7 @@ const workSans = Work_Sans({
 
 export const metadata: Metadata = {
   title: "OK Chantier",
-  description: "Checklist sécurité chantier — rapide et fiable",
+  description: "Liste de vérification sécurité chantier — rapide et fiable",
   icons: { icon: "/ok-fav-icon.svg", apple: "/ok-fav-icon.svg" },
   manifest: "/manifest.json",
   appleWebApp: {

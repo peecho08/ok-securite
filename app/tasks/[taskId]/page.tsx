@@ -178,6 +178,28 @@ export default function TaskPage() {
     return () => clearTimeout(t);
   }, [phaseToast]);
 
+  const scrollToNextUnresolved = useCallback((justResolvedId: string) => {
+    setTimeout(() => {
+      const ordered = phases.flatMap(p => {
+        if (collapsed.has(p.phase)) return [];
+        return [...p.items].sort((a, b) => (a.critical && !b.critical ? -1 : !a.critical && b.critical ? 1 : 0));
+      });
+      const idx = ordered.findIndex(item => item.id === justResolvedId);
+      if (idx === -1) return;
+      const next = ordered.slice(idx + 1).find(item =>
+        !checked.has(item.id) && !na.has(item.id) && item.id !== justResolvedId
+      );
+      if (!next) return;
+      const el = document.querySelector(`[data-item-id="${next.id}"]`);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const viewBottom = window.innerHeight - 80;
+      if (rect.top < 0 || rect.bottom > viewBottom) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 350);
+  }, [phases, collapsed, checked, na]);
+
   const toggleCheck = useCallback((id: string) => {
     const wasChecked = checked.has(id);
     haptic(wasChecked ? HAPTIC_UNCHECK : HAPTIC_CHECK);
@@ -188,11 +210,11 @@ export default function TaskPage() {
       else next.add(id);
       return next;
     });
-    // If checking, remove from N/A
     if (!wasChecked) {
       setNa((prev) => { const next = new Set(prev); next.delete(id); return next; });
+      scrollToNextUnresolved(id);
     }
-  }, [checked]);
+  }, [checked, scrollToNextUnresolved]);
 
   const toggleNa = useCallback((id: string) => {
     haptic(HAPTIC_NA);
@@ -204,11 +226,11 @@ export default function TaskPage() {
       else next.add(id);
       return next;
     });
-    // If marking N/A, remove from checked
     if (!wasNa) {
       setChecked((prev) => { const next = new Set(prev); next.delete(id); return next; });
+      scrollToNextUnresolved(id);
     }
-  }, [na]);
+  }, [na, scrollToNextUnresolved]);
 
   const togglePhaseCollapse = useCallback((phase: Phase) => {
     setCollapsed((prev) => {
@@ -312,7 +334,8 @@ export default function TaskPage() {
     const checkSpace = (needed: number) => { if (y + needed > 275) addPage(); };
 
     const brandRgb: [number, number, number] = [17, 137, 20];
-    doc.setFillColor(...brandRgb);
+    const headerRgb: [number, number, number] = [30, 35, 36];
+    doc.setFillColor(...headerRgb);
     doc.rect(0, 0, pageW, 40, "F");
 
     const now = new Date();
@@ -535,7 +558,6 @@ export default function TaskPage() {
           ref={fileInputRef}
           type="file"
           accept="image/*"
-          capture="environment"
           className="hidden"
           onChange={handleScanFile}
         />
@@ -599,6 +621,7 @@ export default function TaskPage() {
                     return (
                       <SwipeItem key={item.id} onSwipe={() => { if (!isChecked && !isNa) toggleCheck(item.id); }}>
                         <div
+                          data-item-id={item.id}
                           role="button"
                           tabIndex={0}
                           onClick={() => toggleCheck(item.id)}

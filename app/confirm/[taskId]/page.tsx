@@ -117,7 +117,8 @@ export default function ConfirmPage() {
     const checkSpace = (needed: number) => { if (y + needed > 275) addPage(); };
 
     const brandRgb: [number, number, number] = acqColors ? [248, 164, 27] : [17, 137, 20];
-    doc.setFillColor(...brandRgb);
+    const headerRgb: [number, number, number] = [30, 35, 36];
+    doc.setFillColor(...headerRgb);
     doc.rect(0, 0, pageW, 40, "F");
 
     try {
