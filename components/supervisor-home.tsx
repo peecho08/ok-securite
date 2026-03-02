@@ -98,7 +98,22 @@ export function SupervisorHome() {
             className="acq-logo h-8 w-auto brightness-0 invert"
             priority
           />
-          <button
+          <div className="flex items-center gap-3">
+            <a
+              href="https://www.acq.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center transition-opacity hover:opacity-80"
+            >
+              <Image
+                src="/acq-logo.svg"
+                alt="ACQ"
+                width={120}
+                height={40}
+                className="h-[19px] w-auto brightness-0 invert"
+              />
+            </a>
+            <button
               type="button"
               onClick={() => setShowMenu((v) => !v)}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white transition-colors active:bg-white/40"
@@ -107,6 +122,7 @@ export function SupervisorHome() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </button>
+          </div>
         </div>
         <h1 className="mt-4 font-heading text-2xl font-bold text-white">{teamName || t("supervisor.myTeam")}</h1>
         {workerName && <p className="mt-0.5 text-sm text-white/70">{workerName} · {t("menu.supervisor")}</p>}
