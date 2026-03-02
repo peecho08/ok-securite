@@ -215,6 +215,13 @@ export default function ConfirmPage() {
   }, [task, phases, checkedIds, naIds, checkedCount, naCount, items, workerName, timestamp, time, taskId, now, locale, t, acqColors, locationLabel, siteName]);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      try { navigator?.vibrate?.([10, 30, 10, 30, 40]); } catch { /* unsupported */ }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     if (!task || saved || !progressLoaded || geoLoading) return;
     addHistory({
       taskId,

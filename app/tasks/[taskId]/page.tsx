@@ -7,15 +7,20 @@ import { tasks } from "@/data/tasks";
 import { checklists } from "@/data/checklists";
 import { checklistItemsEn, phaseTitlesEn } from "@/data/checklists-en";
 import type { Phase } from "@/types";
-import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress, getSites, type ConstructionSite } from "@/lib/storage";
+import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress, getSites, getLastSiteId, setLastSiteId, type ConstructionSite } from "@/lib/storage";
 import { mergePhases } from "@/lib/locale-helpers";
 import { useLocale } from "@/lib/i18n";
 import { getLogoPngDataUrl } from "@/lib/pdf-logo";
 import { AlertTriangle, Camera, Download, MapPin } from "lucide-react";
 
-function haptic() {
-  try { navigator?.vibrate?.(10); } catch { /* unsupported */ }
+function haptic(pattern: number | number[] = 15) {
+  try { navigator?.vibrate?.(pattern); } catch { /* unsupported */ }
 }
+const HAPTIC_CHECK = 15;
+const HAPTIC_UNCHECK = 8;
+const HAPTIC_NA = 6;
+const HAPTIC_PHASE = [15, 50, 15];
+const HAPTIC_ALL_DONE = [10, 30, 10, 30, 40];
 
 function linkifyPhones(text: string) {
   const phoneRegex = /(1[\s-]?\d{3}[\s-]\d{3}[\s-]\d{4})/g;
@@ -117,7 +122,12 @@ export default function TaskPage() {
       clearProgress(taskId);
     }
     addRecentTask(taskId);
-    setAvailableSites(getSites());
+    const sites = getSites();
+    setAvailableSites(sites);
+    const lastId = getLastSiteId();
+    if (lastId && sites.some((s) => s.id === lastId && s.active !== false)) {
+      setSelectedSiteId(lastId);
+    }
   }, [taskId, shouldResume]);
 
   // Persist progress on change
@@ -145,7 +155,7 @@ export default function TaskPage() {
       const group = phases.find((g) => g.phase === newlyCompleted);
       if (group) {
         setPhaseToast({ phase: newlyCompleted, title: group.title });
-        haptic();
+        haptic(HAPTIC_PHASE);
 
         const completedIdx = phases.findIndex((g) => g.phase === newlyCompleted);
         const nextPhase = phases[completedIdx + 1];
@@ -169,9 +179,9 @@ export default function TaskPage() {
   }, [phaseToast]);
 
   const toggleCheck = useCallback((id: string) => {
-    haptic();
-    userToggledRef.current = true;
     const wasChecked = checked.has(id);
+    haptic(wasChecked ? HAPTIC_UNCHECK : HAPTIC_CHECK);
+    userToggledRef.current = true;
     setChecked((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -185,7 +195,7 @@ export default function TaskPage() {
   }, [checked]);
 
   const toggleNa = useCallback((id: string) => {
-    haptic();
+    haptic(HAPTIC_NA);
     userToggledRef.current = true;
     const wasNa = na.has(id);
     setNa((prev) => {
@@ -421,6 +431,7 @@ export default function TaskPage() {
   }
 
   function handleConfirm() {
+    haptic(HAPTIC_ALL_DONE);
     if (uncheckedCritical.length > 0) {
       setShowCriticalWarning(true);
       return;
@@ -454,12 +465,12 @@ export default function TaskPage() {
                 clearProgress(taskId);
                 router.push("/");
               }}
-              className="flex h-10 items-center gap-1.5 rounded-lg px-3 text-xs text-red-300 transition-colors hover:bg-white/10 active:bg-white/10"
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-red-300 transition-colors hover:bg-white/10 active:bg-white/10"
+              aria-label={t("task.abandon")}
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6h12z" />
               </svg>
-              {t("task.abandon")}
             </button>
           )}
         </div>
@@ -471,7 +482,7 @@ export default function TaskPage() {
           />
         </div>
         <p className="mt-1 text-xs text-white/60">
-          {resolvedCount} / {allItems.length} {t("task.verifications")}
+          <span key={resolvedCount} className="inline-block animate-count-bump">{resolvedCount}</span> / {allItems.length} {t("task.verifications")}
         </p>
       </header>
 
@@ -485,7 +496,7 @@ export default function TaskPage() {
             </span>
             <select
               value={selectedSiteId}
-              onChange={(e) => setSelectedSiteId(e.target.value)}
+              onChange={(e) => { setSelectedSiteId(e.target.value); setLastSiteId(e.target.value); }}
               className="min-w-0 flex-1 appearance-none bg-transparent text-sm font-medium text-gray-700 outline-none dark:bg-neutral-800 dark:text-neutral-200 [&>option]:bg-white [&>option]:text-gray-700 dark:[&>option]:bg-neutral-800 dark:[&>option]:text-neutral-200"
             >
               <option value="">{t("site.select")}</option>
@@ -636,7 +647,7 @@ export default function TaskPage() {
                                   e.stopPropagation();
                                   setExpandedInfo(expandedInfo === item.id ? null : item.id);
                                 }}
-                                className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                                className={`mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors ${
                                   expandedInfo === item.id
                                     ? "bg-gray-200 text-gray-700 dark:bg-neutral-600 dark:text-neutral-200"
                                     : "bg-gray-100 text-gray-500 hover:bg-gray-200 active:bg-gray-300 dark:bg-neutral-700 dark:text-neutral-400"
@@ -648,7 +659,7 @@ export default function TaskPage() {
                             )}
                             <button
                               onClick={(e) => { e.stopPropagation(); toggleNa(item.id); }}
-                              className={`mt-0.5 flex h-9 shrink-0 items-center justify-center rounded-full px-2.5 text-xs font-bold transition-colors ${
+                              className={`mt-0.5 flex h-11 shrink-0 items-center justify-center rounded-full px-3.5 text-sm font-bold transition-colors ${
                                 isNa
                                   ? "bg-gray-400 text-white dark:bg-neutral-500"
                                   : "bg-gray-100 text-gray-500 hover:bg-gray-200 active:bg-gray-300 dark:bg-neutral-700 dark:text-neutral-400"

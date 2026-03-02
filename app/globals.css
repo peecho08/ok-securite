@@ -110,16 +110,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes stamp {
-  0% { opacity: 0; transform: scale(3) rotate(-15deg); }
-  35% { opacity: 1; transform: scale(0.82) rotate(3deg); }
-  50% { transform: scale(1.12) rotate(-2deg); }
-  65% { transform: scale(0.95) rotate(1deg); }
-  80% { transform: scale(1.04) rotate(-0.5deg); }
+  0% { opacity: 0; transform: scale(4) rotate(-12deg); }
+  25% { opacity: 1; transform: scale(0.78) rotate(4deg); }
+  40% { transform: scale(1.15) rotate(-3deg); }
+  55% { transform: scale(0.92) rotate(2deg); }
+  70% { transform: scale(1.06) rotate(-1deg); }
+  85% { transform: scale(0.98) rotate(0.5deg); }
   100% { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 
 .animate-stamp {
-  animation: stamp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.8s both;
+  animation: stamp 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.6s both;
 }
 
 @keyframes confirm-fade-in {
@@ -158,6 +159,16 @@ h1, h2, h3, h4, h5, h6 {
 
 .animate-phase-check {
   animation: phase-check 0.35s ease-out;
+}
+
+@keyframes count-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+.animate-count-bump {
+  animation: count-bump 0.25s ease-out;
 }
 
 @keyframes check-pop {

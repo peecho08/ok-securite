@@ -367,6 +367,19 @@ export interface ConstructionSite {
   createdAt?: string;
 }
 
+const LAST_SITE_KEY = key("last-site-id");
+
+export function getLastSiteId(): string {
+  return safeStorage()?.getItem(LAST_SITE_KEY) || "";
+}
+
+export function setLastSiteId(id: string): void {
+  const s = safeStorage();
+  if (!s) return;
+  if (id) s.setItem(LAST_SITE_KEY, id);
+  else s.removeItem(LAST_SITE_KEY);
+}
+
 const SITES_KEY = key("construction-sites");
 
 export function getSites(): ConstructionSite[] {
