@@ -501,7 +501,7 @@ export function resetAllForFreshStart(): void {
 // ── Seed demo data ────────────────────────────────────────────────
 
 const DEMO_SEEDED_KEY = key("demo-seeded");
-const DEMO_VERSION = "5";
+const DEMO_VERSION = "6";
 
 export function isDemoSeeded(): boolean {
   try {
@@ -604,11 +604,24 @@ export function seedDemoData() {
     }
   }
 
+  const demoSites: ConstructionSite[] = [
+    { id: "site-1", name: "Condo des Draveurs", address: "120 boul. des Draveurs, Gatineau", active: true, createdAt: new Date(now - 10 * DAY).toISOString() },
+    { id: "site-2", name: "Centre Sportif Aylmer", address: "55 rue Principale, Aylmer", active: true, createdAt: new Date(now - 8 * DAY).toISOString() },
+    { id: "site-3", name: "Pont du Rapibus Phase 2", address: "Boul. Maloney, Gatineau", active: true, createdAt: new Date(now - 6 * DAY).toISOString() },
+    { id: "site-4", name: "Résidence du Plateau", address: "430 boul. du Plateau, Hull", active: true, createdAt: new Date(now - 4 * DAY).toISOString() },
+    { id: "site-5", name: "École secondaire Mont-Bleu", address: "225 boul. Mont-Bleu, Hull", active: true, createdAt: new Date(now - 2 * DAY).toISOString() },
+  ];
+
   try {
     entries.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
     const existing = getHistory();
     const merged = [...entries, ...existing].slice(0, MAX_HISTORY);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(merged));
+
+    if (getSites().length === 0) {
+      localStorage.setItem(SITES_KEY, JSON.stringify(demoSites));
+    }
+
     localStorage.setItem(DEMO_SEEDED_KEY, DEMO_VERSION);
   } catch { /* ignore */ }
 }

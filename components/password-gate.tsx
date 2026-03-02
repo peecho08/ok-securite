@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { isUnlocked, setUnlocked } from "@/lib/storage";
+import { useLocale } from "@/lib/i18n";
 
 const APP_PASSWORD = process.env.NEXT_PUBLIC_APP_PASSWORD;
 
@@ -11,6 +12,7 @@ interface PasswordGateProps {
 }
 
 export function PasswordGate({ children }: PasswordGateProps) {
+  const { t } = useLocale();
   const [unlocked, setUnlockedState] = useState(false);
   const [ready, setReady] = useState(false);
   const [password, setPassword] = useState("");
@@ -21,12 +23,10 @@ export function PasswordGate({ children }: PasswordGateProps) {
     setReady(true);
   }, []);
 
-  // No password configured — skip gate
   if (!APP_PASSWORD || APP_PASSWORD === "") {
     return <>{children}</>;
   }
 
-  // Not yet hydrated — show loading to avoid flash
   if (!ready) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-[var(--color-primary)]">
@@ -46,7 +46,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
       setUnlocked();
       setUnlockedState(true);
     } else {
-      setError("Mot de passe incorrect");
+      setError(t("password.incorrect"));
     }
   }
 
@@ -62,14 +62,14 @@ export function PasswordGate({ children }: PasswordGateProps) {
       <form onSubmit={handleSubmit} className="w-full max-w-xs space-y-4">
         <div>
           <label htmlFor="pw" className="mb-2 block text-sm font-medium text-white/90">
-            Mot de passe
+            {t("password.label")}
           </label>
           <input
             id="pw"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Entrez le mot de passe"
+            placeholder={t("password.placeholder")}
             autoFocus
             autoComplete="current-password"
             className="w-full rounded-xl border border-white/30 bg-white/15 px-4 py-3.5 text-white placeholder:text-white/50 outline-none transition-colors focus:border-white/50 focus:bg-white/20"
@@ -82,7 +82,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
           type="submit"
           className="w-full rounded-xl bg-white py-3.5 font-heading text-sm font-bold tracking-wide text-[var(--color-primary)] transition-colors hover:bg-white/95 active:bg-white/90"
         >
-          ENTRER
+          {t("password.enter")}
         </button>
       </form>
     </div>

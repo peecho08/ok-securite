@@ -17,7 +17,7 @@ const fr: Record<string, string | string[]> = {
   "home.greeting.evening": "Bonne soirée",
   "home.chooseTask": "Choisissez une tâche pour commencer.",
   "home.ongoing": "En cours",
-  "home.myTasks": "Mes tâches",
+  "home.myTasks": "Tâches de l'entreprise",
   "home.favorites": "Favoris",
   "home.edit": "Modifier",
   "home.noResults": "Aucune tâche trouvée",
@@ -26,6 +26,8 @@ const fr: Record<string, string | string[]> = {
   "home.verifications": "vérifications",
   "home.abandonConfirm": "Abandonner cette inspection ?",
   "home.abandon": "Abandonner",
+  "home.showAll": "Voir toutes les tâches",
+  "home.hideAll": "Masquer",
 
   // ── Menu ────────────────────────────────────────────────
   "menu.worker": "Travailleur",
@@ -327,6 +329,23 @@ const fr: Record<string, string | string[]> = {
   // ── Phase titles ────────────────────────────────────────
   "phase.avant": "Avant les travaux",
   "phase.fin": "Fin des travaux",
+
+  // ── Offline ────────────────────────────────────────────
+  "offline.message": "Hors ligne — les données sont sauvegardées localement",
+
+  // ── Error page ─────────────────────────────────────────
+  "error.title": "Une erreur s'est produite.",
+  "error.subtitle": "Rechargez la page ou réessayez plus tard.",
+  "error.retry": "Réessayer",
+
+  // ── Password gate ──────────────────────────────────────
+  "password.label": "Mot de passe",
+  "password.placeholder": "Entrez le mot de passe",
+  "password.incorrect": "Mot de passe incorrect",
+  "password.enter": "ENTRER",
+
+  // ── Create team misc ───────────────────────────────────
+  "createTeam.logoDetected": "Logo détecté automatiquement",
 };
 
 const en: Record<string, string | string[]> = {
@@ -348,7 +367,7 @@ const en: Record<string, string | string[]> = {
   "home.greeting.evening": "Good evening",
   "home.chooseTask": "Choose a task to get started.",
   "home.ongoing": "In progress",
-  "home.myTasks": "My tasks",
+  "home.myTasks": "Company tasks",
   "home.favorites": "Favorites",
   "home.edit": "Edit",
   "home.noResults": "No tasks found",
@@ -357,6 +376,8 @@ const en: Record<string, string | string[]> = {
   "home.verifications": "checks",
   "home.abandonConfirm": "Abandon this inspection?",
   "home.abandon": "Abandon",
+  "home.showAll": "Show all tasks",
+  "home.hideAll": "Hide",
 
   // ── Menu ────────────────────────────────────────────────
   "menu.worker": "Worker",
@@ -658,6 +679,23 @@ const en: Record<string, string | string[]> = {
   // ── Phase titles ────────────────────────────────────────
   "phase.avant": "Before work",
   "phase.fin": "After work",
+
+  // ── Offline ────────────────────────────────────────────
+  "offline.message": "Offline — data is saved locally",
+
+  // ── Error page ─────────────────────────────────────────
+  "error.title": "Something went wrong.",
+  "error.subtitle": "Reload the page or try again later.",
+  "error.retry": "Try again",
+
+  // ── Password gate ──────────────────────────────────────
+  "password.label": "Password",
+  "password.placeholder": "Enter the password",
+  "password.incorrect": "Incorrect password",
+  "password.enter": "ENTER",
+
+  // ── Create team misc ───────────────────────────────────
+  "createTeam.logoDetected": "Logo detected automatically",
 };
 
 export const translations: Record<string, Record<string, string | string[]>> = { fr, en };

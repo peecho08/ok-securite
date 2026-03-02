@@ -11,7 +11,6 @@ import { AppHeader } from "@/components/app-header";
 import { SearchBar } from "@/components/search-bar";
 import { MusicPlayer } from "@/components/music-player";
 import { ActiveTasks } from "@/components/active-tasks";
-import { TeamTaskStrip } from "@/components/team-task-strip";
 import { TaskList } from "@/components/task-list";
 import { Onboarding } from "@/components/onboarding";
 import { SupervisorHome } from "@/components/supervisor-home";
@@ -37,6 +36,7 @@ export default function HomePage() {
   const [workerName, setWorkerNameState] = useState("");
   const [ready, setReady] = useState(false);
   const [isSupervisor, setIsSupervisor] = useState(false);
+  const [showAllTasks, setShowAllTasks] = useState(false);
 
   useEffect(() => {
     if (!isDemoSeeded()) {
@@ -73,9 +73,14 @@ export default function HomePage() {
   }, []);
 
   const teamTasks = useMemo(
-    () => teamTaskIds.map((id) => tasks.find((task) => task.id === id)),
+    () => teamTaskIds.map((id) => tasks.find((task) => task.id === id)).filter(Boolean) as (typeof tasks)[number][],
     [teamTaskIds],
   );
+
+  const teamGrouped = useMemo(() => {
+    if (teamTasks.length === 0) return [];
+    return [{ category: "team", label: t("home.myTasks"), tasks: teamTasks }];
+  }, [teamTasks, t]);
 
   const activeTasks = useMemo(() => {
     return activeProgress
@@ -185,11 +190,30 @@ export default function HomePage() {
               <ActiveTasks activeTasks={activeTasks} onAbandon={handleAbandon} />
             )}
 
-            {!query && teamTaskIds.length > 0 && (
-              <TeamTaskStrip tasks={teamTasks} />
+            {!query && teamTasks.length > 0 && (
+              <>
+                <TaskList grouped={teamGrouped} />
+                <button
+                  onClick={() => setShowAllTasks((v) => !v)}
+                  className="mx-auto mb-4 mt-2 flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-500 shadow-sm transition-colors hover:border-gray-400 hover:text-gray-700 active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-500 dark:hover:text-neutral-200"
+                >
+                  {showAllTasks ? t("home.hideAll") : t("home.showAll")}
+                  <svg
+                    className={`h-4 w-4 transition-transform duration-200 ${showAllTasks ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </>
             )}
 
-            <TaskList grouped={grouped} />
+            {(query || teamTasks.length === 0 || showAllTasks) && (
+              <TaskList grouped={grouped} />
+            )}
           </>
         )}
       </main>

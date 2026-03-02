@@ -71,7 +71,7 @@ export default function ReportPage() {
         </p>
         <div className="mt-8 flex gap-3">
           <Link
-            href={`/confirm/${taskId}`}
+            href={`/tasks/${taskId}`}
             className="rounded-xl border-2 border-gray-300 px-5 py-3 font-heading text-sm font-bold transition-colors active:bg-gray-50 dark:border-neutral-600 dark:text-neutral-100 dark:active:bg-neutral-700"
           >
             {t("report.back")}

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLocale } from "@/lib/i18n";
 
 export function OfflineIndicator() {
+  const { t } = useLocale();
   const [online, setOnline] = useState(true);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export function OfflineIndicator() {
         <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 010 12.728M5.636 5.636a9 9 0 000 12.728M8.464 15.536a5 5 0 010-7.072M15.536 8.464a5 5 0 010 7.072" />
         <line x1="4" y1="4" x2="20" y2="20" strokeWidth={2} strokeLinecap="round" />
       </svg>
-      Hors ligne — les données sont sauvegardées localement
+      {t("offline.message")}
     </div>
   );
 }

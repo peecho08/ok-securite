@@ -9,6 +9,7 @@ import { setSupervisorOrg, setActiveRole, setWorkerName, setCompanyLogo, getTeam
 import { tasks } from "@/data/tasks";
 import { categoryLabels, categoryLabelsEn, type TaskCategory } from "@/types";
 import { Upload, Check, Copy, Mail, MessageSquare, Search } from "lucide-react";
+import { TaskIcon } from "@/components/task-icon";
 
 function randomId() {
   return Math.random().toString(36).slice(2, 12);
@@ -104,7 +105,7 @@ function TaskPicker({ onDone, editMode }: { onDone: () => void; editMode: boolea
                             : "border-gray-200 bg-white hover:border-gray-300 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600"
                         }`}
                       >
-                        <span className="text-xl">{task.icon}</span>
+                        <TaskIcon taskId={task.id} className="h-6 w-6" />
                         <span className={`text-xs font-medium leading-tight ${isSelected ? "text-[var(--color-primary)]" : "text-gray-700 dark:text-neutral-300"}`}>
                           {title}
                         </span>
@@ -328,7 +329,7 @@ export default function CreateTeamPage() {
                   alt=""
                   className="h-8 w-8 rounded-lg object-contain"
                 />
-                <span className="text-xs text-primary dark:text-primary">Logo détecté automatiquement</span>
+                <span className="text-xs text-primary dark:text-primary">{t("createTeam.logoDetected")}</span>
               </div>
             )}
           </div>

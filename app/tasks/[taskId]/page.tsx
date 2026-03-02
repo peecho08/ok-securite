@@ -7,11 +7,11 @@ import { tasks } from "@/data/tasks";
 import { checklists } from "@/data/checklists";
 import { checklistItemsEn, phaseTitlesEn } from "@/data/checklists-en";
 import type { Phase } from "@/types";
-import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress, getSites, getLastSiteId, setLastSiteId, type ConstructionSite } from "@/lib/storage";
+import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress, getSites, setLastSiteId, type ConstructionSite } from "@/lib/storage";
 import { mergePhases } from "@/lib/locale-helpers";
 import { useLocale } from "@/lib/i18n";
 import { getLogoPngDataUrl } from "@/lib/pdf-logo";
-import { AlertTriangle, Camera, Download, MapPin } from "lucide-react";
+import { AlertTriangle, Camera, Check, ChevronRight, Download, MapPin } from "lucide-react";
 
 
 function haptic(pattern: number | number[] = 15) {
@@ -101,6 +101,7 @@ export default function TaskPage() {
   const [scanPhoto, setScanPhoto] = useState<string | null>(null);
   const [scanRisks, setScanRisks] = useState<string[]>([]);
   const [scanMarkers, setScanMarkers] = useState<{ x: number; y: number }[]>([]);
+  const [showSiteSheet, setShowSiteSheet] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const userToggledRef = useRef(false);
   const prevCompletedPhasesRef = useRef<Set<Phase>>(new Set());
@@ -124,10 +125,6 @@ export default function TaskPage() {
     addRecentTask(taskId);
     const sites = getSites();
     setAvailableSites(sites);
-    const lastId = getLastSiteId();
-    if (lastId && sites.some((s) => s.id === lastId && s.active !== false)) {
-      setSelectedSiteId(lastId);
-    }
   }, [taskId, shouldResume]);
 
   // Persist progress on change
@@ -478,25 +475,76 @@ export default function TaskPage() {
 
       {/* Checklist */}
       <main className="flex-1 px-5 py-4 sm:px-8">
-        {/* Site picker */}
+        {/* Site picker trigger */}
         {availableSites.length > 0 && (
-          <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 p-2.5 dark:border-neutral-700 dark:bg-neutral-800">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-gray-400 shadow-sm dark:bg-neutral-700 dark:text-neutral-400">
-              <MapPin className="h-4 w-4" />
-            </span>
-            <select
-              value={selectedSiteId}
-              onChange={(e) => { setSelectedSiteId(e.target.value); setLastSiteId(e.target.value); }}
-              className="min-w-0 flex-1 appearance-none bg-transparent text-sm font-medium text-gray-700 outline-none dark:bg-neutral-800 dark:text-neutral-200 [&>option]:bg-white [&>option]:text-gray-700 dark:[&>option]:bg-neutral-800 dark:[&>option]:text-neutral-200"
+          <>
+            <button
+              type="button"
+              onClick={() => setShowSiteSheet(true)}
+              className="mb-2 flex w-full items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-left transition-colors active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-700"
             >
-              <option value="">{t("site.select")}</option>
-              {availableSites.filter((s) => s.active !== false).map((site) => (
-                <option key={site.id} value={site.id}>
-                  {site.name}{site.address ? ` — ${site.address}` : ""}
-                </option>
-              ))}
-            </select>
-          </div>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-gray-400 shadow-sm dark:bg-neutral-700 dark:text-neutral-400">
+                <MapPin className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-700 dark:text-neutral-200">
+                {selectedSiteId
+                  ? (() => { const s = availableSites.find((s) => s.id === selectedSiteId); return s ? `${s.name}${s.address ? ` — ${s.address}` : ""}` : t("site.select"); })()
+                  : t("site.select")}
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-gray-400 dark:text-neutral-500" />
+            </button>
+
+            {/* Site picker bottom sheet */}
+            {showSiteSheet && (
+              <>
+                <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setShowSiteSheet(false)} aria-hidden />
+                <div
+                  className="animate-sheet-up fixed inset-x-0 bottom-0 z-50 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] dark:border-neutral-700 dark:bg-neutral-800"
+                  onTouchStart={(e) => { (e.currentTarget as HTMLElement).dataset.touchY = String(e.touches[0].clientY); }}
+                  onTouchEnd={(e) => { const dy = e.changedTouches[0].clientY - Number((e.currentTarget as HTMLElement).dataset.touchY ?? 0); if (dy > 60) setShowSiteSheet(false); }}
+                >
+                  <div className="mx-auto mb-1 mt-3 h-1 w-12 rounded-full bg-gray-300 dark:bg-neutral-600" aria-hidden />
+                  <div className="border-b border-gray-100 px-5 py-3 dark:border-neutral-700">
+                    <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{t("site.select")}</p>
+                  </div>
+                  <div className="py-1 pb-[env(safe-area-inset-bottom)]">
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedSiteId(""); setLastSiteId(""); setShowSiteSheet(false); }}
+                      className={`flex min-h-[52px] w-full items-center justify-between gap-3 px-5 py-3 text-left transition-colors active:bg-gray-100 dark:active:bg-neutral-700 ${selectedSiteId === "" ? "bg-gray-50 dark:bg-neutral-750" : ""}`}
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-400">
+                          <MapPin className="h-4 w-4" />
+                        </span>
+                        <span className="text-sm text-gray-500 dark:text-neutral-400">{t("site.none")}</span>
+                      </span>
+                      {selectedSiteId === "" && <Check className="h-4 w-4 shrink-0 text-[var(--color-primary)]" />}
+                    </button>
+                    {availableSites.filter((s) => s.active !== false).map((site) => (
+                      <button
+                        key={site.id}
+                        type="button"
+                        onClick={() => { setSelectedSiteId(site.id); setLastSiteId(site.id); setShowSiteSheet(false); }}
+                        className={`flex min-h-[52px] w-full items-center justify-between gap-3 px-5 py-3 text-left transition-colors active:bg-gray-100 dark:active:bg-neutral-700 ${selectedSiteId === site.id ? "bg-gray-50 dark:bg-neutral-750" : ""}`}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-400">
+                            <MapPin className="h-4 w-4" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium text-gray-800 dark:text-neutral-200">{site.name}</span>
+                            {site.address && <span className="block text-xs text-gray-500 dark:text-neutral-400">{site.address}</span>}
+                          </span>
+                        </span>
+                        {selectedSiteId === site.id && <Check className="h-4 w-4 shrink-0 text-[var(--color-primary)]" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </>
         )}
 
         {/* ACQ course banner — Travaux en hauteur only */}
@@ -530,16 +578,14 @@ export default function TaskPage() {
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="mb-5 flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 text-left transition-colors active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-700"
+          className="mb-5 flex w-full items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-left transition-colors active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-700"
         >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-400">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-gray-400 shadow-sm dark:bg-neutral-700 dark:text-neutral-400">
             <Camera className="h-4 w-4" />
           </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-gray-600 dark:text-neutral-300">{t("task.scanPhoto")}</p>
-          </div>
+          <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-700 dark:text-neutral-200">{t("task.scanPhoto")}</span>
           <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-400 dark:bg-neutral-700 dark:text-neutral-500">
-            Beta
+            BETA
           </span>
         </button>
 

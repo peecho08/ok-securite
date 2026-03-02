@@ -94,8 +94,8 @@ export default function HistoryPage() {
                     return (
                       <Link
                         key={`${entry.completedAt}-${i}`}
-                        href={entry.id ? `/history/${entry.id}` : "#"}
-                        className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-3 transition-colors active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-750"
+                        href={entry.id ? `/history/${entry.id}` : "/history"}
+                        className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-3 transition-colors active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-700"
                       >
                         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-neutral-700 dark:text-neutral-400">
                           <TaskIcon taskId={entry.taskId} className="h-4 w-4" fallback={entry.taskIcon} />
