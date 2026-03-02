@@ -13,7 +13,7 @@ export default function BienEtrePage() {
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="flex h-12 w-12 items-center justify-center rounded-lg text-gray-500 transition-colors active:bg-gray-100"
+            className="flex h-12 w-12 items-center justify-center rounded-lg text-gray-500 transition-colors active:bg-gray-100 dark:text-neutral-400 dark:active:bg-neutral-700"
             aria-label={t("nav.back")}
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -76,7 +76,7 @@ export default function BienEtrePage() {
             href="tel:18662773553"
             className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-400 active:border-gray-500 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-500 dark:active:border-neutral-400"
           >
-            <Phone className="h-5 w-5 shrink-0 text-gray-400" />
+            <Phone className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" />
             <div>
               <p className="font-heading text-sm font-semibold text-gray-900 dark:text-neutral-100">
                 Tel-Aide · 1 866 277-3553
@@ -91,7 +91,7 @@ export default function BienEtrePage() {
             href="tel:18664277273"
             className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-400 active:border-gray-500 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-500 dark:active:border-neutral-400"
           >
-            <Phone className="h-5 w-5 shrink-0 text-gray-400" />
+            <Phone className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" />
             <div>
               <p className="font-heading text-sm font-semibold text-gray-900 dark:text-neutral-100">
                 Drogue: aide et référence · 1 866 427-7273
@@ -106,7 +106,7 @@ export default function BienEtrePage() {
             href="tel:18006652000"
             className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-400 active:border-gray-500 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-500 dark:active:border-neutral-400"
           >
-            <Phone className="h-5 w-5 shrink-0 text-gray-400" />
+            <Phone className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" />
             <div>
               <p className="font-heading text-sm font-semibold text-gray-900 dark:text-neutral-100">
                 Jeu: aide et référence · 1 800 665-2000

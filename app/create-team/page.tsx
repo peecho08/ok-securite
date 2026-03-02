@@ -111,7 +111,7 @@ export default function CreateTeamPage() {
                 href={`sms:?&body=${encodeURIComponent(`${t("supervisor.inviteMessage")} ${inviteUrl}`)}`}
                 className="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium text-gray-600 transition-colors active:bg-gray-50 dark:text-neutral-300 dark:active:bg-neutral-700"
               >
-                <MessageSquare className="h-4 w-4 text-gray-400" />
+                <MessageSquare className="h-4 w-4 text-gray-500 dark:text-neutral-400" />
                 {t("supervisor.shareText")}
               </a>
               <div className="w-px bg-gray-100 dark:bg-neutral-700" />
@@ -119,7 +119,7 @@ export default function CreateTeamPage() {
                 href={`mailto:?subject=${encodeURIComponent(t("supervisor.inviteEmailSubject"))}&body=${encodeURIComponent(`${t("supervisor.inviteMessage")} ${inviteUrl}`)}`}
                 className="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium text-gray-600 transition-colors active:bg-gray-50 dark:text-neutral-300 dark:active:bg-neutral-700"
               >
-                <Mail className="h-4 w-4 text-gray-400" />
+                <Mail className="h-4 w-4 text-gray-500 dark:text-neutral-400" />
                 {t("supervisor.shareEmail")}
               </a>
             </div>
@@ -221,7 +221,7 @@ export default function CreateTeamPage() {
               {pdfName ? (
                 <Check className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400" />
               ) : (
-                <Upload className="h-5 w-5 shrink-0 text-gray-400" />
+                <Upload className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" />
               )}
               <div className="min-w-0 flex-1">
                 {pdfName ? (
@@ -230,7 +230,7 @@ export default function CreateTeamPage() {
                     <p className="text-xs text-green-600/70 dark:text-green-400/60">{t("createTeam.preventionUploaded")}</p>
                   </>
                 ) : (
-                  <p className="text-sm text-gray-400">{t("createTeam.preventionUploadHint")}</p>
+                  <p className="text-sm text-gray-500 dark:text-neutral-400">{t("createTeam.preventionUploadHint")}</p>
                 )}
               </div>
             </button>
@@ -238,7 +238,7 @@ export default function CreateTeamPage() {
           <button
             type="submit"
             disabled={!teamName.trim() || !isEmailValid}
-            className="mt-2 w-full rounded-xl bg-[var(--color-primary)] py-3.5 font-heading text-base font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)] disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
+            className="mt-2 w-full rounded-xl bg-[var(--color-primary)] py-3.5 font-heading text-base font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)] disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 dark:disabled:bg-neutral-700 dark:disabled:text-neutral-500"
           >
             {t("createTeam.create")}
           </button>

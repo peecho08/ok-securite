@@ -95,7 +95,7 @@ export default function MyTeamPage() {
       <main className="flex-1 px-5 py-6 sm:px-8">
         {/* Company info */}
         <section className="mb-6">
-          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
             {t("team.companyInfo")}
           </h2>
           <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
@@ -121,7 +121,7 @@ export default function MyTeamPage() {
               />
               <div className="min-w-0 flex-1 space-y-3">
                 <div>
-                  <p className="text-xs font-medium text-gray-400">{t("createTeam.companyName")}</p>
+                  <p className="text-xs font-medium text-gray-500 dark:text-neutral-400">{t("createTeam.companyName")}</p>
                   <input
                     type="text"
                     value={teamName}
@@ -132,9 +132,9 @@ export default function MyTeamPage() {
                   />
                 </div>
                 <div>
-                  <p className="mb-1 text-xs font-medium text-gray-400">{t("team.companyWebsite")}</p>
+                  <p className="mb-1 text-xs font-medium text-gray-500 dark:text-neutral-400">{t("team.companyWebsite")}</p>
                   <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 shrink-0 text-gray-300" />
+                    <Globe className="h-4 w-4 shrink-0 text-gray-400 dark:text-neutral-500" />
                     <input
                       type="url"
                       value={website}
@@ -151,7 +151,7 @@ export default function MyTeamPage() {
               <button
                 type="button"
                 onClick={() => logoInputRef.current?.click()}
-                className="mt-3 text-xs font-medium text-gray-400 transition-colors hover:text-gray-600"
+                className="mt-3 text-xs font-medium text-gray-500 transition-colors hover:text-gray-700 dark:text-neutral-400 dark:hover:text-neutral-300"
               >
                 {t("team.changeLogo")}
               </button>
@@ -161,7 +161,7 @@ export default function MyTeamPage() {
 
         {/* Invite link */}
         <section className="mb-6">
-          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
             <Users className="h-3.5 w-3.5" />
             {t("supervisor.inviteTitle")}
           </h2>
@@ -182,7 +182,7 @@ export default function MyTeamPage() {
                 href={`sms:?&body=${encodeURIComponent(`${t("supervisor.inviteMessage")} ${inviteUrl}`)}`}
                 className="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium text-gray-600 transition-colors active:bg-gray-50 dark:text-neutral-300 dark:active:bg-neutral-700"
               >
-                <MessageSquare className="h-4 w-4 text-gray-400" />
+                <MessageSquare className="h-4 w-4 text-gray-500 dark:text-neutral-400" />
                 {t("supervisor.shareText")}
               </a>
               <div className="w-px bg-gray-100 dark:bg-neutral-700" />
@@ -190,7 +190,7 @@ export default function MyTeamPage() {
                 href={`mailto:?subject=${encodeURIComponent(t("supervisor.inviteEmailSubject"))}&body=${encodeURIComponent(`${t("supervisor.inviteMessage")} ${inviteUrl}`)}`}
                 className="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium text-gray-600 transition-colors active:bg-gray-50 dark:text-neutral-300 dark:active:bg-neutral-700"
               >
-                <Mail className="h-4 w-4 text-gray-400" />
+                <Mail className="h-4 w-4 text-gray-500 dark:text-neutral-400" />
                 {t("supervisor.shareEmail")}
               </a>
             </div>
@@ -199,13 +199,13 @@ export default function MyTeamPage() {
 
         {/* Team members */}
         <section className="mb-6">
-          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
             <Users className="h-3.5 w-3.5" />
-            {t("team.members")} {members.length > 0 && <span className="text-gray-300">({members.length})</span>}
+            {t("team.members")} {members.length > 0 && <span className="text-gray-400 dark:text-neutral-500">({members.length})</span>}
           </h2>
           {members.length === 0 ? (
             <div className="rounded-xl border border-gray-200 bg-white p-6 text-center dark:border-neutral-700 dark:bg-neutral-800">
-              <p className="text-sm text-gray-400">{t("team.noMembers")}</p>
+              <p className="text-sm text-gray-500 dark:text-neutral-400">{t("team.noMembers")}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -223,7 +223,7 @@ export default function MyTeamPage() {
                       {m.name.charAt(0).toUpperCase()}
                     </span>
                     <span className="flex-1 truncate font-heading text-sm font-semibold">{m.name}</span>
-                    <span className="shrink-0 text-xs text-gray-400">
+                    <span className="shrink-0 text-xs text-gray-500 dark:text-neutral-400">
                       {t("team.completions").replace("{count}", String(m.count)).replace("{s}", m.count !== 1 ? "s" : "")}
                     </span>
                     <button
@@ -324,7 +324,7 @@ function Leaderboard({ workerName, history, removedMembers }: { workerName: stri
 
   return (
     <section>
-      <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+      <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
         <Trophy className="h-3.5 w-3.5" />
         {t("dashboard.topWorkers")}
       </h2>
@@ -340,7 +340,7 @@ function Leaderboard({ workerName, history, removedMembers }: { workerName: stri
             <span className="flex-1 truncate font-heading text-sm font-semibold">
               {worker.name}
             </span>
-            <span className="shrink-0 text-sm tabular-nums text-gray-400">{worker.count}</span>
+            <span className="shrink-0 text-sm tabular-nums text-gray-500 dark:text-neutral-400">{worker.count}</span>
           </div>
         ))}
       </div>

@@ -75,7 +75,7 @@ export default function HistoryDetailPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="flex h-12 w-12 items-center justify-center rounded-lg text-gray-500 transition-colors active:bg-gray-100"
+            className="flex h-12 w-12 items-center justify-center rounded-lg text-gray-500 transition-colors active:bg-gray-100 dark:text-neutral-400 dark:active:bg-neutral-700"
             aria-label={t("nav.back")}
           >
             <ArrowLeft className="h-5 w-5" />
@@ -142,7 +142,7 @@ export default function HistoryDetailPage() {
         {/* Checklist items */}
         {phases.length > 0 && (
           <div className="mt-6">
-            <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
               {t("history.detail.checklist")}
             </h2>
             {phases.map((group) => (

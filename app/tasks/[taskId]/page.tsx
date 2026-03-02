@@ -96,7 +96,6 @@ export default function TaskPage() {
   const [workerName, setWorkerName] = useState(getWorkerName);
   const [availableSites, setAvailableSites] = useState<ConstructionSite[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState("");
-  const [phaseToast, setPhaseToast] = useState<{ phase: Phase; title: string } | null>(null);
   const [showCriticalWarning, setShowCriticalWarning] = useState(false);
   const [scanState, setScanState] = useState<"idle" | "scanning" | "done">("idle");
   const [scanPhoto, setScanPhoto] = useState<string | null>(null);
@@ -153,31 +152,21 @@ export default function TaskPage() {
     setCollapsed(completedPhases);
 
     if (newlyCompleted && userToggledRef.current) {
-      const group = phases.find((g) => g.phase === newlyCompleted);
-      if (group) {
-        setPhaseToast({ phase: newlyCompleted, title: group.title });
-        haptic(HAPTIC_PHASE);
+      haptic(HAPTIC_PHASE);
 
-        const completedIdx = phases.findIndex((g) => g.phase === newlyCompleted);
-        const nextPhase = phases[completedIdx + 1];
-        if (nextPhase) {
-          const el = phaseRefs.current.get(nextPhase.phase);
-          if (el) {
-            setTimeout(() => {
-              el.scrollIntoView({ behavior: "smooth", block: "start" });
-            }, 300);
-          }
+      const completedIdx = phases.findIndex((g) => g.phase === newlyCompleted);
+      const nextPhase = phases[completedIdx + 1];
+      if (nextPhase) {
+        const el = phaseRefs.current.get(nextPhase.phase);
+        if (el) {
+          setTimeout(() => {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 300);
         }
       }
     }
   }, [phases, checked, na, isResolved]);
 
-  // Clear phase toast after delay
-  useEffect(() => {
-    if (!phaseToast) return;
-    const t = setTimeout(() => setPhaseToast(null), 2200);
-    return () => clearTimeout(t);
-  }, [phaseToast]);
 
   const toggleCheck = useCallback((id: string) => {
     const wasChecked = checked.has(id);
@@ -572,7 +561,7 @@ export default function TaskPage() {
                   className="flex min-h-[48px] flex-1 items-center gap-2 text-left"
                 >
                   <svg
-                    className={`h-5 w-5 shrink-0 text-gray-400 transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
+                    className={`h-5 w-5 shrink-0 text-gray-500 transition-transform dark:text-neutral-400 ${isCollapsed ? "-rotate-90" : ""}`}
                     fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -611,7 +600,7 @@ export default function TaskPage() {
                                 ? "border-gray-200 bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800/50"
                                 : item.critical
                                   ? "animate-critical-pulse border-red-300 bg-red-50/50 ring-1 ring-red-200 hover:border-red-400 dark:border-red-700 dark:bg-red-950/40 dark:ring-red-800"
-                                  : "border-gray-200 bg-white hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-750 dark:active:bg-neutral-700"
+                                  : "border-gray-200 bg-white hover:border-gray-300 active:border-gray-400 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-500 dark:active:border-neutral-400"
                           }`}
                         >
                           <div
@@ -685,7 +674,7 @@ export default function TaskPage() {
           );
         })}
 
-        <p className="mt-2 mb-4 text-center text-[11px] text-gray-400">
+        <p className="mt-2 mb-4 text-center text-[11px] text-gray-500 dark:text-neutral-400">
           {t("task.source")}
         </p>
       </main>
@@ -706,23 +695,6 @@ export default function TaskPage() {
       </div>
 
 
-      {/* Phase completion toast */}
-      {phaseToast && (
-        <div
-          className="fixed inset-x-0 bottom-[120px] z-40 flex justify-center px-5 sm:px-8 animate-fade-in"
-          role="status"
-          aria-live="polite"
-        >
-          <div className="flex w-full max-w-3xl items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-3.5 shadow-md">
-            <svg className="h-5 w-5 shrink-0 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-            <p className="text-sm font-semibold text-green-800">
-              {localPhaseTitle(phaseToast.title)} — {t("task.phaseCompleteDetail")}
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Critical items warning dialog */}
       {showCriticalWarning && (

@@ -47,7 +47,7 @@ export default function HistoryPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="flex h-12 w-12 items-center justify-center rounded-lg text-gray-500 transition-colors active:bg-gray-100"
+            className="flex h-12 w-12 items-center justify-center rounded-lg text-gray-500 transition-colors active:bg-gray-100 dark:text-neutral-400 dark:active:bg-neutral-700"
             aria-label={t("nav.back")}
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -69,7 +69,7 @@ export default function HistoryPage() {
       <main className="flex-1 px-5 py-4 sm:px-8">
         {entries.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="font-heading text-lg font-semibold text-gray-400">{t("history.empty")}</p>
+            <p className="font-heading text-lg font-semibold text-gray-500 dark:text-neutral-400">{t("history.empty")}</p>
             <p className="mt-1 text-sm text-muted">
               {t("history.emptyHint")}
             </p>
@@ -109,7 +109,7 @@ export default function HistoryPage() {
                             {entry.workerName && ` — ${entry.workerName}`}
                           </p>
                         </div>
-                        <svg className="h-4 w-4 shrink-0 text-gray-300 dark:text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <svg className="h-4 w-4 shrink-0 text-gray-400 dark:text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
                       </Link>

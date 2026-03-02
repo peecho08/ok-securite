@@ -143,7 +143,7 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
         <button
           type="button"
           onClick={() => setLocale(locale === "fr" ? "en" : "fr")}
-          className="pb-6 pt-2 text-sm font-medium text-gray-400 transition-colors hover:text-gray-600"
+          className="pb-6 pt-2 text-sm font-medium text-gray-500 transition-colors hover:text-gray-700"
         >
           {locale === "fr" ? "English" : "Français"}
         </button>
@@ -309,11 +309,11 @@ export function Onboarding({ initial = [], skipWelcome = false, onDone }: Onboar
         <div className="mx-auto max-w-3xl">
           <div className="space-y-6">
             {filteredGrouped.length === 0 ? (
-              <p className="py-8 text-center text-sm text-gray-400">{t("onboarding.noResults")}</p>
+              <p className="py-8 text-center text-sm text-gray-500 dark:text-neutral-400">{t("onboarding.noResults")}</p>
             ) : (
               filteredGrouped.map(({ category, label, tasks: catTasks }) => (
                 <section key={category}>
-                  <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+                  <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
                     {localCatLabel(category, locale)}
                   </h2>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">

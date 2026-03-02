@@ -288,24 +288,24 @@ export default function ConfirmPage() {
 
         <div className="animate-confirm-card mt-5 w-full max-w-md rounded-xl border border-gray-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
           {workerName && (
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3 dark:border-neutral-700">
               <span className="text-sm text-muted">{t("confirm.worker")}</span>
               <span className="font-heading font-bold">{workerName}</span>
             </div>
           )}
           {siteName && (
-            <div className={`flex items-center justify-between border-b border-gray-100 ${workerName ? "py-3" : "pb-3"}`}>
+            <div className={`flex items-center justify-between border-b border-gray-100 dark:border-neutral-700 ${workerName ? "py-3" : "pb-3"}`}>
               <span className="text-sm text-muted">{t("confirm.site")}</span>
               <span className="max-w-[60%] text-right text-sm font-medium">{siteName}</span>
             </div>
           )}
           {geoAddress && (
-            <div className={`flex items-center justify-between border-b border-gray-100 ${workerName || siteName ? "py-3" : "pb-3"}`}>
+            <div className={`flex items-center justify-between border-b border-gray-100 dark:border-neutral-700 ${workerName || siteName ? "py-3" : "pb-3"}`}>
               <span className="text-sm text-muted">{t("confirm.location")}</span>
               <span className="max-w-[60%] text-right text-sm font-medium">{geoAddress}</span>
             </div>
           )}
-          <div className={`flex items-center justify-between ${workerName || siteName || geoAddress ? "border-b border-gray-100 py-3" : "border-b border-gray-100 pb-3"}`}>
+          <div className={`flex items-center justify-between ${workerName || siteName || geoAddress ? "border-b border-gray-100 py-3 dark:border-neutral-700" : "border-b border-gray-100 pb-3 dark:border-neutral-700"}`}>
             <span className="text-sm text-muted">{t("confirm.pointsChecked")}</span>
             <span className="font-heading font-bold">
               {naCount > 0
@@ -314,7 +314,7 @@ export default function ConfirmPage() {
               }
             </span>
           </div>
-          <div className="flex items-center justify-between border-b border-gray-100 py-3">
+          <div className="flex items-center justify-between border-b border-gray-100 py-3 dark:border-neutral-700">
             <span className="text-sm text-muted">{t("confirm.status")}</span>
             <span className="font-heading rounded-md bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800">
               {t("confirm.statusComplete")}

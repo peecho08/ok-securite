@@ -126,7 +126,7 @@ export function SupervisorHome() {
             <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-neutral-700">
               <div className="min-w-0">
                 <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{workerName || t("menu.supervisor")}</p>
-                <p className="text-sm text-gray-400">{t("menu.supervisor")}</p>
+                <p className="text-sm text-gray-500 dark:text-neutral-400">{t("menu.supervisor")}</p>
               </div>
               <button
                 type="button"
@@ -142,7 +142,7 @@ export function SupervisorHome() {
                 onClick={() => setShowMenu(false)}
                 className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
               >
-                <Users className="h-5 w-5 shrink-0 text-gray-400" />
+                <Users className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" />
                 {t("team.title")}
               </Link>
               <button
@@ -155,19 +155,19 @@ export function SupervisorHome() {
                 className="flex min-h-[52px] w-full items-center justify-between gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
               >
                 <span className="flex items-center gap-4">
-                  <ClipboardList className="h-5 w-5 shrink-0 text-gray-400" />
+                  <ClipboardList className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" />
                   {t("menu.preventionProgram")}
                 </span>
-                <ExternalLink className="h-4 w-4 shrink-0 text-gray-400" />
+                <ExternalLink className="h-4 w-4 shrink-0 text-gray-500 dark:text-neutral-400" />
               </button>
               <button
                 onClick={() => { toggleTheme(); setShowMenu(false); }}
                 className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
               >
                 {theme === "dark" ? (
-                  <svg className="h-5 w-5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                  <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                 ) : (
-                  <svg className="h-5 w-5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                  <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                 )}
                 {t("menu.theme")}
               </button>
@@ -175,7 +175,7 @@ export function SupervisorHome() {
                 onClick={() => { setLocale(locale === "fr" ? "en" : "fr"); setShowMenu(false); }}
                 className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
               >
-                <svg className="h-5 w-5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" /></svg>
+                <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" /></svg>
                 {t("menu.language")}
               </button>
               <button
@@ -193,7 +193,7 @@ export function SupervisorHome() {
       <main className="flex-1 px-5 py-5 sm:px-8">
         {/* Invite link — quick copy + share */}
         <section className="mb-5">
-          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
             <Users className="h-3.5 w-3.5" />
             {t("supervisor.inviteTitle")}
           </h2>
@@ -214,7 +214,7 @@ export function SupervisorHome() {
                 href={`sms:?&body=${encodeURIComponent(`${t("supervisor.inviteMessage")} ${inviteUrl}`)}`}
                 className="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium text-gray-600 transition-colors active:bg-gray-50 dark:text-neutral-300 dark:active:bg-neutral-700"
               >
-                <MessageSquare className="h-4 w-4 text-gray-400" />
+                <MessageSquare className="h-4 w-4 text-gray-500 dark:text-neutral-400" />
                 {t("supervisor.shareText")}
               </a>
               <div className="w-px bg-gray-100 dark:bg-neutral-700" />
@@ -222,7 +222,7 @@ export function SupervisorHome() {
                 href={`mailto:?subject=${encodeURIComponent(t("supervisor.inviteEmailSubject"))}&body=${encodeURIComponent(`${t("supervisor.inviteMessage")} ${inviteUrl}`)}`}
                 className="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium text-gray-600 transition-colors active:bg-gray-50 dark:text-neutral-300 dark:active:bg-neutral-700"
               >
-                <Mail className="h-4 w-4 text-gray-400" />
+                <Mail className="h-4 w-4 text-gray-500 dark:text-neutral-400" />
                 {t("supervisor.shareEmail")}
               </a>
             </div>
@@ -232,7 +232,7 @@ export function SupervisorHome() {
         {/* Construction sites */}
         <section className="mb-5">
           
-          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
             <MapPin className="h-3.5 w-3.5" />
             {t("site.title")}
           </h2>
@@ -297,7 +297,7 @@ export function SupervisorHome() {
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="font-heading text-sm font-semibold leading-tight">{site.name}</p>
-                        {site.address && <p className="mt-0.5 truncate text-xs text-gray-400">{site.address}</p>}
+                        {site.address && <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-neutral-400">{site.address}</p>}
                       </div>
                     </Link>
                     <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${active ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"}`}>
@@ -306,7 +306,7 @@ export function SupervisorHome() {
                     <button
                       type="button"
                       onClick={() => handleRemoveSite(site.id)}
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gray-300 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950 dark:hover:text-red-400"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-neutral-500 dark:hover:bg-red-950 dark:hover:text-red-400"
                       aria-label={t("site.remove")}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -320,7 +320,7 @@ export function SupervisorHome() {
             <button
               type="button"
               onClick={() => setShowAddSite(true)}
-              className={`flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 bg-white py-4 text-sm text-gray-400 transition-colors hover:border-gray-300 hover:text-gray-500 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600 ${sites.length > 0 ? "mt-2" : ""}`}
+              className={`flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 bg-white py-4 text-sm text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-600 dark:hover:text-neutral-300 ${sites.length > 0 ? "mt-2" : ""}`}
             >
               <Plus className="h-4 w-4" />
               {t("site.add")}
@@ -330,13 +330,13 @@ export function SupervisorHome() {
 
         {/* Recent completions */}
         <section className="mt-6">
-          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
             <ClipboardList className="h-3.5 w-3.5" />
             {t("dashboard.recentActivity")}
           </h2>
           {history.length === 0 ? (
             <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center dark:border-neutral-700 dark:bg-neutral-800">
-              <p className="text-sm text-gray-400">{t("supervisor.noActivity")}</p>
+              <p className="text-sm text-gray-500 dark:text-neutral-400">{t("supervisor.noActivity")}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -351,13 +351,13 @@ export function SupervisorHome() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-heading text-sm font-semibold leading-tight">{entry.taskTitle}</p>
-                    <p className="mt-0.5 truncate text-xs text-gray-400">
+                    <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-neutral-400">
                       {entry.workerName || t("menu.supervisor")}
-                      <span className="mx-1 text-gray-300 dark:text-neutral-600">·</span>
+                      <span className="mx-1 text-gray-400 dark:text-neutral-500">·</span>
                       {new Date(entry.completedAt).toLocaleDateString(dateLocale, { day: "numeric", month: "short" })}
                     </p>
                   </div>
-                  <svg className="h-4 w-4 shrink-0 text-gray-300 dark:text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="h-4 w-4 shrink-0 text-gray-400 dark:text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
@@ -372,14 +372,14 @@ export function SupervisorHome() {
             href="/create-team"
             className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
           >
-            <Users className="h-5 w-5 text-gray-400" />
+            <Users className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
             <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{t("supervisor.manageTeam")}</span>
           </Link>
           <Link
             href="/dashboard"
             className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
           >
-            <ClipboardList className="h-5 w-5 text-gray-400" />
+            <ClipboardList className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
             <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{t("menu.dashboard")}</span>
           </Link>
         </section>

@@ -157,7 +157,7 @@ export default function SiteDetailPage() {
           </Link>
         </header>
         <main className="flex flex-1 items-center justify-center px-5">
-          <p className="text-gray-400">{t("task.notFound")}</p>
+          <p className="text-gray-500 dark:text-neutral-400">{t("task.notFound")}</p>
         </main>
       </div>
     );
@@ -240,7 +240,7 @@ export default function SiteDetailPage() {
             {site.address && (
               <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3.5 dark:border-neutral-700">
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-400">{t("siteDetail.address")}</p>
+                  <p className="text-xs text-gray-500 dark:text-neutral-400">{t("siteDetail.address")}</p>
                   <p className="mt-0.5 text-sm text-gray-700 dark:text-neutral-200">{site.address}</p>
                 </div>
                 <button
@@ -257,7 +257,7 @@ export default function SiteDetailPage() {
             {/* Created date */}
             {site.createdAt && (
               <div className="border-t border-gray-100 px-4 py-3.5 dark:border-neutral-700">
-                <p className="text-xs text-gray-400">{t("siteDetail.createdAt")}</p>
+                <p className="text-xs text-gray-500 dark:text-neutral-400">{t("siteDetail.createdAt")}</p>
                 <p className="mt-0.5 text-sm text-gray-700 dark:text-neutral-200">
                   {new Date(site.createdAt).toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" })}
                 </p>
@@ -282,12 +282,12 @@ export default function SiteDetailPage() {
 
         {/* Activity */}
         <section className="mb-5">
-          <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
             {t("siteDetail.activity")}
           </h2>
           {activity.length === 0 ? (
             <div className="rounded-xl border border-gray-200 bg-white p-8 text-center dark:border-neutral-700 dark:bg-neutral-800">
-              <p className="text-sm text-gray-400">{t("siteDetail.noActivity")}</p>
+              <p className="text-sm text-gray-500 dark:text-neutral-400">{t("siteDetail.noActivity")}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -301,10 +301,10 @@ export default function SiteDetailPage() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="font-heading text-sm font-semibold leading-tight">{entry.taskTitle}</p>
-                    <p className="mt-0.5 text-xs text-gray-400">
+                    <p className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">
                       {new Date(entry.completedAt).toLocaleDateString(dateLocale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                       {entry.workerName ? ` — ${entry.workerName}` : ""}
-                      {entry.workerCompany && <span className="text-gray-300 dark:text-neutral-600"> · {entry.workerCompany}</span>}
+                      {entry.workerCompany && <span className="text-gray-400 dark:text-neutral-500"> · {entry.workerCompany}</span>}
                     </p>
                   </div>
                   <span className="shrink-0 rounded-md bg-green-100 px-2 py-0.5 font-heading text-[10px] font-semibold text-green-800 dark:bg-green-900 dark:text-green-300">

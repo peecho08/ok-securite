@@ -72,13 +72,13 @@ export default function ReportPage() {
         <div className="mt-8 flex gap-3">
           <Link
             href={`/confirm/${taskId}`}
-            className="rounded-xl border-2 border-gray-300 px-5 py-3 font-heading text-sm font-bold transition-colors active:bg-gray-50"
+            className="rounded-xl border-2 border-gray-300 px-5 py-3 font-heading text-sm font-bold transition-colors active:bg-gray-50 dark:border-neutral-600 dark:text-neutral-100 dark:active:bg-neutral-700"
           >
             {t("report.back")}
           </Link>
           <Link
             href="/"
-            className="rounded-xl bg-black px-5 py-3 font-heading text-sm font-bold text-accent transition-colors active:bg-gray-900"
+            className="rounded-xl bg-black px-5 py-3 font-heading text-sm font-bold text-accent transition-colors active:bg-gray-900 dark:bg-neutral-100 dark:text-neutral-900 dark:active:bg-neutral-200"
           >
             {t("nav.home")}
           </Link>
@@ -89,11 +89,11 @@ export default function ReportPage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-10 border-b border-gray-100 bg-white px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4 sm:px-8">
+      <header className="sticky top-0 z-10 border-b border-gray-100 bg-white px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="flex h-12 w-12 items-center justify-center rounded-lg text-gray-500 transition-colors active:bg-gray-100"
+            className="flex h-12 w-12 items-center justify-center rounded-lg text-gray-500 transition-colors active:bg-gray-100 dark:text-neutral-400 dark:active:bg-neutral-700"
             aria-label={t("report.back")}
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -118,8 +118,8 @@ export default function ReportPage() {
                   onClick={() => setSeverity(opt.value)}
                   className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     severity === opt.value
-                      ? `${opt.color} ring-2 ring-offset-1 ring-gray-400`
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      ? `${opt.color} ring-2 ring-offset-1 ring-gray-400 dark:ring-neutral-500 dark:ring-offset-neutral-900`
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
                   }`}
                 >
                   {t(opt.labelKey)}
@@ -160,7 +160,7 @@ export default function ReportPage() {
           </div>
 
           {/* Timestamp */}
-          <div className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-muted">
+          <div className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-muted dark:bg-neutral-800">
             {t("report.datetime")} {new Date().toLocaleString(locale === "en" ? "en-CA" : "fr-FR")}
           </div>
 

@@ -32,6 +32,22 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "OK Chantier",
   },
+  metadataBase: new URL("https://ok-chantier.vercel.app"),
+  openGraph: {
+    title: "OK Chantier",
+    description: "Liste de vérification sécurité chantier — rapide et fiable",
+    url: "https://ok-chantier.vercel.app",
+    siteName: "OK Chantier",
+    images: [{ url: "/social-share.jpg", width: 1200, height: 630 }],
+    locale: "fr_CA",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OK Chantier",
+    description: "Liste de vérification sécurité chantier — rapide et fiable",
+    images: ["/social-share.jpg"],
+  },
 };
 
 export const viewport: Viewport = {

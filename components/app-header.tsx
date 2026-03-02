@@ -110,7 +110,7 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
                   <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-neutral-700">
                     <div className="min-w-0">
                       <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{workerName || (getActiveRole() === "supervisor" ? t("menu.supervisor") : t("menu.worker"))}</p>
-                      <p className="text-sm text-gray-400">{getActiveRole() === "supervisor" ? t("menu.supervisor") : t("menu.worker")}</p>
+                      <p className="text-sm text-gray-500 dark:text-neutral-400">{getActiveRole() === "supervisor" ? t("menu.supervisor") : t("menu.worker")}</p>
                     </div>
                     {getActiveRole() === "supervisor" ? (
                       <button
@@ -163,17 +163,17 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
                       className="flex min-h-[52px] w-full items-center justify-between gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
                       <span className="flex items-center gap-4 sm:gap-3">
-                        <ClipboardList className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" />
+                        <ClipboardList className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" />
                         {t("menu.preventionProgram")}
                       </span>
-                      <ExternalLink className="h-4 w-4 shrink-0 text-gray-400 sm:h-3.5 sm:w-3.5" />
+                      <ExternalLink className="h-4 w-4 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-3.5 sm:w-3.5" />
                     </button>
                     <Link
                       href="/history"
                       onClick={() => setShowMenu(false)}
                       className="flex min-h-[52px] items-center gap-4 px-5 py-3 text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
-                      <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       {t("menu.history")}
@@ -183,7 +183,7 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
                       onClick={() => setShowMenu(false)}
                       className="flex min-h-[52px] items-center gap-4 px-5 py-3 text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
-                      <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                       </svg>
                       {t("menu.wellbeing")}
@@ -194,7 +194,7 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
                       className="flex min-h-[52px] items-center gap-4 px-5 py-3 text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
                       <span className="relative">
-                        <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                         {reportCount > 0 && (
@@ -209,7 +209,7 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
                       onClick={() => { setShowMenu(false); onEditFavorites(); }}
                       className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
-                      <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.518 4.674h4.911c.969 0 1.372 1.24.588 1.81l-3.974 2.888 1.518 4.674c.3.921-.755 1.688-1.539 1.118L12 15.203l-3.974 2.888c-.783.57-1.838-.197-1.539-1.118l1.518-4.674-3.974-2.888c-.783-.57-.38-1.81.588-1.81h4.911l1.518-4.674z" />
                       </svg>
                       {t("menu.editFavorites")}
@@ -219,7 +219,7 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
                       onClick={() => setShowMenu(false)}
                       className="flex min-h-[52px] items-center gap-4 px-5 py-3 text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
-                      <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
                       {t("menu.dashboard")}
@@ -229,11 +229,11 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
                       className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
                       {theme === "dark" ? (
-                        <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
                       ) : (
-                        <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                         </svg>
                       )}
@@ -243,7 +243,7 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
                       onClick={() => { setLocale(locale === "fr" ? "en" : "fr"); setShowMenu(false); }}
                       className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
-                      <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
                       </svg>
                       {t("menu.language")}
@@ -252,7 +252,7 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
                       onClick={() => { setShowMenu(false); onFreshStart(); }}
                       className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
-                      <svg className="h-5 w-5 shrink-0 text-gray-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
                       {t("menu.freshStart")}
