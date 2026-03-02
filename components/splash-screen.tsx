@@ -12,6 +12,11 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       if (sessionStorage.getItem(SPLASH_KEY)) return;
+      const ndaAlreadyAccepted = localStorage.getItem("ok-chantier:nda-accepted") === "1";
+      if (ndaAlreadyAccepted) {
+        sessionStorage.setItem(SPLASH_KEY, "1");
+        return;
+      }
       setVisible(true);
       sessionStorage.setItem(SPLASH_KEY, "1");
       const fadeTimer = setTimeout(() => setFading(true), 1200);
@@ -33,11 +38,11 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
       >
         <div className="animate-splash-logo">
           <Image
-            src="/logo.svg"
+            src="/ok-yellow-white.svg"
             alt="OK Chantier"
             width={240}
             height={60}
-            className="acq-logo h-16 w-auto brightness-0 invert sm:h-20"
+            className="h-16 w-auto sm:h-20"
             priority
           />
         </div>

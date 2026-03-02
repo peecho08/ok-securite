@@ -8,7 +8,7 @@ import { useTheme } from "@/components/theme-provider";
 import { getTeamName, getInviteToken, getWorkerName, setActiveRole, getHistory, resetAllForFreshStart, isDemoSeeded, seedDemoData, getSites, addSite, removeSite, type HistoryEntry, type ConstructionSite } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
 import { PlaceAutocomplete } from "@/components/address-autocomplete";
-import { Copy, Check, Users, ClipboardList, RotateCcw, ExternalLink, Mail, MessageSquare, MapPin, Plus, Trash2 } from "lucide-react";
+import { Copy, Check, Users, ClipboardList, RotateCcw, ExternalLink, Mail, MessageSquare, MapPin, Plus, Trash2, ListChecks } from "lucide-react";
 
 export function SupervisorHome() {
   const { locale, setLocale, t } = useLocale();
@@ -91,28 +91,14 @@ export function SupervisorHome() {
       <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-5 sm:px-8">
         <div className="flex items-center justify-between">
           <Image
-            src="/logo.svg"
+            src="/ok-yellow-white.svg"
             alt="OK Chantier"
             width={140}
             height={36}
-            className="acq-logo h-8 w-auto brightness-0 invert"
+            className="h-8 w-auto"
             priority
           />
           <div className="flex items-center gap-3">
-            <a
-              href="https://www.acq.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center transition-opacity hover:opacity-80"
-            >
-              <Image
-                src="/acq-logo.svg"
-                alt="ACQ"
-                width={120}
-                height={40}
-                className="h-[19px] w-auto brightness-0 invert"
-              />
-            </a>
             <button
               type="button"
               onClick={() => setShowMenu((v) => !v)}
@@ -160,6 +146,14 @@ export function SupervisorHome() {
               >
                 <Users className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" />
                 {t("team.title")}
+              </Link>
+              <Link
+                href="/create-team?edit-tasks"
+                onClick={() => setShowMenu(false)}
+                className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
+              >
+                <ListChecks className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" />
+                {t("menu.manageTasks")}
               </Link>
               <button
                 type="button"

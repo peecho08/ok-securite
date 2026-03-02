@@ -1,23 +1,157 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
-import { setSupervisorOrg, setActiveRole, setWorkerName, setCompanyLogo, getTeamName, getInviteToken, getDashboardSecret } from "@/lib/storage";
-import { Upload, Check, Copy, Mail, MessageSquare } from "lucide-react";
+import { setSupervisorOrg, setActiveRole, setWorkerName, setCompanyLogo, getTeamName, getInviteToken, getDashboardSecret, getTeamTasks, setTeamTasks, clearRoleChoiceDone } from "@/lib/storage";
+import { tasks } from "@/data/tasks";
+import { categoryLabels, categoryLabelsEn, type TaskCategory } from "@/types";
+import { Upload, Check, Copy, Mail, MessageSquare, Search } from "lucide-react";
 
 function randomId() {
   return Math.random().toString(36).slice(2, 12);
 }
 
+function TaskPicker({ onDone, editMode }: { onDone: () => void; editMode: boolean }) {
+  const { locale, t } = useLocale();
+  const [selected, setSelected] = useState<Set<string>>(() => {
+    if (editMode) return new Set(getTeamTasks());
+    return new Set<string>();
+  });
+  const [search, setSearch] = useState("");
+
+  const catLabels = locale === "en" ? categoryLabelsEn : categoryLabels;
+  const categories = Object.keys(catLabels) as TaskCategory[];
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return tasks;
+    const q = search.toLowerCase();
+    return tasks.filter((t) => {
+      const title = locale === "en" && t.titleEn ? t.titleEn : t.title;
+      if (title.toLowerCase().includes(q)) return true;
+      if (t.keywords?.some((k) => k.toLowerCase().includes(q))) return true;
+      return false;
+    });
+  }, [search, locale]);
+
+  function toggle(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function handleSave() {
+    setTeamTasks(Array.from(selected));
+    onDone();
+  }
+
+  return (
+    <div className="flex min-h-dvh flex-col dark:bg-neutral-900">
+      <div className="safe-area-header-cover" />
+      <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-5 sm:px-8">
+        <Link href="/" className="inline-flex items-center gap-2 text-sm text-white/80 transition-colors hover:text-white">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          {t("nav.back")}
+        </Link>
+        <h1 className="mt-3 font-heading text-2xl font-bold text-white">
+          {t("createTeam.selectTasks")}
+        </h1>
+        <p className="mt-0.5 text-sm text-white/70">
+          {t("createTeam.selectTasksHint")}
+        </p>
+      </header>
+      <main className="flex-1 px-5 py-5 sm:px-8">
+
+        <div className="relative mt-4">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t("onboarding.searchPlaceholder")}
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-neutral-500 dark:focus:bg-neutral-700"
+          />
+        </div>
+
+        <div className="mt-5 space-y-6 pb-28">
+          {categories.map((cat) => {
+            const catTasks = filtered.filter((t) => t.category === cat);
+            if (catTasks.length === 0) return null;
+            return (
+              <section key={cat}>
+                <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
+                  {catLabels[cat]}
+                </h2>
+                <div className="grid grid-cols-3 gap-2">
+                  {catTasks.map((task) => {
+                    const isSelected = selected.has(task.id);
+                    const title = locale === "en" && task.titleEn ? task.titleEn : task.title;
+                    return (
+                      <button
+                        key={task.id}
+                        type="button"
+                        onClick={() => toggle(task.id)}
+                        className={`flex flex-col items-center gap-1.5 rounded-xl border-2 px-2 py-3 text-center transition-all ${
+                          isSelected
+                            ? "border-[var(--color-primary)] bg-primary/5 dark:border-[var(--color-primary)] dark:bg-primary/10"
+                            : "border-gray-200 bg-white hover:border-gray-300 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600"
+                        }`}
+                      >
+                        <span className="text-xl">{task.icon}</span>
+                        <span className={`text-xs font-medium leading-tight ${isSelected ? "text-[var(--color-primary)]" : "text-gray-700 dark:text-neutral-300"}`}>
+                          {title}
+                        </span>
+                        {isSelected && (
+                          <Check className="h-3.5 w-3.5 text-[var(--color-primary)]" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+          {filtered.length === 0 && (
+            <p className="py-8 text-center text-sm text-gray-500 dark:text-neutral-400">
+              {t("onboarding.noResults")}
+            </p>
+          )}
+        </div>
+      </main>
+
+      <div className="fixed inset-x-0 bottom-0 border-t border-gray-200 bg-white/95 px-5 py-4 backdrop-blur-sm dark:border-neutral-700 dark:bg-neutral-900/95 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <p className="mb-2 text-center text-xs text-gray-500 dark:text-neutral-400">
+          {t("createTeam.taskCount").replace("{count}", String(selected.size)).replace("{s}", selected.size > 1 ? "s" : "")}
+        </p>
+        <button
+          type="button"
+          onClick={handleSave}
+          className="w-full rounded-xl bg-[var(--color-primary)] py-3.5 font-heading text-base font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
+        >
+          {t("createTeam.done")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function CreateTeamPage() {
   const { t } = useLocale();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEditTasks = searchParams.has("edit-tasks");
   const [supervisorName, setSupervisorName] = useState("");
   const [supervisorEmail, setSupervisorEmail] = useState("");
   const [teamName, setTeamName] = useState("");
   const [pdfName, setPdfName] = useState("");
-  const [done, setDone] = useState(false);
+  const [step, setStep] = useState<"form" | "tasks" | "invite">("form");
   const [copied, setCopied] = useState<"invite" | "dashboard" | null>(null);
   const [fetchedLogo, setFetchedLogo] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -42,6 +176,14 @@ export default function CreateTeamPage() {
 
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supervisorEmail.trim());
 
+  if (isEditTasks) {
+    return <TaskPicker editMode onDone={() => { window.location.href = "/"; }} />;
+  }
+
+  if (step === "tasks") {
+    return <TaskPicker editMode={false} onDone={() => setStep("invite")} />;
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const name = teamName.trim();
@@ -53,7 +195,7 @@ export default function CreateTeamPage() {
     if (supervisorName.trim()) setWorkerName(supervisorName.trim());
     if (fetchedLogo) setCompanyLogo(fetchedLogo);
     setActiveRole("supervisor");
-    setDone(true);
+    setStep("tasks");
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -77,23 +219,23 @@ export default function CreateTeamPage() {
     setTimeout(() => setCopied(null), 2000);
   }
 
-  if (done && inviteToken && dashboardSecret) {
+  if (step === "invite" && inviteToken && dashboardSecret) {
     const inviteUrl = typeof window !== "undefined" ? `${window.location.origin}/join/${inviteToken}` : "";
     const dashboardUrl = typeof window !== "undefined" ? `${window.location.origin}/dashboard?team=${dashboardSecret}` : "";
 
     return (
-      <div className="flex min-h-dvh flex-col bg-white dark:bg-neutral-900">
+      <div className="flex min-h-dvh flex-col dark:bg-neutral-900">
         <div className="safe-area-header-cover" />
-        <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4">
-          <Link href="/" className="inline-flex items-center gap-2 text-white/90 hover:text-white">
-            <Image src="/logo.svg" alt="OK Chantier" width={120} height={32} className="acq-logo h-8 w-auto brightness-0 invert" />
+        <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-5 sm:px-8">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm text-white/80 transition-colors hover:text-white">
+            <Image src="/ok-yellow-white.svg" alt="OK Chantier" width={120} height={32} className="h-8 w-auto" />
           </Link>
-        </header>
-        <main className="flex-1 px-5 py-8">
-          <h1 className="font-heading text-2xl font-bold text-gray-900 dark:text-neutral-100">
+          <h1 className="mt-3 font-heading text-2xl font-bold text-white">
             {t("supervisor.inviteTitle")}
           </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400">{displayName}</p>
+          <p className="mt-0.5 text-sm text-white/70">{displayName}</p>
+        </header>
+        <main className="flex-1 px-5 py-5 sm:px-8">
           <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
             <div className="flex items-center gap-2 p-2.5 pl-3">
               <span className="min-w-0 flex-1 truncate text-sm text-gray-600 dark:text-neutral-300">{inviteUrl}</span>
@@ -136,21 +278,25 @@ export default function CreateTeamPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-white dark:bg-neutral-900">
+    <div className="flex min-h-dvh flex-col dark:bg-neutral-900">
       <div className="safe-area-header-cover" />
-      <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4">
-        <Link href="/" className="inline-flex items-center gap-2 text-white/90 hover:text-white">
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <header className="bg-[var(--color-header)] px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-5 sm:px-8">
+        <button
+          type="button"
+          onClick={() => { clearRoleChoiceDone(); router.push("/"); }}
+          className="inline-flex items-center gap-2 text-sm text-white/80 transition-colors hover:text-white"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
           {t("nav.back")}
-        </Link>
-      </header>
-      <main className="flex-1 px-5 py-8">
-        <h1 className="font-heading text-2xl font-bold text-gray-900 dark:text-neutral-100">
+        </button>
+        <h1 className="mt-3 font-heading text-2xl font-bold text-white">
           {t("createTeam.title")}
         </h1>
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+      </header>
+      <main className="flex-1 px-5 py-5 sm:px-8">
+        <form onSubmit={handleSubmit} className="mt-1 space-y-5">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-neutral-300">
               {t("createTeam.yourName")}

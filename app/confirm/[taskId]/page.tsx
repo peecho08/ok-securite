@@ -272,7 +272,7 @@ export default function ConfirmPage() {
             alt="OK"
             width={94}
             height={49}
-            className="acq-logo h-12 w-auto"
+            className="h-12 w-auto"
           />
         </div>
 

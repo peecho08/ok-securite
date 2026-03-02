@@ -21,9 +21,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.acq-logo {
-  filter: brightness(0) saturate(100%) invert(67%) sepia(89%) saturate(1200%) hue-rotate(5deg) brightness(1.05);
-}
 
 .dark body,
 body:where(.dark *) {
@@ -33,6 +30,35 @@ body:where(.dark *) {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
+}
+
+.pac-container {
+  z-index: 10000 !important;
+  border-radius: 0 0 12px 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  font-family: var(--font-body);
+  margin-top: 2px;
+}
+
+.pac-item {
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(0,0,0,0.05);
+}
+
+.pac-item:active {
+  background-color: #f3f4f6;
+}
+
+.pac-item-query {
+  font-size: 14px;
+}
+
+.pac-icon {
+  margin-top: 2px;
 }
 
 .safe-area-header-cover {
@@ -293,6 +319,15 @@ h1, h2, h3, h4, h5, h6 {
 
 .animate-placeholder-rotate {
   animation: placeholder-rotate 3s ease-in-out forwards;
+}
+
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-sheet-up {
+  animation: sheet-up 0.32s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 @keyframes waveform {

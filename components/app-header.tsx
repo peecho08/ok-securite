@@ -11,11 +11,10 @@ import { ClipboardList, ExternalLink } from "lucide-react";
 
 interface AppHeaderProps {
   workerName: string;
-  onEditFavorites: () => void;
   onFreshStart: () => void;
 }
 
-export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHeaderProps) {
+export function AppHeader({ workerName, onFreshStart }: AppHeaderProps) {
   const { locale, setLocale, t } = useLocale();
   const { theme, toggle: toggleTheme } = useTheme();
   const router = useRouter();
@@ -38,30 +37,16 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
             aria-label={t("nav.refresh")}
           >
             <Image
-              src="/logo.svg"
+              src="/ok-yellow-white.svg"
               alt="OK Chantier"
               width={188}
               height={48}
-              className="acq-logo h-[40px] w-auto brightness-0 invert sm:h-8"
+              className="h-[40px] w-auto sm:h-8"
               priority
             />
           </button>
 
           <div className="relative flex shrink-0 items-center gap-4 sm:gap-3">
-            <a
-              href="https://www.acq.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center transition-opacity hover:opacity-80"
-            >
-              <Image
-                src="/acq-logo.svg"
-                alt="ACQ"
-                width={120}
-                height={40}
-                className="h-[19px] w-auto brightness-0 invert"
-              />
-            </a>
             <button
               onClick={() => setShowMenu((v) => !v)}
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition-colors active:bg-white/40 sm:h-9 sm:w-9"
@@ -183,15 +168,6 @@ export function AppHeader({ workerName, onEditFavorites, onFreshStart }: AppHead
                       </span>
                       {t("menu.report")}
                     </Link>
-                    <button
-                      onClick={() => { setShowMenu(false); onEditFavorites(); }}
-                      className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
-                    >
-                      <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.518 4.674h4.911c.969 0 1.372 1.24.588 1.81l-3.974 2.888 1.518 4.674c.3.921-.755 1.688-1.539 1.118L12 15.203l-3.974 2.888c-.783.57-1.838-.197-1.539-1.118l1.518-4.674-3.974-2.888c-.783-.57-.38-1.81.588-1.81h4.911l1.518-4.674z" />
-                      </svg>
-                      {t("menu.editFavorites")}
-                    </button>
                     <Link
                       href="/dashboard"
                       onClick={() => setShowMenu(false)}

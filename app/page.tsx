@@ -5,13 +5,13 @@ import { tasks } from "@/data/tasks";
 import { type TaskCategory } from "@/types";
 import { useLocale } from "@/lib/i18n";
 import { localCatLabel, localTitle, normalize } from "@/lib/locale-helpers";
-import { clearProgress, getActiveTaskProgress, getFavorites, getHistory, getWorkerName, getActiveRole, getRoleChoiceDone, hasFavorites, isDemoSeeded, seedDemoData, resetAllForFreshStart } from "@/lib/storage";
+import { clearProgress, getActiveTaskProgress, getTeamTasks, getWorkerName, getActiveRole, getRoleChoiceDone, isDemoSeeded, seedDemoData, resetAllForFreshStart } from "@/lib/storage";
 import { checklists } from "@/data/checklists";
 import { AppHeader } from "@/components/app-header";
 import { SearchBar } from "@/components/search-bar";
 import { MusicPlayer } from "@/components/music-player";
 import { ActiveTasks } from "@/components/active-tasks";
-import { FavoriteStrip } from "@/components/favorite-strip";
+import { TeamTaskStrip } from "@/components/team-task-strip";
 import { TaskList } from "@/components/task-list";
 import { Onboarding } from "@/components/onboarding";
 import { SupervisorHome } from "@/components/supervisor-home";
@@ -29,9 +29,8 @@ const categoryOrder: TaskCategory[] = [
 export default function HomePage() {
   const { locale, t } = useLocale();
   const [query, setQuery] = useState("");
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [teamTaskIds, setTeamTaskIds] = useState<string[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [editingFavorites, setEditingFavorites] = useState(false);
   const [activeProgress, setActiveProgress] = useState<{ taskId: string; checkedIds: string[]; naIds: string[] }[]>([]);
   const [showTop, setShowTop] = useState(false);
   const [searchPinned, setSearchPinned] = useState(false);
@@ -43,13 +42,13 @@ export default function HomePage() {
     if (!isDemoSeeded()) {
       seedDemoData();
     }
-    setFavoriteIds(getFavorites());
+    setTeamTaskIds(getTeamTasks());
     setActiveProgress(getActiveTaskProgress());
     setWorkerNameState(getWorkerName());
     const roleDone = getRoleChoiceDone();
     const supervisorMode = getActiveRole() === "supervisor";
     setIsSupervisor(supervisorMode);
-    if (!roleDone || (!hasFavorites() && !supervisorMode)) setShowOnboarding(true);
+    if (!roleDone) setShowOnboarding(true);
     setReady(true);
   }, []);
 
@@ -73,9 +72,9 @@ export default function HomePage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const favoriteTasks = useMemo(
-    () => favoriteIds.map((id) => tasks.find((task) => task.id === id)),
-    [favoriteIds],
+  const teamTasks = useMemo(
+    () => teamTaskIds.map((id) => tasks.find((task) => task.id === id)),
+    [teamTaskIds],
   );
 
   const activeTasks = useMemo(() => {
@@ -149,7 +148,6 @@ export default function HomePage() {
     <div className="flex min-h-dvh flex-col">
       <AppHeader
         workerName={workerName}
-        onEditFavorites={() => { setEditingFavorites(true); setShowOnboarding(true); }}
         onFreshStart={() => { resetAllForFreshStart(); window.location.href = "/"; }}
       />
 
@@ -187,11 +185,8 @@ export default function HomePage() {
               <ActiveTasks activeTasks={activeTasks} onAbandon={handleAbandon} />
             )}
 
-            {!query && favoriteIds.length > 0 && (
-              <FavoriteStrip
-                tasks={favoriteTasks}
-                onEdit={() => { setEditingFavorites(true); setShowOnboarding(true); }}
-              />
+            {!query && teamTaskIds.length > 0 && (
+              <TeamTaskStrip tasks={teamTasks} />
             )}
 
             <TaskList grouped={grouped} />
@@ -205,12 +200,11 @@ export default function HomePage() {
 
       {showOnboarding && (
         <Onboarding
-          initial={editingFavorites ? favoriteIds : []}
-          skipWelcome={editingFavorites}
-          onDone={(ids) => {
-            setFavoriteIds(ids);
+          onDone={() => {
+            setTeamTaskIds(getTeamTasks());
+            setWorkerNameState(getWorkerName());
+            setIsSupervisor(getActiveRole() === "supervisor");
             setShowOnboarding(false);
-            setEditingFavorites(false);
           }}
         />
       )}

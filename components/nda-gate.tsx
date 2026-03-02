@@ -37,13 +37,20 @@ export function NdaGate({ children }: { children: React.ReactNode }) {
     const t = copy[locale === "en" ? "en" : "fr"];
 
     return (
-      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 px-6 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center px-6">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url(/nda-bg.jpg)" }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+        <div className="relative z-10 flex flex-col items-center justify-center w-full">
         <Image
-          src="/logo.svg"
+          src="/ok-yellow-white.svg"
           alt="OK Chantier"
-          width={120}
-          height={30}
-          className="mb-6 h-6 w-auto brightness-0 invert opacity-40"
+          width={160}
+          height={40}
+          className="mb-6 h-10 w-auto"
           priority
         />
         <div className="w-full max-w-md rounded-2xl bg-neutral-900 p-8 text-white shadow-2xl">
@@ -70,10 +77,11 @@ export function NdaGate({ children }: { children: React.ReactNode }) {
         <button
           type="button"
           onClick={() => setLocale(locale === "fr" ? "en" : "fr")}
-          className="mt-4 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-300"
+          className="mt-4 rounded-lg border border-neutral-700 bg-neutral-800/60 px-5 py-2 text-sm font-medium text-neutral-300 transition-colors hover:border-neutral-500 hover:bg-neutral-700/60 hover:text-white"
         >
           {locale === "fr" ? "English" : "Français"}
         </button>
+        </div>
       </div>
     );
   }

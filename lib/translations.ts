@@ -17,6 +17,7 @@ const fr: Record<string, string | string[]> = {
   "home.greeting.evening": "Bonne soirée",
   "home.chooseTask": "Choisissez une tâche pour commencer.",
   "home.ongoing": "En cours",
+  "home.myTasks": "Mes tâches",
   "home.favorites": "Favoris",
   "home.edit": "Modifier",
   "home.noResults": "Aucune tâche trouvée",
@@ -43,6 +44,7 @@ const fr: Record<string, string | string[]> = {
   "menu.preventionProgram": "Mon programme de prévention",
   "menu.switchToWorker": "Utiliser comme travailleur",
   "menu.supervisor": "Superviseur",
+  "menu.manageTasks": "Gérer les tâches",
 
   // ── Role choice ─────────────────────────────────────────
   "role.chooseTitle": "Vous êtes…",
@@ -69,6 +71,9 @@ const fr: Record<string, string | string[]> = {
   "createTeam.copy": "Copier",
   "createTeam.copied": "Copié",
   "createTeam.done": "COMPLÉTER",
+  "createTeam.selectTasks": "Tâches de votre entreprise",
+  "createTeam.selectTasksHint": "Sélectionnez les tâches que votre équipe effectue.",
+  "createTeam.taskCount": "{count} tâche{s} sélectionnée{s}",
 
   // ── Join team ────────────────────────────────────────────
   "joinTeam.title": "Rejoindre une équipe",
@@ -343,6 +348,7 @@ const en: Record<string, string | string[]> = {
   "home.greeting.evening": "Good evening",
   "home.chooseTask": "Choose a task to get started.",
   "home.ongoing": "In progress",
+  "home.myTasks": "My tasks",
   "home.favorites": "Favorites",
   "home.edit": "Edit",
   "home.noResults": "No tasks found",
@@ -369,6 +375,7 @@ const en: Record<string, string | string[]> = {
   "menu.preventionProgram": "My prevention program",
   "menu.switchToWorker": "Use as worker",
   "menu.supervisor": "Supervisor",
+  "menu.manageTasks": "Manage tasks",
 
   // ── Role choice ─────────────────────────────────────────
   "role.chooseTitle": "You are…",
@@ -395,6 +402,9 @@ const en: Record<string, string | string[]> = {
   "createTeam.copy": "Copy",
   "createTeam.copied": "Copied",
   "createTeam.done": "DONE",
+  "createTeam.selectTasks": "Your company's tasks",
+  "createTeam.selectTasksHint": "Select the tasks your team performs.",
+  "createTeam.taskCount": "{count} task{s} selected",
 
   // ── Join team ────────────────────────────────────────────
   "joinTeam.title": "Join a team",

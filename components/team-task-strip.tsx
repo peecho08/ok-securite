@@ -7,30 +7,22 @@ import type { Task } from "@/lib/locale-helpers";
 import { checklists } from "@/data/checklists";
 import { TaskIcon } from "@/components/task-icon";
 
-interface FavoriteStripProps {
+interface TeamTaskStripProps {
   tasks: (Task | undefined)[];
-  onEdit: () => void;
 }
 
-export function FavoriteStrip({ tasks: tasksProp, onEdit }: FavoriteStripProps) {
+export function TeamTaskStrip({ tasks: tasksProp }: TeamTaskStripProps) {
   const { locale, t } = useLocale();
   const tasks = tasksProp.filter((task): task is Task => task != null);
+
+  if (tasks.length === 0) return null;
 
   return (
     <section className="mb-6">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
-          {t("home.favorites")}
+          {t("home.myTasks")}
         </h2>
-        <button
-          onClick={onEdit}
-          className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-        >
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
-          </svg>
-          {t("home.edit")}
-        </button>
       </div>
       <div className="relative">
         <div className="flex gap-2.5 overflow-x-auto scroll-smooth pb-1">

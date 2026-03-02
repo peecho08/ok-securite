@@ -164,6 +164,10 @@ export function setRoleChoiceDone() {
   safeStorage()?.setItem(ROLE_CHOICE_DONE_KEY, "1");
 }
 
+export function clearRoleChoiceDone() {
+  safeStorage()?.removeItem(ROLE_CHOICE_DONE_KEY);
+}
+
 export function getSupervisorOrgId(): string | null {
   return safeStorage()?.getItem(SUPERVISOR_ORG_ID_KEY) ?? null;
 }
@@ -206,6 +210,42 @@ export function setWorkerOrgId(orgId: string | null) {
     if (orgId) s.setItem(WORKER_ORG_ID_KEY, orgId);
     else s.removeItem(WORKER_ORG_ID_KEY);
   } catch { /* ignore */ }
+}
+
+// ── Team tasks (employer-selected tasks for the team) ─────────────
+
+const TEAM_TASKS_KEY = key("team-tasks");
+
+export function getTeamTasks(): string[] {
+  const s = safeStorage();
+  if (!s) return [];
+  try {
+    const raw = s.getItem(TEAM_TASKS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function setTeamTasks(ids: string[]) {
+  const s = safeStorage();
+  if (!s) return;
+  try {
+    s.setItem(TEAM_TASKS_KEY, JSON.stringify(ids));
+  } catch { /* quota exceeded — ignore */ }
+}
+
+// ── Worker onboarding ─────────────────────────────────────────────
+
+const WORKER_ONBOARDING_KEY = key("worker-onboarding-done");
+
+export function getWorkerOnboardingDone(): boolean {
+  const s = safeStorage();
+  return s ? s.getItem(WORKER_ONBOARDING_KEY) === "1" : false;
+}
+
+export function setWorkerOnboardingDone() {
+  safeStorage()?.setItem(WORKER_ONBOARDING_KEY, "1");
 }
 
 // ── Language ─────────────────────────────────────────────────────
