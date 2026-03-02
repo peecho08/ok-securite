@@ -12,6 +12,7 @@ import { mergePhases } from "@/lib/locale-helpers";
 import { useLocale } from "@/lib/i18n";
 import { getLogoPngDataUrl } from "@/lib/pdf-logo";
 import { AlertTriangle, Camera, Download, MapPin } from "lucide-react";
+import { fireConfetti } from "@/lib/confetti";
 
 function haptic(pattern: number | number[] = 15) {
   try { navigator?.vibrate?.(pattern); } catch { /* unsupported */ }
@@ -178,28 +179,6 @@ export default function TaskPage() {
     return () => clearTimeout(t);
   }, [phaseToast]);
 
-  const scrollToNextUnresolved = useCallback((justResolvedId: string) => {
-    setTimeout(() => {
-      const ordered = phases.flatMap(p => {
-        if (collapsed.has(p.phase)) return [];
-        return [...p.items].sort((a, b) => (a.critical && !b.critical ? -1 : !a.critical && b.critical ? 1 : 0));
-      });
-      const idx = ordered.findIndex(item => item.id === justResolvedId);
-      if (idx === -1) return;
-      const next = ordered.slice(idx + 1).find(item =>
-        !checked.has(item.id) && !na.has(item.id) && item.id !== justResolvedId
-      );
-      if (!next) return;
-      const el = document.querySelector(`[data-item-id="${next.id}"]`);
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const viewBottom = window.innerHeight - 80;
-      if (rect.top < 0 || rect.bottom > viewBottom) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 350);
-  }, [phases, collapsed, checked, na]);
-
   const toggleCheck = useCallback((id: string) => {
     const wasChecked = checked.has(id);
     haptic(wasChecked ? HAPTIC_UNCHECK : HAPTIC_CHECK);
@@ -212,9 +191,8 @@ export default function TaskPage() {
     });
     if (!wasChecked) {
       setNa((prev) => { const next = new Set(prev); next.delete(id); return next; });
-      scrollToNextUnresolved(id);
     }
-  }, [checked, scrollToNextUnresolved]);
+  }, [checked]);
 
   const toggleNa = useCallback((id: string) => {
     haptic(HAPTIC_NA);
@@ -228,9 +206,8 @@ export default function TaskPage() {
     });
     if (!wasNa) {
       setChecked((prev) => { const next = new Set(prev); next.delete(id); return next; });
-      scrollToNextUnresolved(id);
     }
-  }, [na, scrollToNextUnresolved]);
+  }, [na]);
 
   const togglePhaseCollapse = useCallback((phase: Phase) => {
     setCollapsed((prev) => {
@@ -320,6 +297,7 @@ export default function TaskPage() {
   const progress = allItems.length > 0 ? resolvedCount / allItems.length : 0;
   const allResolved = resolvedCount === allItems.length && allItems.length > 0;
   const uncheckedCritical = allItems.filter((i) => i.critical && !isResolved(i.id));
+
 
   const generatePdf = useCallback(async () => {
     if (!task || phases.length === 0) return;
@@ -442,6 +420,7 @@ export default function TaskPage() {
   }, [task, phases, checked, na, allItems, workerName, availableSites, selectedSiteId, taskId, locale, t]);
 
   function navigateToConfirm() {
+    fireConfetti();
     const selectedSite = availableSites.find((s) => s.id === selectedSiteId);
     const params = new URLSearchParams({
       items: String(allItems.length),
@@ -621,7 +600,6 @@ export default function TaskPage() {
                     return (
                       <SwipeItem key={item.id} onSwipe={() => { if (!isChecked && !isNa) toggleCheck(item.id); }}>
                         <div
-                          data-item-id={item.id}
                           role="button"
                           tabIndex={0}
                           onClick={() => toggleCheck(item.id)}
