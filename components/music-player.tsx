@@ -68,7 +68,7 @@ export function MusicPlayer() {
 
   return (
     <div>
-      <div className="flex items-center gap-2.5 bg-amber-50 px-5 py-4 sm:px-8 dark:bg-amber-950/40">
+      <div className="flex items-center gap-2.5 rounded-xl bg-amber-50 px-4 py-3 dark:bg-amber-950/40">
         <button
           onClick={toggle}
           className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-amber-500 text-white shadow-sm transition-transform active:scale-90"

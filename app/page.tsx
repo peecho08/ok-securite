@@ -9,7 +9,6 @@ import { clearProgress, getActiveTaskProgress, getTeamTasks, getWorkerName, getA
 import { checklists } from "@/data/checklists";
 import { AppHeader } from "@/components/app-header";
 import { SearchBar } from "@/components/search-bar";
-import { MusicPlayer } from "@/components/music-player";
 import { ActiveTasks } from "@/components/active-tasks";
 import { TaskList } from "@/components/task-list";
 import { Onboarding } from "@/components/onboarding";

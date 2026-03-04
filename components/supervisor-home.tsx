@@ -27,6 +27,15 @@ export function SupervisorHome() {
   const [showAddSite, setShowAddSite] = useState(false);
 
   useEffect(() => {
+    if (showMenu) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [showMenu]);
+
+  useEffect(() => {
     if (!isDemoSeeded()) seedDemoData();
     setTeamName(getTeamName() || t("supervisor.defaultTeamName"));
     const token = getInviteToken();

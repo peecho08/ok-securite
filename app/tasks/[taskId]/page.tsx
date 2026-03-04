@@ -131,6 +131,15 @@ export default function TaskPage() {
     }
   }, [taskId, shouldResume]);
 
+  useEffect(() => {
+    if (showSiteSheet) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [showSiteSheet]);
+
   // Persist progress on change
   useEffect(() => {
     if (!taskId || (checked.size === 0 && na.size === 0)) return;

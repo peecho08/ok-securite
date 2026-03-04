@@ -8,6 +8,7 @@ import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
 import { getReportCount, getActiveRole, setActiveRole, getSupervisorOrgId } from "@/lib/storage";
 import { ClipboardList, ExternalLink } from "lucide-react";
+import { MusicPlayer } from "@/components/music-player";
 
 interface AppHeaderProps {
   workerName: string;
@@ -23,6 +24,15 @@ export function AppHeader({ workerName, onFreshStart }: AppHeaderProps) {
 
   useEffect(() => {
     setReportCount(getReportCount());
+  }, [showMenu]);
+
+  useEffect(() => {
+    if (showMenu) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
   }, [showMenu]);
 
   return (
@@ -214,6 +224,9 @@ export function AppHeader({ workerName, onFreshStart }: AppHeaderProps) {
                       </svg>
                       {t("menu.freshStart")}
                     </button>
+                    <div className="mx-4 mt-2 mb-3">
+                      <MusicPlayer />
+                    </div>
                   </div>
                 </div>
               </>
