@@ -34,7 +34,13 @@ export function ActiveTasks({ activeTasks, onAbandon }: ActiveTasksProps) {
                   {localTitle(task, locale)}
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-primary/20">
+                  <div
+                    className="h-2 flex-1 overflow-hidden rounded-full bg-primary/20"
+                    role="progressbar"
+                    aria-valuenow={checked}
+                    aria-valuemin={0}
+                    aria-valuemax={total}
+                  >
                     <div
                       className="h-full rounded-full bg-primary transition-all"
                       style={{ width: `${(checked / total) * 100}%` }}
@@ -48,7 +54,7 @@ export function ActiveTasks({ activeTasks, onAbandon }: ActiveTasksProps) {
             </Link>
             <button
               onClick={() => onAbandon(task.id)}
-              className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-gray-400 shadow-sm transition-colors hover:bg-white hover:text-red-500"
+              className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-gray-500 shadow-sm transition-colors hover:bg-white hover:text-red-500"
               aria-label={t("home.abandon")}
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

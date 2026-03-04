@@ -59,9 +59,12 @@ export function AppHeader({ workerName, onFreshStart }: AppHeaderProps) {
 
             {showMenu && (
               <>
-                <div className="fixed inset-0 z-40 animate-fade-in bg-black/30" onClick={() => setShowMenu(false)} aria-hidden />
+                <div className="fixed inset-0 z-40 animate-fade-in bg-black/30" onClick={() => setShowMenu(false)} aria-hidden="true" />
                 <div
+                  role="dialog"
+                  aria-label={t("a11y.navigationMenu")}
                   className="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] animate-sheet-up overflow-y-auto rounded-t-2xl border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] dark:border-neutral-700 dark:bg-neutral-800"
+                  onKeyDown={(e) => { if (e.key === "Escape") setShowMenu(false); }}
                   onTouchStart={(e) => {
                     (e.currentTarget as HTMLElement).dataset.touchY = String(e.touches[0].clientY);
                   }}
@@ -71,7 +74,7 @@ export function AppHeader({ workerName, onFreshStart }: AppHeaderProps) {
                     if (dy > 60) setShowMenu(false);
                   }}
                 >
-                  <div className="mx-auto mb-2 mt-3 h-1 w-12 rounded-full bg-gray-200" aria-hidden />
+                  <div className="mx-auto mb-2 mt-3 h-1 w-12 rounded-full bg-gray-200" aria-hidden="true" />
                   <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-neutral-700">
                     <div className="min-w-0">
                       <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{workerName || (getActiveRole() === "supervisor" ? t("menu.supervisor") : t("menu.worker"))}</p>

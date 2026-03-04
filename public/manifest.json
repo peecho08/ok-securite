@@ -4,12 +4,12 @@
   "description": "Liste de vérification sécurité chantier — rapide et fiable",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#118914",
-  "theme_color": "#118914",
+  "background_color": "#1E2324",
+  "theme_color": "#1E2324",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/logo.svg",
+      "src": "/ok-yellow-white.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
-import { getTeamName, getInviteToken, getWorkerName, setActiveRole, getHistory, resetAllForFreshStart, isDemoSeeded, seedDemoData, getSites, addSite, removeSite, type HistoryEntry, type ConstructionSite } from "@/lib/storage";
+import { getTeamName, getInviteToken, getWorkerName, setActiveRole, clearWorkerOnboardingDone, getHistory, resetAllForFreshStart, isDemoSeeded, seedDemoData, getSites, addSite, removeSite, type HistoryEntry, type ConstructionSite } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
 import { PlaceAutocomplete } from "@/components/address-autocomplete";
 import { Copy, Check, Users, ClipboardList, RotateCcw, ExternalLink, Mail, MessageSquare, MapPin, Plus, Trash2, ListChecks } from "lucide-react";
@@ -74,6 +74,7 @@ export function SupervisorHome() {
 
   function switchToWorker() {
     setActiveRole("worker");
+    clearWorkerOnboardingDone();
     window.location.href = "/";
   }
 
@@ -102,7 +103,8 @@ export function SupervisorHome() {
             <button
               type="button"
               onClick={() => setShowMenu((v) => !v)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white transition-colors active:bg-white/40"
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white transition-colors active:bg-white/40"
+              aria-label={t("nav.menu")}
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -118,13 +120,16 @@ export function SupervisorHome() {
       {/* Profile menu */}
       {showMenu && (
         <>
-          <div className="fixed inset-0 z-40 animate-fade-in bg-black/30" onClick={() => setShowMenu(false)} aria-hidden />
+          <div className="fixed inset-0 z-40 animate-fade-in bg-black/30" onClick={() => setShowMenu(false)} aria-hidden="true" />
           <div
+            role="dialog"
+            aria-label={t("a11y.navigationMenu")}
             className="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] animate-sheet-up overflow-y-auto rounded-t-2xl border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] dark:border-neutral-700 dark:bg-neutral-800"
+            onKeyDown={(e) => { if (e.key === "Escape") setShowMenu(false); }}
             onTouchStart={(e) => { (e.currentTarget as HTMLElement).dataset.touchY = String(e.touches[0].clientY); }}
             onTouchEnd={(e) => { const dy = e.changedTouches[0].clientY - Number((e.currentTarget as HTMLElement).dataset.touchY ?? 0); if (dy > 60) setShowMenu(false); }}
           >
-            <div className="mx-auto mb-2 mt-3 h-1 w-12 rounded-full bg-gray-200" aria-hidden />
+            <div className="mx-auto mb-2 mt-3 h-1 w-12 rounded-full bg-gray-200" aria-hidden="true" />
             <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-neutral-700">
               <div className="min-w-0">
                 <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{workerName || t("menu.supervisor")}</p>
@@ -190,7 +195,7 @@ export function SupervisorHome() {
               </button>
               <button
                 onClick={() => { resetAllForFreshStart(); setShowMenu(false); window.location.href = "/"; }}
-                className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-400 transition-colors active:bg-gray-100 dark:text-neutral-500 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
+                className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-500 transition-colors active:bg-gray-100 dark:text-neutral-400 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
               >
                 <RotateCcw className="h-5 w-5 shrink-0" />
                 {t("menu.freshStart")}
@@ -204,7 +209,7 @@ export function SupervisorHome() {
         {/* Quick links */}
         <section className="mb-5 grid grid-cols-2 gap-3">
           <Link
-            href="/create-team"
+            href="/my-team"
             className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
           >
             <Users className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
@@ -256,6 +261,27 @@ export function SupervisorHome() {
             </div>
           </div>
         </section>
+
+        {/* ACQ Formations banner */}
+        <a
+          href="https://www.acq.org/formations/repertoire-des-cours/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-5 flex items-center gap-3 rounded-xl bg-amber-50 p-4 transition-colors active:bg-amber-100 dark:bg-amber-950/40"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-white">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-heading text-sm font-bold text-amber-900 dark:text-amber-200">{t("menu.acqFormations")}</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400">{t("menu.acqFormationsDesc")}</p>
+          </div>
+          <svg className="h-4 w-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
 
         {/* Construction sites */}
         <section className="mb-5">
@@ -334,7 +360,7 @@ export function SupervisorHome() {
                     <button
                       type="button"
                       onClick={() => handleRemoveSite(site.id)}
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-neutral-500 dark:hover:bg-red-950 dark:hover:text-red-400"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-neutral-500 dark:hover:bg-red-950 dark:hover:text-red-400"
                       aria-label={t("site.remove")}
                     >
                       <Trash2 className="h-3.5 w-3.5" />

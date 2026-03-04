@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
-import { setSupervisorOrg, setActiveRole, setWorkerName, setCompanyLogo, getTeamName, getInviteToken, getDashboardSecret, getTeamTasks, setTeamTasks, clearRoleChoiceDone } from "@/lib/storage";
+import { setSupervisorOrg, setActiveRole, setWorkerName, setCompanyLogo, getTeamName, getInviteToken, getDashboardSecret, getTeamTasks, setTeamTasks, clearRoleChoiceDone, setSupervisorEmail } from "@/lib/storage";
 import { tasks } from "@/data/tasks";
 import { categoryLabels, categoryLabelsEn, type TaskCategory } from "@/types";
 import { Upload, Check, Copy, Mail, MessageSquare, Search } from "lucide-react";
@@ -188,7 +188,7 @@ export default function CreateTeamPage() {
   const searchParams = useSearchParams();
   const isEditTasks = searchParams.has("edit-tasks");
   const [supervisorName, setSupervisorName] = useState("");
-  const [supervisorEmail, setSupervisorEmail] = useState("");
+  const [supervisorEmail, setSupervisorEmailState] = useState("");
   const [teamName, setTeamName] = useState("");
   const [pdfName, setPdfName] = useState("");
   const [step, setStep] = useState<"form" | "tasks" | "invite">("form");
@@ -233,6 +233,7 @@ export default function CreateTeamPage() {
     const dash = randomId();
     setSupervisorOrg(orgId, name, inv, dash);
     if (supervisorName.trim()) setWorkerName(supervisorName.trim());
+    if (supervisorEmail.trim()) setSupervisorEmail(supervisorEmail.trim());
     if (fetchedLogo) setCompanyLogo(fetchedLogo);
     setActiveRole("supervisor");
     setStep("tasks");
@@ -343,6 +344,8 @@ export default function CreateTeamPage() {
             </label>
             <input
               type="text"
+              name="name"
+              autoComplete="name"
               value={supervisorName}
               onChange={(e) => setSupervisorName(e.target.value)}
               placeholder={t("createTeam.yourNamePlaceholder")}
@@ -355,9 +358,11 @@ export default function CreateTeamPage() {
             </label>
             <input
               type="email"
+              name="email"
+              autoComplete="email"
               required
               value={supervisorEmail}
-              onChange={(e) => setSupervisorEmail(e.target.value)}
+              onChange={(e) => setSupervisorEmailState(e.target.value)}
               placeholder={t("createTeam.yourEmailPlaceholder")}
               className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-[var(--color-primary)] dark:focus:bg-neutral-700"
             />
@@ -378,6 +383,8 @@ export default function CreateTeamPage() {
             </label>
             <input
               type="text"
+              name="organization"
+              autoComplete="organization"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
               placeholder={t("createTeam.namePlaceholder")}

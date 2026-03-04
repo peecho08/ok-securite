@@ -347,6 +347,20 @@ const fr: Record<string, string | string[]> = {
 
   // ── Create team misc ───────────────────────────────────
   "createTeam.logoDetected": "Logo détecté automatiquement",
+
+  // ── Accessibility ─────────────────────────────────────
+  "a11y.scrollToTop": "Retour en haut",
+  "a11y.checkItem": "Cocher ce point",
+  "a11y.itemInfo": "Plus d'informations",
+  "a11y.markNa": "Marquer non applicable",
+  "a11y.searchTasks": "Rechercher des tâches",
+  "a11y.closeMenu": "Fermer le menu",
+  "a11y.closeDialog": "Fermer",
+  "a11y.progress": "Progression : {checked} sur {total}",
+  "a11y.checklist": "Liste de vérification",
+  "a11y.sitePickerTitle": "Sélection du chantier",
+  "a11y.navigationMenu": "Menu de navigation",
+  "a11y.criticalWarning": "Avertissement : points critiques manquants",
 };
 
 const en: Record<string, string | string[]> = {
@@ -698,6 +712,20 @@ const en: Record<string, string | string[]> = {
 
   // ── Create team misc ───────────────────────────────────
   "createTeam.logoDetected": "Logo detected automatically",
+
+  // ── Accessibility ─────────────────────────────────────
+  "a11y.scrollToTop": "Back to top",
+  "a11y.checkItem": "Check this item",
+  "a11y.itemInfo": "More information",
+  "a11y.markNa": "Mark not applicable",
+  "a11y.searchTasks": "Search tasks",
+  "a11y.closeMenu": "Close menu",
+  "a11y.closeDialog": "Close",
+  "a11y.progress": "Progress: {checked} of {total}",
+  "a11y.checklist": "Checklist",
+  "a11y.sitePickerTitle": "Site selection",
+  "a11y.navigationMenu": "Navigation menu",
+  "a11y.criticalWarning": "Warning: missing critical items",
 };
 
 export const translations: Record<string, Record<string, string | string[]>> = { fr, en };

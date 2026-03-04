@@ -5,7 +5,7 @@ import { tasks } from "@/data/tasks";
 import { type TaskCategory } from "@/types";
 import { useLocale } from "@/lib/i18n";
 import { localCatLabel, localTitle, normalize } from "@/lib/locale-helpers";
-import { clearProgress, getActiveTaskProgress, getTeamTasks, getWorkerName, getActiveRole, getRoleChoiceDone, isDemoSeeded, seedDemoData, resetAllForFreshStart } from "@/lib/storage";
+import { clearProgress, getActiveTaskProgress, getTeamTasks, getWorkerName, getActiveRole, getRoleChoiceDone, getWorkerOnboardingDone, isDemoSeeded, seedDemoData, resetAllForFreshStart } from "@/lib/storage";
 import { checklists } from "@/data/checklists";
 import { AppHeader } from "@/components/app-header";
 import { SearchBar } from "@/components/search-bar";
@@ -48,7 +48,7 @@ export default function HomePage() {
     const roleDone = getRoleChoiceDone();
     const supervisorMode = getActiveRole() === "supervisor";
     setIsSupervisor(supervisorMode);
-    if (!roleDone) setShowOnboarding(true);
+    if (!roleDone || (!supervisorMode && !getWorkerOnboardingDone())) setShowOnboarding(true);
     setReady(true);
   }, []);
 
@@ -173,14 +173,14 @@ export default function HomePage() {
             {!query && activeTasks.length === 0 && (
               <section className="mx-auto mb-5 max-w-xs py-4 text-center">
                 {workerName && (
-                  <p className="mb-2 text-base font-semibold text-gray-400">
+                  <p className="mb-2 text-base font-semibold text-gray-500 dark:text-neutral-400">
                     {t(greeting)}, {workerName}
                   </p>
                 )}
                 <p className="font-heading text-xl font-bold text-gray-700 dark:text-neutral-200">
                   &laquo;&nbsp;{t(quoteKey)}&nbsp;&raquo;
                 </p>
-                <p className="mt-1.5 text-sm text-gray-400">
+                <p className="mt-1.5 text-sm text-gray-500 dark:text-neutral-400">
                   {t("home.chooseTask")}
                 </p>
               </section>
@@ -235,8 +235,8 @@ export default function HomePage() {
 
       <button
         onClick={scrollToTop}
-        aria-label="Retour en haut"
-        className={`fixed bottom-6 right-6 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-black text-white shadow-lg transition-all duration-300 hover:bg-gray-800 active:scale-95 ${
+        aria-label={t("a11y.scrollToTop")}
+        className={`fixed bottom-6 right-6 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-black text-white shadow-lg transition-all duration-300 hover:bg-gray-800 active:scale-95 ${
           showTop ? "translate-y-0 opacity-100" : "translate-y-4 pointer-events-none opacity-0"
         }`}
       >

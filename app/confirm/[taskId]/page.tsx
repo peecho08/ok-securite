@@ -259,7 +259,7 @@ export default function ConfirmPage() {
       <div className="px-5 pt-[calc(env(safe-area-inset-top)+1rem)] sm:px-8">
         <Link
           href={`/tasks/${taskId}?resume=1`}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors active:text-gray-600 dark:text-neutral-500 dark:active:text-neutral-300"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors active:text-gray-700 dark:text-neutral-400 dark:active:text-neutral-200"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("confirm.backToChecklist")}
@@ -276,7 +276,7 @@ export default function ConfirmPage() {
           />
         </div>
 
-        <div className="animate-confirm-content">
+        <div className="animate-confirm-content" aria-live="polite">
           <h1 className="mt-4 text-xl font-bold">
             {t("confirm.complete")}
           </h1>

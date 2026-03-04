@@ -105,6 +105,22 @@ export function setWorkerName(name: string) {
   safeStorage()?.setItem(NAME_KEY, name);
 }
 
+// ── Supervisor email ─────────────────────────────────────────────
+
+const EMAIL_KEY = key("supervisor-email");
+
+export function getSupervisorEmail(): string {
+  const s = safeStorage();
+  return s ? s.getItem(EMAIL_KEY) || "" : "";
+}
+
+export function setSupervisorEmail(email: string) {
+  const s = safeStorage();
+  if (!s) return;
+  if (email) s.setItem(EMAIL_KEY, email);
+  else s.removeItem(EMAIL_KEY);
+}
+
 // ── Favorites ────────────────────────────────────────────────────
 
 const FAVORITES_KEY = key("favorites");
@@ -246,6 +262,10 @@ export function getWorkerOnboardingDone(): boolean {
 
 export function setWorkerOnboardingDone() {
   safeStorage()?.setItem(WORKER_ONBOARDING_KEY, "1");
+}
+
+export function clearWorkerOnboardingDone() {
+  safeStorage()?.removeItem(WORKER_ONBOARDING_KEY);
 }
 
 // ── Language ─────────────────────────────────────────────────────
@@ -497,6 +517,7 @@ export function resetAllForFreshStart(): void {
     key("worker-name"),
     key("company-website"),
     key("company-logo"),
+    key("supervisor-email"),
     key("lang"),
     key("unlocked"),
     key("last-site-id"),
@@ -621,8 +642,6 @@ export function seedDemoData() {
     { id: "site-1", name: "Condo des Draveurs", address: "120 boul. des Draveurs, Gatineau", active: true, createdAt: new Date(now - 10 * DAY).toISOString() },
     { id: "site-2", name: "Centre Sportif Aylmer", address: "55 rue Principale, Aylmer", active: true, createdAt: new Date(now - 8 * DAY).toISOString() },
     { id: "site-3", name: "Pont du Rapibus Phase 2", address: "Boul. Maloney, Gatineau", active: true, createdAt: new Date(now - 6 * DAY).toISOString() },
-    { id: "site-4", name: "Résidence du Plateau", address: "430 boul. du Plateau, Hull", active: true, createdAt: new Date(now - 4 * DAY).toISOString() },
-    { id: "site-5", name: "École secondaire Mont-Bleu", address: "225 boul. Mont-Bleu, Hull", active: true, createdAt: new Date(now - 2 * DAY).toISOString() },
   ];
 
   try {

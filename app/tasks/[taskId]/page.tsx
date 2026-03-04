@@ -466,19 +466,26 @@ export default function TaskPage() {
           )}
         </div>
 
-        <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-white/20">
+        <div
+          className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-white/20"
+          role="progressbar"
+          aria-valuenow={resolvedCount}
+          aria-valuemin={0}
+          aria-valuemax={allItems.length}
+          aria-label={t("a11y.progress").replace("{checked}", String(resolvedCount)).replace("{total}", String(allItems.length))}
+        >
           <div
             className="h-full rounded-full bg-yellow-400 transition-all duration-300"
             style={{ width: `${progress * 100}%` }}
           />
         </div>
-        <p className="mt-1 text-xs text-white/60">
+        <p className="mt-1 text-xs text-white/70">
           <span key={resolvedCount} className="inline-block animate-count-bump">{resolvedCount}</span> / {allItems.length} {t("task.verifications")}
         </p>
       </header>
 
       {/* Checklist */}
-      <main className="flex-1 px-5 py-4 sm:px-8">
+      <main className="flex-1 px-5 py-4 sm:px-8" aria-label={t("a11y.checklist")}>
         {/* Site picker trigger */}
         {availableSites.length > 0 && (
           <>
@@ -501,9 +508,12 @@ export default function TaskPage() {
             {/* Site picker bottom sheet */}
             {showSiteSheet && (
               <>
-                <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setShowSiteSheet(false)} aria-hidden />
+                <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setShowSiteSheet(false)} aria-hidden="true" />
                 <div
+                  role="dialog"
+                  aria-label={t("a11y.sitePickerTitle")}
                   className="animate-sheet-up fixed inset-x-0 bottom-0 z-50 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] dark:border-neutral-700 dark:bg-neutral-800"
+                  onKeyDown={(e) => { if (e.key === "Escape") setShowSiteSheet(false); }}
                   onTouchStart={(e) => { (e.currentTarget as HTMLElement).dataset.touchY = String(e.touches[0].clientY); }}
                   onTouchEnd={(e) => { const dy = e.changedTouches[0].clientY - Number((e.currentTarget as HTMLElement).dataset.touchY ?? 0); if (dy > 60) setShowSiteSheet(false); }}
                 >
@@ -638,11 +648,16 @@ export default function TaskPage() {
                     return (
                       <SwipeItem key={item.id} onSwipe={() => { if (!isChecked && !isNa) toggleCheck(item.id); }}>
                         <div
-                          role="button"
+                          role="checkbox"
+                          aria-checked={isChecked}
+                          aria-label={`${localItemLabel(item)}${item.critical ? ` — ${t("task.critical")}` : ""}`}
                           tabIndex={0}
                           onClick={() => toggleCheck(item.id)}
-                          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleCheck(item.id); } }}
-                          className={`flex w-full cursor-pointer items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleCheck(item.id); }
+                            if (e.key === "n" || e.key === "N") { e.preventDefault(); toggleNa(item.id); }
+                          }}
+                          className={`flex w-full cursor-pointer items-start gap-3 rounded-xl border p-4 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] ${
                             isChecked
                               ? "border-primary/20 bg-primary/5 dark:border-primary/25 dark:bg-primary/10"
                               : isNa
@@ -660,7 +675,7 @@ export default function TaskPage() {
                                   ? "border-gray-300 dark:border-neutral-600"
                                   : item.critical ? "border-red-400 active:border-primary" : "border-gray-300 active:border-primary"
                             }`}
-                            aria-label="Done"
+                            aria-hidden="true"
                           >
                             {isChecked && (
                               <svg className="h-4 w-4 animate-check-pop" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -669,7 +684,7 @@ export default function TaskPage() {
                             )}
                           </div>
                           <span className={`flex min-w-0 flex-1 flex-col items-start gap-0.5 text-base leading-snug ${
-                            isChecked ? "text-primary-dark dark:text-primary" : isNa ? "text-gray-400 line-through dark:text-neutral-500" : ""
+                            isChecked ? "text-primary-dark dark:text-primary" : isNa ? "text-gray-500 line-through dark:text-neutral-500" : ""
                           }`}>
                             {item.critical && !isChecked && !isNa && (
                               <span className="flex items-center gap-1 rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700 dark:bg-red-900 dark:text-red-300">
@@ -686,24 +701,26 @@ export default function TaskPage() {
                                   e.stopPropagation();
                                   setExpandedInfo(expandedInfo === item.id ? null : item.id);
                                 }}
-                                className={`mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                                className={`mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors ${
                                   expandedInfo === item.id
                                     ? "bg-gray-200 text-gray-700 dark:bg-neutral-600 dark:text-neutral-200"
-                                    : "bg-gray-100 text-gray-500 hover:bg-gray-200 active:bg-gray-300 dark:bg-neutral-700 dark:text-neutral-400"
+                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 dark:bg-neutral-700 dark:text-neutral-400"
                                 }`}
-                                aria-label="Info"
+                                aria-label={t("a11y.itemInfo")}
+                                aria-expanded={expandedInfo === item.id}
                               >
                                 i
                               </button>
                             )}
                             <button
                               onClick={(e) => { e.stopPropagation(); toggleNa(item.id); }}
-                              className={`mt-0.5 flex h-11 shrink-0 items-center justify-center rounded-full px-3.5 text-sm font-bold transition-colors ${
+                              className={`mt-0.5 flex h-12 shrink-0 items-center justify-center rounded-full px-3.5 text-sm font-bold transition-colors ${
                                 isNa
                                   ? "bg-gray-400 text-white dark:bg-neutral-500"
-                                  : "bg-gray-100 text-gray-500 hover:bg-gray-200 active:bg-gray-300 dark:bg-neutral-700 dark:text-neutral-400"
+                                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 dark:bg-neutral-700 dark:text-neutral-400"
                               }`}
-                              aria-label="N/A"
+                              aria-label={t("a11y.markNa")}
+                              aria-pressed={isNa}
                             >
                               {t("task.na")}
                             </button>
@@ -733,10 +750,11 @@ export default function TaskPage() {
         <button
           onClick={handleConfirm}
           disabled={!allResolved}
+          aria-disabled={!allResolved}
           className={`w-full rounded-xl py-3.5 font-heading text-sm font-bold tracking-wide transition-colors ${
             allResolved
               ? "bg-black text-accent hover:bg-gray-900 active:bg-gray-900 dark:bg-primary dark:text-white dark:hover:bg-primary-dark"
-              : "cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"
+              : "cursor-not-allowed bg-gray-200 text-gray-500 dark:bg-neutral-700 dark:text-neutral-500"
           }`}
         >
           {allResolved ? t("task.validate") : `${allItems.length - resolvedCount} ${t("task.remaining")}`}
@@ -749,7 +767,13 @@ export default function TaskPage() {
       {showCriticalWarning && (
         <>
           <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setShowCriticalWarning(false)} />
-          <div className="fixed inset-x-4 top-1/2 z-50 mx-auto max-w-md -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl dark:bg-neutral-800">
+          <div
+            role="alertdialog"
+            aria-label={t("a11y.criticalWarning")}
+            aria-describedby="critical-warning-desc"
+            className="fixed inset-x-4 top-1/2 z-50 mx-auto max-w-md -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl dark:bg-neutral-800"
+            onKeyDown={(e) => { if (e.key === "Escape") setShowCriticalWarning(false); }}
+          >
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
                 <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
@@ -758,15 +782,15 @@ export default function TaskPage() {
                 <h3 className="font-heading text-lg font-bold text-gray-900 dark:text-neutral-100">
                   {t("task.criticalWarningTitle")}
                 </h3>
-                <p className="text-sm text-muted">
+                <p id="critical-warning-desc" className="text-sm text-gray-500 dark:text-neutral-400">
                   {t("task.criticalWarningCount").replace("{count}", String(uncheckedCritical.length))}
                 </p>
               </div>
             </div>
-            <ul className="mt-4 max-h-40 space-y-2 overflow-y-auto">
+            <ul className="mt-4 max-h-40 space-y-2 overflow-y-auto" aria-label={t("task.criticalWarningTitle")}>
               {uncheckedCritical.map((item) => (
                 <li key={item.id} className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950 dark:text-red-300">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                   {localItemLabel(item)}
                 </li>
               ))}
@@ -774,13 +798,13 @@ export default function TaskPage() {
             <div className="mt-5 flex gap-3">
               <button
                 onClick={() => setShowCriticalWarning(false)}
-                className="flex-1 rounded-xl border-2 border-gray-300 py-3 font-heading text-sm font-bold transition-colors active:bg-gray-50 dark:border-neutral-600 dark:text-neutral-100"
+                className="flex-1 rounded-xl border-2 border-gray-300 py-3.5 font-heading text-sm font-bold transition-colors active:bg-gray-50 dark:border-neutral-600 dark:text-neutral-100"
               >
                 {t("task.criticalWarningBack")}
               </button>
               <button
                 onClick={() => { setShowCriticalWarning(false); navigateToConfirm(); }}
-                className="flex-1 rounded-xl bg-red-600 py-3 font-heading text-sm font-bold text-white transition-colors hover:bg-red-700 active:bg-red-700"
+                className="flex-1 rounded-xl bg-red-600 py-3.5 font-heading text-sm font-bold text-white transition-colors hover:bg-red-700 active:bg-red-700"
               >
                 {t("task.criticalWarningContinue")}
               </button>
@@ -791,7 +815,7 @@ export default function TaskPage() {
 
       {/* AI Scan — fullscreen takeover */}
       {scanState !== "idle" && (
-        <div className="fixed inset-0 z-[100] flex flex-col bg-black">
+        <div className="fixed inset-0 z-[100] flex flex-col bg-black" role="dialog" aria-label={t("task.scanTitle")}>
           {scanPhoto && (
             <div className={`relative w-full overflow-hidden ${scanState === "done" ? "flex-shrink-0" : "flex-1"}`} style={scanState === "done" ? { height: "42dvh" } : undefined}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
