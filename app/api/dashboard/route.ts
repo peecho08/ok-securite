@@ -40,6 +40,7 @@ export async function GET() {
     totalCount: e.total_count,
     notes: e.notes ?? null,
     imageUrl: e.image_url ?? null,
+    pdfUrl: e.pdf_url ?? null,
   }));
 
   const totalCompleted = entries.length;

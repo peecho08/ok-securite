@@ -8,7 +8,7 @@ import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
 import { getActiveRole, getWorkerOrgId, setWorkerOrgId, getTeamName } from "@/lib/storage";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sounds";
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { ClipboardList, ExternalLink, LogOut, UserPlus, Volume2, VolumeX } from "lucide-react";
 import { MusicPlayer } from "@/components/music-player";
 
@@ -20,6 +20,7 @@ export function AppHeader({ workerName }: AppHeaderProps) {
   const { locale, setLocale, t } = useLocale();
   const { theme, toggle: toggleTheme } = useTheme();
   const { signOut } = useClerk();
+  const { user } = useUser();
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(false);
@@ -29,11 +30,26 @@ export function AppHeader({ workerName }: AppHeaderProps) {
   const [joinSuccess, setJoinSuccess] = useState(false);
   const [hasTeam, setHasTeam] = useState(true);
   const [soundOn, setSoundOn] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     setHasTeam(!!getWorkerOrgId());
     setSoundOn(isSoundEnabled());
   }, [showMenu]);
+
+  useEffect(() => {
+    fetch("/api/profile")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data?.avatar_url) setAvatarUrl(data.avatar_url); })
+      .catch(() => {});
+
+    function onAvatarUpdate(e: Event) {
+      const url = (e as CustomEvent<string | null>).detail;
+      setAvatarUrl(url);
+    }
+    window.addEventListener("avatar-updated", onAvatarUpdate);
+    return () => window.removeEventListener("avatar-updated", onAvatarUpdate);
+  }, []);
 
   useEffect(() => {
     if (getActiveRole() !== "worker") return;
@@ -120,12 +136,21 @@ export function AppHeader({ workerName }: AppHeaderProps) {
           <div className="relative flex shrink-0 items-center gap-4 sm:gap-3">
             <button
               onClick={() => setShowMenu((v) => !v)}
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition-colors active:bg-white/40 sm:h-9 sm:w-9"
+              className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/20 text-white transition-colors active:bg-white/40 sm:h-9 sm:w-9"
               aria-label={t("nav.menu")}
             >
-              <svg className="h-6 w-6 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
+              {(avatarUrl || user?.imageUrl) ? (
+                <img
+                  src={avatarUrl || user?.imageUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <svg className="h-6 w-6 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              )}
             </button>
 
             {showMenu && (

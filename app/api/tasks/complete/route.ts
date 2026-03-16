@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   const orgId = profile?.org_id ?? null;
   const displayName = workerName || profile?.full_name || "Unknown";
 
-  const { error: insertError } = await supabaseAdmin().from("history").insert({
+  const { data: inserted, error: insertError } = await supabaseAdmin().from("history").insert({
     user_id: userId,
     org_id: orgId,
     task_id: taskId,
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     notes: notes ?? null,
     image_url: imageUrl ?? null,
     completed_at: new Date().toISOString(),
-  });
+  }).select("id").single();
 
   if (insertError) {
     console.error("Failed to insert history:", insertError.message);
@@ -59,5 +59,5 @@ export async function POST(req: Request) {
     console.error("Failed to notify supervisors:", err);
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, id: inserted?.id ?? null });
 }

@@ -44,6 +44,17 @@ export async function getOrgLimitsServer(orgId: string): Promise<PlanLimits & { 
   return { ...getPlanLimits(plan), plan };
 }
 
+export async function updateProfileAvatarServer(
+  userId: string,
+  avatarUrl: string | null
+): Promise<void> {
+  const { error } = await supabaseAdmin()
+    .from("profiles")
+    .update({ avatar_url: avatarUrl, updated_at: new Date().toISOString() })
+    .eq("id", userId);
+  if (error) throw new Error(`updateProfileAvatarServer: ${error.message}`);
+}
+
 export async function checkLimitServer(
   orgId: string,
   resource: "sites" | "customChecklists" | "teamMembers",

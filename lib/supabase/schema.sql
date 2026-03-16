@@ -76,6 +76,7 @@ create table if not exists history (
   total_count integer not null default 0,
   notes text,
   image_url text,
+  pdf_url text,
   completed_at timestamptz default now()
 );
 
@@ -160,6 +161,9 @@ create index if not exists idx_organizations_invite on organizations(invite_toke
 -- ── Migration: add notes & image_url to history ─────────────────────
 -- ALTER TABLE history ADD COLUMN IF NOT EXISTS notes text;
 -- ALTER TABLE history ADD COLUMN IF NOT EXISTS image_url text;
+
+-- ── Migration: add pdf_url to history ────────────────────────────────
+-- ALTER TABLE history ADD COLUMN IF NOT EXISTS pdf_url text;
 
 -- ── Row Level Security ─────────────────────────────────────────────
 -- NOTE: These RLS policies use auth.uid() (Supabase Auth). Since this

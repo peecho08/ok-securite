@@ -46,10 +46,6 @@ export async function POST(request: Request) {
       return Response.json({ error: "No team" }, { status: 400 });
     }
 
-    if (profile.role !== "supervisor") {
-      return Response.json({ error: "Only supervisors can add sites" }, { status: 403 });
-    }
-
     const { data: sub } = await supabaseAdmin()
       .from("subscriptions")
       .select("plan, status")

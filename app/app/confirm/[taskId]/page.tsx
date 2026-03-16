@@ -111,8 +111,8 @@ export default function ConfirmPage() {
   });
   const time = now.toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" });
 
-  const generatePdf = useCallback(async () => {
-    if (!task || phases.length === 0) return;
+  const buildPdfDoc = useCallback(async () => {
+    if (!task || phases.length === 0) return null;
     const { jsPDF } = await import("jspdf");
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pageW = doc.internal.pageSize.getWidth();
@@ -217,10 +217,16 @@ export default function ConfirmPage() {
     doc.setTextColor(150, 150, 150);
     doc.text(t("task.source"), margin, y + 6);
 
-    const filename = `ok-securite-${taskId}-${now.toISOString().slice(0, 10)}.pdf`;
-    doc.save(filename);
+    return doc;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task, phases, checkedIds, naIds, checkedCount, naCount, items, workerName, timestamp, time, taskId, now, locale, t, locationLabel, siteName]);
+
+  const generatePdf = useCallback(async () => {
+    const doc = await buildPdfDoc();
+    if (!doc) return;
+    const filename = `ok-securite-${taskId}-${now.toISOString().slice(0, 10)}.pdf`;
+    doc.save(filename);
+  }, [buildPdfDoc, taskId, now]);
 
   const MILESTONES = [250, 100, 50, 25, 10] as const;
   const [milestoneCount, setMilestoneCount] = useState<number | null>(null);
@@ -243,6 +249,8 @@ export default function ConfirmPage() {
     }, 600);
     return () => clearTimeout(timer);
   }, []);
+
+  const [historyId, setHistoryId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!task || saved || !progressLoaded || geoLoading) return;
@@ -284,10 +292,41 @@ export default function ConfirmPage() {
         notes: submittedNotes || undefined,
         imageUrl: submittedImageUrl || undefined,
       }),
-    }).catch(() => {});
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.id) setHistoryId(data.id);
+      })
+      .catch(() => {});
 
     setSaved(true);
-  }, [task, taskId, workerName, items, now, saved, progressLoaded, locale, siteName, geoAddress, geoLoading, submittedNotes, submittedImageUrl]);
+  }, [task, taskId, workerName, items, now, saved, progressLoaded, locale, siteName, geoAddress, geoLoading, submittedNotes, submittedImageUrl, checkedCount, naCount]);
+
+  useEffect(() => {
+    if (!historyId || !saved) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const doc = await buildPdfDoc();
+        if (!doc || cancelled) return;
+        const blob = doc.output("blob");
+        const form = new FormData();
+        form.append("file", blob, `${taskId}.pdf`);
+        const uploadRes = await fetch("/api/upload/pdf", { method: "POST", body: form });
+        if (!uploadRes.ok || cancelled) return;
+        const { url } = await uploadRes.json();
+        if (!url || cancelled) return;
+        await fetch(`/api/history/${encodeURIComponent(historyId)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pdfUrl: url }),
+        });
+      } catch {
+        /* PDF upload is best-effort; don't break the flow */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [historyId, saved, buildPdfDoc, taskId]);
 
   function handleFinish() {
     clearProgress(taskId as string);

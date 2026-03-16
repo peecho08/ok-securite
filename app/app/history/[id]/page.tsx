@@ -10,7 +10,7 @@ import { getHistoryEntry, type HistoryEntry } from "@/lib/storage";
 import { mergePhases } from "@/lib/locale-helpers";
 import { TaskIcon } from "@/components/task-icon";
 import { useLocale } from "@/lib/i18n";
-import { ArrowLeft, MapPin, Check, FileText, ImageIcon } from "lucide-react";
+import { ArrowLeft, MapPin, Check, FileText, ImageIcon, Download } from "lucide-react";
 
 export default function HistoryDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -191,7 +191,7 @@ export default function HistoryDetailPage() {
             </div>
           )}
           {entry.imageUrl && (
-            <div className="px-4 py-3">
+            <div className={`px-4 py-3 ${entry.pdfUrl ? "border-b border-gray-100 dark:border-neutral-700" : ""}`}>
               <span className="mb-1.5 flex items-center gap-1.5 text-sm text-muted">
                 <ImageIcon className="h-3.5 w-3.5" />
                 {t("history.detail.photo")}
@@ -200,6 +200,18 @@ export default function HistoryDetailPage() {
             </div>
           )}
         </div>
+
+        {entry.pdfUrl && (
+          <a
+            href={entry.pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary bg-primary/5 py-3.5 font-heading text-sm font-bold tracking-wide text-primary transition-colors hover:bg-primary/10 active:bg-primary/15 dark:border-primary dark:bg-primary/10 dark:hover:bg-primary/20"
+          >
+            <Download className="h-4 w-4" />
+            {t("history.detail.downloadPdf")}
+          </a>
+        )}
 
         {/* Checklist items */}
         {phases.length > 0 && (

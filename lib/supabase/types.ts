@@ -65,6 +65,7 @@ export interface HistoryEntry {
   total_count: number;
   notes: string | null;
   image_url: string | null;
+  pdf_url: string | null;
   completed_at: string;
 }
 

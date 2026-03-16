@@ -192,6 +192,8 @@ const fr: Record<string, string | string[]> = {
   "history.detail.allChecked": "Tous les points vérifiés",
   "history.detail.notes": "Notes",
   "history.detail.photo": "Photo",
+  "history.detail.downloadPdf": "Télécharger le PDF",
+  "history.detail.pdf": "Rapport PDF",
 
   // ── Well-being ──────────────────────────────────────────
   "wellbeing.title": "Bien-être",
@@ -275,9 +277,13 @@ const fr: Record<string, string | string[]> = {
   "site.namePlaceholder": "Ex. Phase 2 - Tour B",
   "site.addressPlaceholder": "Adresse (optionnel)",
   "site.remove": "Retirer",
-  "site.select": "Chantier (optionnel)",
+  "site.select": "Sélectionner un chantier",
+  "site.required": "Chantier requis",
   "site.none": "Aucun chantier",
   "site.empty": "Aucun chantier ajouté.",
+  "site.addNew": "Ajouter un chantier",
+  "site.newNamePlaceholder": "Nom du chantier",
+  "site.adding": "Ajout…",
   "site.close": "Fermer",
   "site.reopen": "Rouvrir",
   "site.closedLabel": "Fermé",
@@ -593,6 +599,13 @@ const fr: Record<string, string | string[]> = {
   "account.exporting": "Exportation…",
   "account.deleting": "Suppression…",
   "account.unsubscribeHint": "Pour ne plus recevoir ces courriels, rendez-vous dans les paramètres de votre compte.",
+  "account.profilePhoto": "Photo de profil",
+  "account.changePhoto": "Changer la photo",
+  "account.removePhoto": "Supprimer la photo",
+  "account.photoHint": "JPEG, PNG ou WebP. Maximum 2 Mo.",
+  "account.photoUpdated": "Photo de profil mise à jour",
+  "account.photoRemoved": "Photo de profil supprimée",
+  "account.photoTooLarge": "L'image dépasse 2 Mo",
 };
 
 const en: Record<string, string | string[]> = {
@@ -789,6 +802,8 @@ const en: Record<string, string | string[]> = {
   "history.detail.allChecked": "All items verified",
   "history.detail.notes": "Notes",
   "history.detail.photo": "Photo",
+  "history.detail.downloadPdf": "Download PDF",
+  "history.detail.pdf": "PDF report",
 
   // ── Well-being ──────────────────────────────────────────
   "wellbeing.title": "Well-being",
@@ -872,9 +887,13 @@ const en: Record<string, string | string[]> = {
   "site.namePlaceholder": "e.g. Phase 2 - Tower B",
   "site.addressPlaceholder": "Address (optional)",
   "site.remove": "Remove",
-  "site.select": "Site (optional)",
+  "site.select": "Select a site",
+  "site.required": "Site required",
   "site.none": "No site",
   "site.empty": "No sites added yet.",
+  "site.addNew": "Add a site",
+  "site.newNamePlaceholder": "Site name",
+  "site.adding": "Adding…",
   "site.close": "Close",
   "site.reopen": "Reopen",
   "site.closedLabel": "Closed",
@@ -1190,6 +1209,13 @@ const en: Record<string, string | string[]> = {
   "account.exporting": "Exporting…",
   "account.deleting": "Deleting…",
   "account.unsubscribeHint": "To stop receiving these emails, go to your account settings.",
+  "account.profilePhoto": "Profile photo",
+  "account.changePhoto": "Change photo",
+  "account.removePhoto": "Remove photo",
+  "account.photoHint": "JPEG, PNG or WebP. Maximum 2 MB.",
+  "account.photoUpdated": "Profile photo updated",
+  "account.photoRemoved": "Profile photo removed",
+  "account.photoTooLarge": "Image exceeds 2 MB",
 };
 
 export const translations: Record<string, Record<string, string | string[]>> = { fr, en };

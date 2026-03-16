@@ -11,7 +11,7 @@ import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress
 import { mergePhases } from "@/lib/locale-helpers";
 import { useLocale } from "@/lib/i18n";
 import { getLogoPngDataUrl } from "@/lib/pdf-logo";
-import { ArrowLeft, AlertTriangle, Check, ChevronRight, Download, MapPin, Camera, X, FileText, Lock } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Check, ChevronRight, Download, MapPin, Camera, X, FileText, Lock, Plus } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { compressImage } from "@/lib/compress-image";
 import { playTick, playPhaseComplete } from "@/lib/sounds";
@@ -106,6 +106,11 @@ export default function TaskPage() {
   const [selectedSiteId, setSelectedSiteId] = useState("");
   const [showCriticalWarning, setShowCriticalWarning] = useState(false);
   const [showSiteSheet, setShowSiteSheet] = useState(false);
+  const [showAddSiteForm, setShowAddSiteForm] = useState(false);
+  const [newSiteName, setNewSiteName] = useState("");
+  const [addingSite, setAddingSite] = useState(false);
+  const [customSiteName, setCustomSiteName] = useState("");
+  const [hasOrg, setHasOrg] = useState(true);
   const [notes, setNotes] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -144,12 +149,14 @@ export default function TaskPage() {
       .then((data) => {
         const sites = data.sites ?? [];
         setAvailableSites(sites);
+        if (sites.length === 0 && !data.error) setHasOrg(true);
+        if (data.error) setHasOrg(false);
         const lastId = getLastSiteId();
         if (lastId && sites.some((s: { id: string; active: boolean }) => s.id === lastId && s.active !== false)) {
           setSelectedSiteId(lastId);
         }
       })
-      .catch(() => {});
+      .catch(() => { setHasOrg(false); });
   }, [taskId, shouldResume]);
 
   useEffect(() => {
@@ -253,6 +260,8 @@ export default function TaskPage() {
 
   const progress = allItems.length > 0 ? resolvedCount / allItems.length : 0;
   const allResolved = resolvedCount === allItems.length && allItems.length > 0;
+  const hasSite = !!selectedSiteId || !!customSiteName.trim();
+  const canSubmit = allResolved && hasSite;
   const uncheckedCritical = allItems.filter((i) => i.critical && !isResolved(i.id));
 
 
@@ -311,11 +320,12 @@ export default function TaskPage() {
       y += 7;
     }
     const selectedSite = availableSites.find((s) => s.id === selectedSiteId);
-    if (selectedSite) {
+    const pdfSiteName = selectedSite?.name || customSiteName.trim();
+    if (pdfSiteName) {
       doc.setFont("helvetica", "bold");
       doc.text(`${t("confirm.site")}: `, margin, y);
       doc.setFont("helvetica", "normal");
-      doc.text(selectedSite.name, margin + 30, y);
+      doc.text(pdfSiteName, margin + 30, y);
       y += 7;
     }
     doc.setFont("helvetica", "bold");
@@ -374,7 +384,7 @@ export default function TaskPage() {
 
     doc.save(`ok-securite-${taskId}-${now.toISOString().slice(0, 10)}.pdf`);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [task, phases, checked, na, allItems, workerName, availableSites, selectedSiteId, taskId, locale, t]);
+  }, [task, phases, checked, na, allItems, workerName, availableSites, selectedSiteId, customSiteName, taskId, locale, t]);
 
   async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -410,6 +420,40 @@ export default function TaskPage() {
     if (imageInputRef.current) imageInputRef.current.value = "";
   }
 
+  async function handleAddSite() {
+    const name = newSiteName.trim();
+    if (!name) return;
+    setAddingSite(true);
+    try {
+      const res = await fetch("/api/teams/sites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      if (res.ok) {
+        const { site } = await res.json();
+        setAvailableSites((prev) => [site, ...prev]);
+        setSelectedSiteId(site.id);
+        setLastSiteId(site.id);
+        setNewSiteName("");
+        setShowAddSiteForm(false);
+        setShowSiteSheet(false);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        if (data.error === "No team") {
+          setCustomSiteName(name);
+          setSelectedSiteId("");
+          setNewSiteName("");
+          setShowAddSiteForm(false);
+          setShowSiteSheet(false);
+          setHasOrg(false);
+        }
+      }
+    } catch { /* network error */ } finally {
+      setAddingSite(false);
+    }
+  }
+
   function navigateToConfirm() {
     const selectedSite = availableSites.find((s) => s.id === selectedSiteId);
     const params = new URLSearchParams({
@@ -419,6 +463,7 @@ export default function TaskPage() {
       worker: workerName.trim(),
     });
     if (selectedSite) params.set("site", selectedSite.name);
+    else if (customSiteName.trim()) params.set("site", customSiteName.trim());
     if (notes.trim()) params.set("notes", notes.trim());
     if (imageUrl) params.set("imageUrl", imageUrl);
     router.push(`/app/confirm/${taskId}?${params.toString()}`);
@@ -499,77 +544,124 @@ export default function TaskPage() {
           </div>
         )}
         {/* Site picker trigger */}
-        {availableSites.length > 0 && (
-          <>
-            <button
-              type="button"
-              onClick={() => setShowSiteSheet(true)}
-              className="mb-2 flex w-full items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-left transition-colors active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-700"
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-gray-400 shadow-sm dark:bg-neutral-700 dark:text-neutral-400">
-                <MapPin className="h-4 w-4" />
-              </span>
-              <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-700 dark:text-neutral-200">
-                {selectedSiteId
-                  ? (() => { const s = availableSites.find((s) => s.id === selectedSiteId); return s ? `${s.name}${s.address ? ` — ${s.address}` : ""}` : t("site.select"); })()
+        <button
+          type="button"
+          onClick={() => { setShowSiteSheet(true); setShowAddSiteForm(false); }}
+          className={`mb-2 flex w-full items-center gap-2.5 rounded-xl border p-2.5 text-left transition-colors active:bg-gray-100 dark:active:bg-neutral-700 ${
+            allResolved && !hasSite
+              ? "border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-950/30"
+              : "border-gray-200 bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800"
+          }`}
+        >
+          <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-sm ${
+            allResolved && !hasSite
+              ? "bg-red-100 text-red-500 dark:bg-red-900 dark:text-red-400"
+              : "bg-white text-gray-400 dark:bg-neutral-700 dark:text-neutral-400"
+          }`}>
+            <MapPin className="h-4 w-4" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className={`block truncate text-sm font-medium ${
+              hasSite ? "text-gray-700 dark:text-neutral-200" : allResolved ? "text-red-600 dark:text-red-400" : "text-gray-700 dark:text-neutral-200"
+            }`}>
+              {selectedSiteId
+                ? (() => { const s = availableSites.find((s) => s.id === selectedSiteId); return s ? `${s.name}${s.address ? ` — ${s.address}` : ""}` : t("site.select"); })()
+                : customSiteName.trim()
+                  ? customSiteName.trim()
                   : t("site.select")}
-              </span>
-              <ChevronRight className="h-4 w-4 shrink-0 text-gray-400 dark:text-neutral-500" />
-            </button>
-
-            {/* Site picker bottom sheet */}
-            {showSiteSheet && (
-              <>
-                <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setShowSiteSheet(false)} aria-hidden="true" />
-                <div
-                  role="dialog"
-                  aria-label={t("a11y.sitePickerTitle")}
-                  className="animate-sheet-up fixed inset-x-0 bottom-0 z-50 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] dark:border-neutral-700 dark:bg-neutral-800"
-                  onKeyDown={(e) => { if (e.key === "Escape") setShowSiteSheet(false); }}
-                  onTouchStart={(e) => { (e.currentTarget as HTMLElement).dataset.touchY = String(e.touches[0].clientY); }}
-                  onTouchEnd={(e) => { const dy = e.changedTouches[0].clientY - Number((e.currentTarget as HTMLElement).dataset.touchY ?? 0); if (dy > 60) setShowSiteSheet(false); }}
-                >
-                  <div className="mx-auto mb-1 mt-3 h-1 w-12 rounded-full bg-gray-300 dark:bg-neutral-600" aria-hidden />
-                  <div className="border-b border-gray-100 px-5 py-3 dark:border-neutral-700">
-                    <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{t("site.select")}</p>
-                  </div>
-                  <div className="py-1 pb-[env(safe-area-inset-bottom)]">
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedSiteId(""); setLastSiteId(""); setShowSiteSheet(false); }}
-                      className={`flex min-h-[52px] w-full items-center justify-between gap-3 px-5 py-3 text-left transition-colors active:bg-gray-100 dark:active:bg-neutral-700 ${selectedSiteId === "" ? "bg-gray-50 dark:bg-neutral-750" : ""}`}
-                    >
-                      <span className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-400">
-                          <MapPin className="h-4 w-4" />
-                        </span>
-                        <span className="text-sm text-gray-500 dark:text-neutral-400">{t("site.none")}</span>
-                      </span>
-                      {selectedSiteId === "" && <Check className="h-4 w-4 shrink-0 text-[var(--color-primary)]" />}
-                    </button>
-                    {availableSites.filter((s) => s.active !== false).map((site) => (
-                      <button
-                        key={site.id}
-                        type="button"
-                        onClick={() => { setSelectedSiteId(site.id); setLastSiteId(site.id); setShowSiteSheet(false); }}
-                        className={`flex min-h-[52px] w-full items-center justify-between gap-3 px-5 py-3 text-left transition-colors active:bg-gray-100 dark:active:bg-neutral-700 ${selectedSiteId === site.id ? "bg-gray-50 dark:bg-neutral-750" : ""}`}
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-400">
-                            <MapPin className="h-4 w-4" />
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block text-sm font-medium text-gray-800 dark:text-neutral-200">{site.name}</span>
-                            {site.address && <span className="block text-xs text-gray-500 dark:text-neutral-400">{site.address}</span>}
-                          </span>
-                        </span>
-                        {selectedSiteId === site.id && <Check className="h-4 w-4 shrink-0 text-[var(--color-primary)]" />}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
+            </span>
+            {allResolved && !hasSite && (
+              <span className="block text-xs text-red-500 dark:text-red-400">{t("site.required")}</span>
             )}
+          </span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-gray-400 dark:text-neutral-500" />
+        </button>
+
+        {/* Site picker bottom sheet */}
+        {showSiteSheet && (
+          <>
+            <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setShowSiteSheet(false)} aria-hidden="true" />
+            <div
+              role="dialog"
+              aria-label={t("a11y.sitePickerTitle")}
+              className="animate-sheet-up fixed inset-x-0 bottom-0 z-50 max-h-[70dvh] overflow-y-auto rounded-t-2xl border-t border-gray-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] dark:border-neutral-700 dark:bg-neutral-800"
+              onKeyDown={(e) => { if (e.key === "Escape") setShowSiteSheet(false); }}
+              onTouchStart={(e) => { (e.currentTarget as HTMLElement).dataset.touchY = String(e.touches[0].clientY); }}
+              onTouchEnd={(e) => { const dy = e.changedTouches[0].clientY - Number((e.currentTarget as HTMLElement).dataset.touchY ?? 0); if (dy > 60) setShowSiteSheet(false); }}
+            >
+              <div className="mx-auto mb-1 mt-3 h-1 w-12 rounded-full bg-gray-300 dark:bg-neutral-600" aria-hidden />
+              <div className="border-b border-gray-100 px-5 py-3 dark:border-neutral-700">
+                <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{t("site.select")}</p>
+              </div>
+              <div className="py-1 pb-[env(safe-area-inset-bottom)]">
+                {availableSites.filter((s) => s.active !== false).map((site) => (
+                  <button
+                    key={site.id}
+                    type="button"
+                    onClick={() => { setSelectedSiteId(site.id); setCustomSiteName(""); setLastSiteId(site.id); setShowSiteSheet(false); }}
+                    className={`flex min-h-[52px] w-full items-center justify-between gap-3 px-5 py-3 text-left transition-colors active:bg-gray-100 dark:active:bg-neutral-700 ${selectedSiteId === site.id ? "bg-gray-50 dark:bg-neutral-750" : ""}`}
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-400">
+                        <MapPin className="h-4 w-4" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-medium text-gray-800 dark:text-neutral-200">{site.name}</span>
+                        {site.address && <span className="block text-xs text-gray-500 dark:text-neutral-400">{site.address}</span>}
+                      </span>
+                    </span>
+                    {selectedSiteId === site.id && <Check className="h-4 w-4 shrink-0 text-[var(--color-primary)]" />}
+                  </button>
+                ))}
+
+                {/* Add new site */}
+                {!showAddSiteForm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowAddSiteForm(true)}
+                    className="flex min-h-[52px] w-full items-center gap-3 px-5 py-3 text-left transition-colors active:bg-gray-100 dark:active:bg-neutral-700"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+                      <Plus className="h-4 w-4" />
+                    </span>
+                    <span className="text-sm font-medium text-[var(--color-primary)]">{t("site.addNew")}</span>
+                  </button>
+                ) : (
+                  <div className="px-5 py-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        autoFocus
+                        type="text"
+                        value={newSiteName}
+                        onChange={(e) => setNewSiteName(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); hasOrg ? handleAddSite() : (() => { setCustomSiteName(newSiteName.trim()); setSelectedSiteId(""); setNewSiteName(""); setShowAddSiteForm(false); setShowSiteSheet(false); })(); } }}
+                        placeholder={t("site.newNamePlaceholder")}
+                        maxLength={200}
+                        className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-500"
+                      />
+                      <button
+                        type="button"
+                        disabled={!newSiteName.trim() || addingSite}
+                        onClick={() => {
+                          if (hasOrg) {
+                            handleAddSite();
+                          } else {
+                            setCustomSiteName(newSiteName.trim());
+                            setSelectedSiteId("");
+                            setNewSiteName("");
+                            setShowAddSiteForm(false);
+                            setShowSiteSheet(false);
+                          }
+                        }}
+                        className="shrink-0 rounded-lg bg-[var(--color-primary)] px-4 py-2.5 text-sm font-bold text-white transition-colors disabled:opacity-50"
+                      >
+                        {addingSite ? t("site.adding") : t("site.add")}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </>
         )}
 
@@ -784,15 +876,19 @@ export default function TaskPage() {
       <div className="fixed bottom-0 left-1/2 z-20 w-full max-w-3xl -translate-x-1/2 border-t border-gray-100 bg-white px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
         <button
           onClick={handleConfirm}
-          disabled={!allResolved}
-          aria-disabled={!allResolved}
+          disabled={!canSubmit}
+          aria-disabled={!canSubmit}
           className={`w-full rounded-xl py-3.5 font-heading text-sm font-bold tracking-wide transition-colors ${
-            allResolved
+            canSubmit
               ? "bg-primary text-white hover:bg-primary-dark active:bg-primary-dark"
               : "cursor-not-allowed bg-gray-200 text-gray-500 dark:bg-neutral-700 dark:text-neutral-500"
           }`}
         >
-          {allResolved ? t("task.validate") : `${allItems.length - resolvedCount} ${t("task.remaining")}`}
+          {!allResolved
+            ? `${allItems.length - resolvedCount} ${t("task.remaining")}`
+            : !hasSite
+              ? t("site.required")
+              : t("task.validate")}
         </button>
       </div>
 

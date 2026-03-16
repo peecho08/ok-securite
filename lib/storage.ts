@@ -311,6 +311,7 @@ export interface HistoryEntry {
   location?: string;
   notes?: string;
   imageUrl?: string;
+  pdfUrl?: string;
 }
 
 const HISTORY_KEY = key("history");

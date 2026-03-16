@@ -1,18 +1,69 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
-import { useClerk } from "@clerk/nextjs";
-import { ArrowLeft, Download, Trash2 } from "lucide-react";
+import { useClerk, useUser } from "@clerk/nextjs";
+import { ArrowLeft, Camera, Download, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AccountPage() {
   const { t } = useLocale();
   const { signOut } = useClerk();
+  const { user } = useUser();
   const [exporting, setExporting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/profile")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data?.avatar_url) setAvatarUrl(data.avatar_url); })
+      .catch(() => {});
+  }, []);
+
+  const displayAvatar = avatarUrl || user?.imageUrl || null;
+
+  async function handleAvatarUpload(file: File) {
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error(t("account.photoTooLarge"));
+      return;
+    }
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/profile/avatar", { method: "POST", body: form });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setAvatarUrl(data.avatar_url);
+      window.dispatchEvent(new CustomEvent("avatar-updated", { detail: data.avatar_url }));
+      toast.success(t("account.photoUpdated"));
+    } catch {
+      toast.error(t("toast.error"));
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleRemoveAvatar() {
+    setUploading(true);
+    try {
+      const res = await fetch("/api/profile/avatar", { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      setAvatarUrl(null);
+      window.dispatchEvent(new CustomEvent("avatar-updated", { detail: null }));
+      toast.success(t("account.photoRemoved"));
+    } catch {
+      toast.error(t("toast.error"));
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function handleExport() {
     setExporting(true);
@@ -62,6 +113,72 @@ export default function AccountPage() {
       </header>
 
       <main className="px-5 pb-10 sm:px-8">
+        <section className="mb-6">
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
+            {t("account.profilePhoto")}
+          </h2>
+          <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-800">
+            <div className="flex items-center gap-5">
+              <div className="relative">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 dark:bg-neutral-700">
+                  {displayAvatar ? (
+                    <img
+                      src={displayAvatar}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <svg className="h-10 w-10 text-gray-400 dark:text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  )}
+                </div>
+                {uploading && (
+                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-1 flex-col gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleAvatarUpload(f);
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-4 py-2.5 font-heading text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)] disabled:opacity-50"
+                >
+                  <Camera className="h-4 w-4" />
+                  {t("account.changePhoto")}
+                </button>
+                {avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveAvatar}
+                    disabled={uploading}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 font-heading text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                  >
+                    <X className="h-4 w-4" />
+                    {t("account.removePhoto")}
+                  </button>
+                )}
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-gray-400 dark:text-neutral-500">
+              {t("account.photoHint")}
+            </p>
+          </div>
+        </section>
+
         <section className="mb-6">
           <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
             {t("account.exportData")}

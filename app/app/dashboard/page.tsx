@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download, RefreshCw } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { TaskIcon } from "@/components/task-icon";
 import { usePlan } from "@/lib/hooks/use-plan";
@@ -18,6 +18,7 @@ interface ActivityEntry {
   completedAt: string;
   checkedCount: number;
   totalCount: number;
+  pdfUrl: string | null;
 }
 
 interface DashboardData {
@@ -50,25 +51,91 @@ function formatActivityTime(iso: string, locale: string): string {
   return d.toLocaleDateString(loc, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
+const PULL_THRESHOLD = 80;
+
 export default function DashboardPage() {
   const { locale, t } = useLocale();
   const { dashboard, loading: planLoading } = usePlan();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("/api/dashboard")
+  const [refreshing, setRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const touchStartY = useRef(0);
+  const isPulling = useRef(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const fetchData = useCallback(() => {
+    return fetch("/api/dashboard")
       .then((r) => r.json())
       .then((d) => setData(d))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    fetchData().finally(() => setLoading(false));
+  }, [fetchData]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+  }, [fetchData]);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    const el = scrollRef.current;
+    if (el && el.scrollTop <= 0) {
+      touchStartY.current = e.touches[0].clientY;
+      isPulling.current = true;
+    }
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isPulling.current || refreshing) return;
+    const delta = e.touches[0].clientY - touchStartY.current;
+    if (delta > 0) {
+      setPullDistance(Math.min(delta * 0.5, PULL_THRESHOLD * 1.5));
+    }
+  }, [refreshing]);
+
+  const onTouchEnd = useCallback(() => {
+    if (!isPulling.current) return;
+    isPulling.current = false;
+    if (pullDistance >= PULL_THRESHOLD && !refreshing) {
+      setPullDistance(PULL_THRESHOLD * 0.6);
+      handleRefresh().finally(() => setPullDistance(0));
+    } else {
+      setPullDistance(0);
+    }
+  }, [pullDistance, refreshing, handleRefresh]);
 
   const weekMax = data ? Math.max(...data.weekDays.map((d) => d.count), 1) : 1;
   const hasData = data && data.totalCompleted > 0;
 
+  const pullProgress = Math.min(pullDistance / PULL_THRESHOLD, 1);
+
   return (
-    <div className="flex min-h-dvh flex-col dark:bg-neutral-900">
+    <div
+      ref={scrollRef}
+      className="flex min-h-dvh flex-col dark:bg-neutral-900 overflow-y-auto"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* Pull-to-refresh indicator */}
+      <div
+        className="flex items-center justify-center overflow-hidden transition-[height] duration-200 ease-out"
+        style={{ height: pullDistance > 0 || refreshing ? Math.max(pullDistance, refreshing ? 48 : 0) : 0 }}
+      >
+        <RefreshCw
+          className={`h-5 w-5 text-primary transition-opacity ${refreshing ? "animate-spin" : ""}`}
+          style={{
+            opacity: refreshing ? 1 : pullProgress,
+            transform: `rotate(${pullProgress * 360}deg)`,
+          }}
+        />
+      </div>
+
       <header className="sticky top-0 z-10 border-b border-gray-100 bg-white px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
         <div className="flex items-center gap-3">
           <Link
@@ -199,22 +266,38 @@ export default function DashboardPage() {
               {data.recentActivity.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3.5 dark:border-neutral-700 dark:bg-neutral-800"
+                  className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800"
                 >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300">
-                    <TaskIcon taskId={entry.taskId} className="h-5 w-5" fallback={entry.taskIcon ?? undefined} />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-heading text-sm font-semibold leading-tight">{entry.taskTitle}</p>
-                    <p className="mt-0.5 text-xs text-muted">
-                      {formatActivityTime(entry.completedAt, locale)}
-                      {entry.workerName ? ` — ${entry.workerName}` : ""}
-                      {entry.siteName ? ` · ${entry.siteName}` : ""}
-                    </p>
-                  </div>
-                  <span className="shrink-0 rounded-md bg-primary/10 px-2 py-0.5 font-heading text-[10px] font-semibold text-primary-dark">
-                    ✓
-                  </span>
+                  <Link
+                    href={`/app/history/${entry.id}`}
+                    className="flex items-center gap-3 p-3.5 transition-colors active:bg-gray-50 dark:active:bg-neutral-700"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300">
+                      <TaskIcon taskId={entry.taskId} className="h-5 w-5" fallback={entry.taskIcon ?? undefined} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-heading text-sm font-semibold leading-tight">{entry.taskTitle}</p>
+                      <p className="mt-0.5 text-xs text-muted">
+                        {formatActivityTime(entry.completedAt, locale)}
+                        {entry.workerName ? ` — ${entry.workerName}` : ""}
+                        {entry.siteName ? ` · ${entry.siteName}` : ""}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-md bg-primary/10 px-2 py-0.5 font-heading text-[10px] font-semibold text-primary-dark">
+                      ✓
+                    </span>
+                  </Link>
+                  {entry.pdfUrl && (
+                    <a
+                      href={entry.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 border-t border-gray-100 px-3.5 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/5 active:bg-primary/10 dark:border-neutral-700 dark:text-primary"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      {t("history.detail.downloadPdf")}
+                    </a>
+                  )}
                 </div>
               ))}
             </div>
