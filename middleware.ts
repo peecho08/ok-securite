@@ -32,10 +32,6 @@ export default clerkMiddleware(async (auth, request) => {
   const hostname = request.headers.get("host")?.split(":")[0] ?? "";
   const { pathname, search } = request.nextUrl;
 
-  if (pathname.startsWith("/__clerk")) {
-    return NextResponse.next();
-  }
-
   if (REDIRECT_TO_SECURITE.has(hostname)) {
     return NextResponse.redirect(
       `https://ok-securite.com${pathname}${search}`,

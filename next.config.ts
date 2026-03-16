@@ -2,14 +2,6 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: "/__clerk/:path*",
-        destination: "https://frontend-api.clerk.services/:path*",
-      },
-    ];
-  },
   async headers() {
     return [
       {
