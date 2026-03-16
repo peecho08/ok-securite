@@ -53,8 +53,8 @@ export function PasswordGate({ children }: PasswordGateProps) {
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--color-header)] px-6">
       <Image
-        src="/ok-yellow-white.svg"
-        alt="OK Chantier"
+        src="/ok-securite.svg"
+        alt="OK Sécurité"
         width={188}
         height={48}
         className="mb-8 h-12 w-auto"

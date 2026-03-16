@@ -13,13 +13,13 @@ interface Particle {
 }
 
 const COLORS = [
-  "#F8A41B", // gold
-  "#FFD166", // soft yellow
+  "#22c55e", // green
+  "#4ade80", // light green
   "#ffffff", // white
-  "#EF896E", // warm coral
-  "#F4C06F", // amber
-  "#E8B960", // deep gold
-  "#FFECD2", // cream
+  "#86efac", // soft mint
+  "#16a34a", // deep green
+  "#bbf7d0", // pale green
+  "#dcfce7", // cream green
 ];
 
 export function fireConfetti() {

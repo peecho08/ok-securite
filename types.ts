@@ -7,7 +7,8 @@ export type TaskCategory =
   | "mecanique"
   | "finition"
   | "equipement"
-  | "situation";
+  | "situation"
+  | "custom";
 
 export interface ChecklistItem {
   id: string;
@@ -31,6 +32,7 @@ export interface Task {
   descriptionEn?: string;
   category: TaskCategory;
   keywords?: string[];
+  custom?: boolean;
 }
 
 export interface Checklist {
@@ -46,6 +48,7 @@ export const categoryLabels: Record<TaskCategory, string> = {
   finition: "Finition & Revêtements",
   equipement: "Équipement & Levage",
   situation: "Situations transversales",
+  custom: "Listes personnalisées",
 };
 
 export const categoryLabelsEn: Record<TaskCategory, string> = {
@@ -56,4 +59,5 @@ export const categoryLabelsEn: Record<TaskCategory, string> = {
   finition: "Finishing & Cladding",
   equipement: "Equipment & Hoisting",
   situation: "Cross-cutting Situations",
+  custom: "Custom Checklists",
 };

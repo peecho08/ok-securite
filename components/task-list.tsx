@@ -5,6 +5,7 @@ import { useLocale } from "@/lib/i18n";
 import { localTitle, localDesc } from "@/lib/locale-helpers";
 import type { Task } from "@/lib/locale-helpers";
 import { checklists } from "@/data/checklists";
+import { getCustomChecklist } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
 
 interface TaskListProps {
@@ -34,7 +35,7 @@ export function TaskList({ grouped }: TaskListProps) {
           </h2>
           <div className="grid gap-2.5 sm:grid-cols-2">
             {groupTasks.map((task) => {
-              const cl = checklists[task.id];
+              const cl = checklists[task.id] ?? getCustomChecklist(task.id);
               const totalPoints = cl ? cl.phases.flatMap((p) => p.items).length : 0;
               return (
                 <Link
@@ -43,7 +44,7 @@ export function TaskList({ grouped }: TaskListProps) {
                   className="flex min-h-[56px] items-center gap-3.5 rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-400 active:border-gray-500 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-500 dark:active:border-neutral-400"
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300">
-                    <TaskIcon taskId={task.id} className="h-5 w-5" />
+                    <TaskIcon taskId={task.id} iconName={task.icon} className="h-5 w-5" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="font-heading text-base font-semibold leading-tight">{localTitle(task, locale)}</p>

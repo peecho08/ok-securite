@@ -51,6 +51,7 @@ import {
   Volume2,
   AlertTriangle,
   Plug,
+  ClipboardPen,
 } from "lucide-react";
 
 const taskIcons: Record<string, LucideIcon> = {
@@ -126,15 +127,65 @@ const taskIcons: Record<string, LucideIcon> = {
   "lignes-aeriennes": Plug,
 };
 
+/** Lucide icons available for custom checklist icon picker */
+export const customIconOptions: { name: string; Icon: LucideIcon }[] = [
+  { name: "Wrench", Icon: Wrench },
+  { name: "Cog", Icon: Cog },
+  { name: "Hammer", Icon: Hammer },
+  { name: "HardHat", Icon: HardHat },
+  { name: "Construction", Icon: Construction },
+  { name: "Building2", Icon: Building2 },
+  { name: "Building", Icon: Building },
+  { name: "Home", Icon: Home },
+  { name: "Shovel", Icon: Shovel },
+  { name: "BrickWall", Icon: BrickWall },
+  { name: "Layers", Icon: Layers },
+  { name: "Axe", Icon: Axe },
+  { name: "Flame", Icon: Flame },
+  { name: "Zap", Icon: Zap },
+  { name: "Droplet", Icon: Droplet },
+  { name: "Droplets", Icon: Droplets },
+  { name: "Snowflake", Icon: Snowflake },
+  { name: "Thermometer", Icon: Thermometer },
+  { name: "Paintbrush", Icon: Paintbrush },
+  { name: "Ruler", Icon: Ruler },
+  { name: "Compass", Icon: Compass },
+  { name: "ShieldAlert", Icon: ShieldAlert },
+  { name: "AlertTriangle", Icon: AlertTriangle },
+  { name: "FireExtinguisher", Icon: FireExtinguisher },
+  { name: "Truck", Icon: Truck },
+  { name: "ChevronsUp", Icon: ChevronsUp },
+  { name: "TowerControl", Icon: TowerControl },
+  { name: "Package", Icon: Package },
+  { name: "DoorOpen", Icon: DoorOpen },
+  { name: "Fence", Icon: Fence },
+  { name: "Plug", Icon: Plug },
+  { name: "Waves", Icon: Waves },
+  { name: "ClipboardPen", Icon: ClipboardPen },
+];
+
+const customIconMap: Record<string, LucideIcon> = Object.fromEntries(
+  customIconOptions.map(({ name, Icon }) => [name, Icon]),
+);
+
 interface TaskIconProps {
   taskId: string;
   className?: string;
   fallback?: string;
+  iconName?: string;
 }
 
-export function TaskIcon({ taskId, className = "h-5 w-5", fallback }: TaskIconProps) {
+export function TaskIcon({ taskId, className = "h-5 w-5", fallback, iconName }: TaskIconProps) {
   const Icon = taskIcons[taskId];
   if (Icon) return <Icon className={className} />;
+  if (iconName && customIconMap[iconName]) {
+    const CustomIcon = customIconMap[iconName];
+    return <CustomIcon className={className} />;
+  }
+  if (fallback && customIconMap[fallback]) {
+    const FallbackIcon = customIconMap[fallback];
+    return <FallbackIcon className={className} />;
+  }
   if (fallback) return <span>{fallback}</span>;
   return <Construction className={className} />;
 }

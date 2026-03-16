@@ -68,10 +68,10 @@ export function MusicPlayer() {
 
   return (
     <div>
-      <div className="flex items-center gap-2.5 rounded-xl bg-amber-50 px-4 py-3 dark:bg-amber-950/40">
+      <div className="flex items-center gap-2.5 rounded-xl bg-green-50 px-4 py-3 dark:bg-green-950/40">
         <button
           onClick={toggle}
-          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-amber-500 text-white shadow-sm transition-transform active:scale-90"
+          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-green-600 text-white shadow-sm transition-transform active:scale-90"
           aria-label={playing ? "Pause" : "Play"}
         >
           {playing ? (
@@ -88,8 +88,8 @@ export function MusicPlayer() {
 
         <div className="flex flex-1 items-center gap-2.5 min-w-0">
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[11px] font-semibold text-amber-900 dark:text-amber-200">
-              OK Chantier
+            <span className="text-[11px] font-semibold text-green-900 dark:text-green-200">
+              OK Sécurité
             </span>
             {playing && <WaveformBars />}
           </div>
@@ -97,15 +97,15 @@ export function MusicPlayer() {
           <div
             ref={progressBarRef}
             onClick={seek}
-            className="group relative h-1 flex-1 cursor-pointer rounded-full bg-amber-200 dark:bg-amber-800/50"
+            className="group relative h-1 flex-1 cursor-pointer rounded-full bg-green-200 dark:bg-green-800/50"
           >
             <div
-              className="absolute inset-y-0 left-0 rounded-full bg-amber-500 transition-[width] duration-100"
+              className="absolute inset-y-0 left-0 rounded-full bg-green-600 transition-[width] duration-100"
               style={{ width: `${progress * 100}%` }}
             />
           </div>
 
-          <span className="text-[10px] tabular-nums text-amber-700 dark:text-amber-400 shrink-0">
+          <span className="text-[10px] tabular-nums text-green-700 dark:text-green-400 shrink-0">
             {fmt(currentTime)}/{duration ? fmt(duration) : "-:--"}
           </span>
         </div>
@@ -120,7 +120,7 @@ function WaveformBars() {
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
-          className="w-[2px] rounded-full bg-amber-500"
+          className="w-[2px] rounded-full bg-green-600"
           style={{
             animation: `waveform 0.8s ease-in-out ${i * 0.12}s infinite alternate`,
           }}

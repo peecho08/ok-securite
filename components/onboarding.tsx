@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { getWorkerName, setWorkerName, getRoleChoiceDone, setRoleChoiceDone, setActiveRole, setWorkerOrgId, setWorkerOnboardingDone } from "@/lib/storage";
 import { useLocale } from "@/lib/i18n";
 
@@ -32,10 +33,17 @@ export function Onboarding({ onDone }: OnboardingProps) {
     setStep("join");
   }
 
+  const [joinError, setJoinError] = useState("");
+
   function handleJoinSubmit() {
+    const token = joinLink.trim().replace(/.*\/join\/?/i, "").trim();
+    if (!token) {
+      setJoinError(t("joinTeam.invalidLink"));
+      return;
+    }
+    setJoinError("");
     setRoleChoiceDone();
     setActiveRole("worker");
-    const token = joinLink.trim().replace(/.*\/join\/?/i, "").trim() || "demo-org";
     setWorkerOrgId(token);
     setStep("welcome");
   }
@@ -57,7 +65,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
     return (
       <div className="fixed inset-y-0 left-0 right-0 z-50 mx-auto flex w-full max-w-3xl flex-col overflow-y-auto bg-white text-gray-900 shadow-sm dark:bg-neutral-900 dark:text-neutral-100 dark:shadow-none">
         <div className="flex flex-1 flex-col items-center justify-center px-8 pb-8 pt-6">
-          <Image src="/logo-black-yellow.svg" alt="OK Chantier" width={188} height={48} className="h-10 w-auto" priority />
+          <Image src="/ok-securite.svg" alt="OK Sécurité" width={188} height={48} className="h-10 w-auto" priority />
           <h1 className="mt-6 font-heading text-xl font-bold text-black dark:text-neutral-100">{t("role.chooseTitle")}</h1>
           <div className="mt-6 grid w-full max-w-sm grid-cols-2 gap-3">
             <button
@@ -98,9 +106,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
             onClick={() => setStep("role")}
             className="inline-flex items-center gap-2 text-sm text-white/80 transition-colors hover:text-white"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
+            <ArrowLeft className="h-4 w-4" />
             {t("nav.back")}
           </button>
           <h1 className="mt-3 font-heading text-2xl font-bold text-white">{t("joinTeam.title")}</h1>
@@ -109,10 +115,11 @@ export function Onboarding({ onDone }: OnboardingProps) {
           <input
             type="text"
             value={joinLink}
-            onChange={(e) => setJoinLink(e.target.value)}
+            onChange={(e) => { setJoinLink(e.target.value); setJoinError(""); }}
             placeholder={t("joinTeam.pastePlaceholder")}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-700"
+            className={`w-full rounded-xl border bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:bg-white dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-700 ${joinError ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-gray-400 dark:border-neutral-600"}`}
           />
+          {joinError && <p className="mt-2 text-sm text-red-500">{joinError}</p>}
           <button
             type="button"
             onClick={handleJoinSubmit}
@@ -144,16 +151,14 @@ export function Onboarding({ onDone }: OnboardingProps) {
               onClick={() => setStep("role")}
               className="absolute left-5 top-6 flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
+              <ArrowLeft className="h-4 w-4" />
               {t("nav.back")}
             </button>
           )}
           <div className="animate-scale-in">
             <Image
-              src="/logo-black-yellow.svg"
-              alt="OK Chantier"
+              src="/ok-securite.svg"
+              alt="OK Sécurité"
               width={188}
               height={48}
               className="h-10 w-auto"

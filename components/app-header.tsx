@@ -6,8 +6,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
-import { getReportCount, getActiveRole, setActiveRole, getSupervisorOrgId } from "@/lib/storage";
-import { ClipboardList, ExternalLink } from "lucide-react";
+import { getReportCount, getActiveRole, setActiveRole } from "@/lib/storage";
+import { useClerk } from "@clerk/nextjs";
+import { ClipboardList, ExternalLink, LogOut } from "lucide-react";
 import { MusicPlayer } from "@/components/music-player";
 
 interface AppHeaderProps {
@@ -18,6 +19,7 @@ interface AppHeaderProps {
 export function AppHeader({ workerName, onFreshStart }: AppHeaderProps) {
   const { locale, setLocale, t } = useLocale();
   const { theme, toggle: toggleTheme } = useTheme();
+  const { signOut } = useClerk();
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const [reportCount, setReportCount] = useState(0);
@@ -47,8 +49,8 @@ export function AppHeader({ workerName, onFreshStart }: AppHeaderProps) {
             aria-label={t("nav.refresh")}
           >
             <Image
-              src="/ok-yellow-white.svg"
-              alt="OK Chantier"
+              src="/ok-securite.svg"
+              alt="OK Sécurité"
               width={188}
               height={48}
               className="h-[40px] w-auto sm:h-8"
@@ -108,26 +110,6 @@ export function AppHeader({ workerName, onFreshStart }: AppHeaderProps) {
                       </button>
                     )}
                   </div>
-                  <a
-                    href="https://www.acq.org/formations/repertoire-des-cours/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setShowMenu(false)}
-                    className="mx-4 mt-3 mb-2 flex items-center gap-3 rounded-xl bg-amber-50 p-4 transition-colors active:bg-amber-100 dark:bg-amber-950/40"
-                  >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-white">
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                      </svg>
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-heading text-sm font-bold text-amber-900 dark:text-amber-200">{t("menu.acqFormations")}</p>
-                      <p className="text-xs text-amber-700 dark:text-amber-400">{t("menu.acqFormationsDesc")}</p>
-                    </div>
-                    <svg className="h-4 w-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </a>
                   <div className="py-2 pb-[env(safe-area-inset-bottom)] sm:py-1 sm:pb-0">
                     <button
                       type="button"
@@ -223,6 +205,16 @@ export function AppHeader({ workerName, onFreshStart }: AppHeaderProps) {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
                       {t("menu.freshStart")}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowMenu(false);
+                        signOut({ redirectUrl: "/sign-in" });
+                      }}
+                      className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-red-600 transition-colors active:bg-red-50 dark:text-red-400 dark:active:bg-red-950/30 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-red-50 dark:sm:hover:bg-red-950/20"
+                    >
+                      <LogOut className="h-5 w-5 shrink-0 sm:h-4 sm:w-4" />
+                      {t("auth.signOut")}
                     </button>
                     <div className="mx-4 mt-2 mb-3">
                       <MusicPlayer />

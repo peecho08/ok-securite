@@ -1,7 +1,7 @@
 {
-  "name": "OK Chantier — Sécurité",
-  "short_name": "OK Chantier",
-  "description": "Liste de vérification sécurité chantier — rapide et fiable",
+  "name": "OK Sécurité",
+  "short_name": "OK Sécurité",
+  "description": "Listes de vérification sécurité — rapide et fiable",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1E2324",
@@ -9,7 +9,7 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/ok-yellow-white.svg",
+      "src": "/ok-securite.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }

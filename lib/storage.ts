@@ -79,19 +79,6 @@ export function getActiveTaskProgress(): { taskId: string; checkedIds: string[];
   return results;
 }
 
-// ── App unlock (password gate) ────────────────────────────────────
-
-const UNLOCK_KEY = key("unlocked");
-
-export function isUnlocked(): boolean {
-  const s = safeStorage();
-  return s ? s.getItem(UNLOCK_KEY) === "1" : false;
-}
-
-export function setUnlocked() {
-  safeStorage()?.setItem(UNLOCK_KEY, "1");
-}
-
 // ── Worker name ──────────────────────────────────────────────────
 
 const NAME_KEY = key("worker-name");
@@ -500,6 +487,66 @@ export function getReportCount(): number {
   return getReports().length;
 }
 
+// ── Custom checklists (supervisor-created) ─────────────────────────
+
+import type { Task, Checklist } from "@/types";
+
+const CUSTOM_TASKS_KEY = key("custom-tasks");
+const CUSTOM_CHECKLISTS_KEY = key("custom-checklists");
+
+export function getCustomTasks(): Task[] {
+  const s = safeStorage();
+  if (!s) return [];
+  try {
+    const raw = s.getItem(CUSTOM_TASKS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function getCustomChecklists(): Record<string, Checklist> {
+  const s = safeStorage();
+  if (!s) return {};
+  try {
+    const raw = s.getItem(CUSTOM_CHECKLISTS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function getCustomChecklist(taskId: string): Checklist | null {
+  return getCustomChecklists()[taskId] ?? null;
+}
+
+export function saveCustomTask(task: Task, checklist: Checklist) {
+  const s = safeStorage();
+  if (!s) return;
+  try {
+    const tasks = getCustomTasks().filter((t) => t.id !== task.id);
+    tasks.push(task);
+    s.setItem(CUSTOM_TASKS_KEY, JSON.stringify(tasks));
+
+    const cls = getCustomChecklists();
+    cls[task.id] = checklist;
+    s.setItem(CUSTOM_CHECKLISTS_KEY, JSON.stringify(cls));
+  } catch { /* quota exceeded */ }
+}
+
+export function deleteCustomTask(id: string) {
+  const s = safeStorage();
+  if (!s) return;
+  try {
+    const tasks = getCustomTasks().filter((t) => t.id !== id);
+    s.setItem(CUSTOM_TASKS_KEY, JSON.stringify(tasks));
+
+    const cls = getCustomChecklists();
+    delete cls[id];
+    s.setItem(CUSTOM_CHECKLISTS_KEY, JSON.stringify(cls));
+  } catch { /* ignore */ }
+}
+
 // ── Fresh start (demo) ────────────────────────────────────────────
 
 /** Clears worker/demo data for a fresh presentation, keeping employer config. */
@@ -519,8 +566,9 @@ export function resetAllForFreshStart(): void {
     key("company-logo"),
     key("supervisor-email"),
     key("lang"),
-    key("unlocked"),
     key("last-site-id"),
+    key("custom-tasks"),
+    key("custom-checklists"),
   ]);
   try {
     const keys: string[] = [];
@@ -532,128 +580,3 @@ export function resetAllForFreshStart(): void {
   } catch { /* ignore */ }
 }
 
-// ── Seed demo data ────────────────────────────────────────────────
-
-const DEMO_SEEDED_KEY = key("demo-seeded");
-const DEMO_VERSION = "6";
-
-export function isDemoSeeded(): boolean {
-  try {
-    return localStorage.getItem(DEMO_SEEDED_KEY) === DEMO_VERSION;
-  } catch {
-    return false;
-  }
-}
-
-export function seedDemoData() {
-  const demoTasks = [
-    { id: "coffrage", title: "Coffrage", icon: "🪵" },
-    { id: "coulage-beton", title: "Coulage béton", icon: "🧱" },
-    { id: "terrassement", title: "Terrassement / Excavation", icon: "⛏️" },
-    { id: "ferraillage", title: "Ferraillage / Armature", icon: "🔩" },
-    { id: "echafaudage", title: "Échafaudage", icon: "🏗️" },
-    { id: "electricite", title: "Électricité", icon: "⚡" },
-    { id: "soudage", title: "Soudage / Coupage", icon: "🔥" },
-    { id: "peinture", title: "Peinture", icon: "🖌️" },
-    { id: "demolition", title: "Démolition", icon: "🔨" },
-    { id: "maconnerie", title: "Maçonnerie / Briquetage", icon: "🧱" },
-    { id: "etancheite", title: "Étanchéité", icon: "💧" },
-    { id: "carrelage", title: "Carrelage / Céramique", icon: "🔲" },
-  ];
-
-  const siteNames = [
-    "Résidence Soleil — Québec",
-    "Tour Frontenac — Montréal",
-    "Complexe Desjardins Phase 3 — Lévis",
-    "Pont Laviolette — Trois-Rivières",
-    "Condo Cartier — Gatineau",
-    "Centre Bell Réno — Montréal",
-    "Éco-Quartier Limoilou — Québec",
-    "Hôpital Sacré-Cœur — Chicoutimi",
-    "Place Laurier Expansion — Sainte-Foy",
-    "Usine Rio Tinto — Alma",
-    "Barrage Eastmain — Baie-James",
-    "Marina de Rimouski — Rimouski",
-  ];
-
-  const currentUser = getWorkerName() || "Claude";
-  const workerCompanies: Record<string, string> = {
-    "Marc-Antoine": "Pomerleau",
-    "Stéphane": "EBC Inc.",
-    "Jean-Pierre": "Groupe Canam",
-    "Luc": "Broccolini",
-    "Patrick": "Kiewit",
-    "Éric": "Pomerleau",
-    "François": "Construction Longer",
-    "Mathieu": "Eurovia Québec",
-    "Sébastien": "Groupe ABS",
-  };
-  const otherWorkers = [
-    "Marc-Antoine", "Stéphane", "Jean-Pierre", "Luc", "Patrick",
-    "Éric", "François", "Mathieu", "Sébastien",
-  ];
-  const now = Date.now();
-  const DAY = 86400000;
-
-  const entries: HistoryEntry[] = [];
-
-  // Current user: most entries (spread over recent days)
-  for (let d = 0; d < 8; d++) {
-    const count = d === 0 ? 3 : d < 3 ? 2 : 1;
-    for (let j = 0; j < count; j++) {
-      const t = demoTasks[(d * 3 + j) % demoTasks.length];
-      const total = 10 + Math.floor(Math.random() * 10);
-      const hour = 7 + j * 3 + Math.floor(Math.random() * 2);
-      const date = new Date(now - d * DAY);
-      date.setHours(hour, Math.floor(Math.random() * 60), 0, 0);
-      entries.push({
-        id: Math.random().toString(36).slice(2, 12),
-        taskId: t.id, taskTitle: t.title, taskIcon: t.icon,
-        workerName: currentUser, workerCompany: "Pomerleau",
-        checkedCount: total, totalCount: total,
-        completedAt: date.toISOString(),
-        siteName: siteNames[(d * 3 + j) % siteNames.length],
-      });
-    }
-  }
-
-  // Other workers: varying amounts to create a realistic leaderboard
-  const otherCounts = [11, 9, 8, 6, 5, 4, 3, 2, 1];
-  for (let w = 0; w < otherWorkers.length; w++) {
-    const numEntries = otherCounts[w];
-    for (let j = 0; j < numEntries; j++) {
-      const t = demoTasks[(w * 4 + j) % demoTasks.length];
-      const total = 10 + Math.floor(Math.random() * 10);
-      const daysAgo = Math.floor(j * 1.5);
-      const date = new Date(now - daysAgo * DAY);
-      date.setHours(6 + Math.floor(Math.random() * 10), Math.floor(Math.random() * 60), 0, 0);
-      entries.push({
-        id: Math.random().toString(36).slice(2, 12),
-        taskId: t.id, taskTitle: t.title, taskIcon: t.icon,
-        workerName: otherWorkers[w], workerCompany: workerCompanies[otherWorkers[w]],
-        checkedCount: total, totalCount: total,
-        completedAt: date.toISOString(),
-        siteName: siteNames[(w * 4 + j) % siteNames.length],
-      });
-    }
-  }
-
-  const demoSites: ConstructionSite[] = [
-    { id: "site-1", name: "Condo des Draveurs", address: "120 boul. des Draveurs, Gatineau", active: true, createdAt: new Date(now - 10 * DAY).toISOString() },
-    { id: "site-2", name: "Centre Sportif Aylmer", address: "55 rue Principale, Aylmer", active: true, createdAt: new Date(now - 8 * DAY).toISOString() },
-    { id: "site-3", name: "Pont du Rapibus Phase 2", address: "Boul. Maloney, Gatineau", active: true, createdAt: new Date(now - 6 * DAY).toISOString() },
-  ];
-
-  try {
-    entries.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
-    const existing = getHistory();
-    const merged = [...entries, ...existing].slice(0, MAX_HISTORY);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(merged));
-
-    if (getSites().length === 0) {
-      localStorage.setItem(SITES_KEY, JSON.stringify(demoSites));
-    }
-
-    localStorage.setItem(DEMO_SEEDED_KEY, DEMO_VERSION);
-  } catch { /* ignore */ }
-}

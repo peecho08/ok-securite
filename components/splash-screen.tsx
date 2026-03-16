@@ -38,8 +38,8 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
       >
         <div className="animate-splash-logo">
           <Image
-            src="/ok-yellow-white.svg"
-            alt="OK Chantier"
+            src="/ok-securite.svg"
+            alt="OK Sécurité"
             width={240}
             height={60}
             className="h-16 w-auto sm:h-20"

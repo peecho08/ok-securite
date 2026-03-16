@@ -23,6 +23,6 @@ export async function getLogoPngDataUrl(): Promise<string> {
       URL.revokeObjectURL(img.src);
       reject(new Error("logo render failed"));
     };
-    img.src = "/logo.svg";
+    img.src = "/ok-securite.svg";
   });
 }

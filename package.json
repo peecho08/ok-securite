@@ -9,7 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@clerk/localizations": "^4.2.1",
+    "@clerk/nextjs": "^6",
     "@google/generative-ai": "^0.24.1",
+    "@supabase/supabase-js": "^2.99.1",
     "@vercel/analytics": "^1.6.1",
     "jspdf": "^4.2.0",
     "lucide-react": "^0.574.0",
