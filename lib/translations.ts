@@ -86,6 +86,7 @@ const fr: Record<string, string | string[]> = {
   "joinTeam.pastePlaceholder": "Collez le lien d'invitation",
   "joinTeam.join": "REJOINDRE",
   "joinTeam.joining": "Rejoignant l'équipe…",
+  "joinTeam.joiningNamed": "Vous rejoignez l'équipe",
   "joinTeam.invalidLink": "Veuillez coller un lien d'invitation valide.",
 
   // ── Onboarding ──────────────────────────────────────────
@@ -619,6 +620,7 @@ const en: Record<string, string | string[]> = {
   "joinTeam.pastePlaceholder": "Paste invite link",
   "joinTeam.join": "JOIN",
   "joinTeam.joining": "Joining team…",
+  "joinTeam.joiningNamed": "Joining",
   "joinTeam.invalidLink": "Please paste a valid invite link.",
 
   // ── Onboarding ──────────────────────────────────────────

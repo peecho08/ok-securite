@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { Users } from "lucide-react";
 import { setWorkerOrgId, setRoleChoiceDone, setActiveRole, setTeamName, setTeamTasks } from "@/lib/storage";
 import { useLocale } from "@/lib/i18n";
 
@@ -11,6 +12,7 @@ export default function JoinPage() {
   const { t } = useLocale();
   const token = (params?.token as string) || "";
   const [error, setError] = useState("");
+  const [orgName, setOrgName] = useState("");
 
   useEffect(() => {
     if (!token) {
@@ -37,6 +39,7 @@ export default function JoinPage() {
         }
 
         const { org } = await res.json();
+        setOrgName(org.name);
         setWorkerOrgId(org.id);
         setTeamName(org.name);
         setTeamTasks(org.teamTasks || []);
@@ -48,6 +51,7 @@ export default function JoinPage() {
           body: JSON.stringify({ role: "worker" }),
         });
         document.cookie = "pending_join=; path=/; max-age=0";
+        await new Promise((r) => setTimeout(r, 1200));
         window.location.href = "/app";
       } catch {
         setError(t("joinTeam.invalidLink"));
@@ -58,7 +62,7 @@ export default function JoinPage() {
   }, [token, router, t]);
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-white px-5 dark:bg-neutral-900">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-white px-8 dark:bg-neutral-900">
       {error ? (
         <div className="text-center">
           <p className="text-sm font-medium text-red-500">{error}</p>
@@ -70,7 +74,17 @@ export default function JoinPage() {
           </button>
         </div>
       ) : (
-        <p className="text-sm text-gray-500">{t("joinTeam.joining")}</p>
+        <div className="flex flex-col items-center text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#22c55e]/10">
+            <Users className="h-10 w-10 text-[#22c55e]" strokeWidth={1.5} />
+          </div>
+          <p className="mt-6 font-heading text-xl font-bold text-gray-900 dark:text-neutral-100">
+            {orgName
+              ? `${t("joinTeam.joiningNamed")} ${orgName}`
+              : t("joinTeam.joining")}
+          </p>
+          <div className="mt-4 h-1 w-16 animate-pulse rounded-full bg-[#22c55e]/30" />
+        </div>
       )}
     </div>
   );
