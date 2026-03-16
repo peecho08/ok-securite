@@ -13,7 +13,7 @@ interface OnboardingProps {
 type OnboardingStep = "join" | "welcome";
 
 export function Onboarding({ onDone }: OnboardingProps) {
-  const { t } = useLocale();
+  const { locale, setLocale, t } = useLocale();
   const [step, setStep] = useState<OnboardingStep>(() => getWorkerOrgId() ? "welcome" : "join");
   const [name, setName] = useState(getWorkerName);
   const [joinLink, setJoinLink] = useState("");
@@ -90,11 +90,19 @@ export function Onboarding({ onDone }: OnboardingProps) {
         <div className="flex flex-1 flex-col items-center justify-center px-8 pb-6 pt-2 text-center">
           <div className="animate-scale-in">
             <Image
+              src="/ok-securite-dark.svg"
+              alt="OK Sécurité"
+              width={188}
+              height={48}
+              className="h-10 w-auto dark:hidden"
+              priority
+            />
+            <Image
               src="/ok-securite.svg"
               alt="OK Sécurité"
               width={188}
               height={48}
-              className="h-10 w-auto"
+              className="hidden h-10 w-auto dark:block"
               priority
             />
           </div>
@@ -124,7 +132,15 @@ export function Onboarding({ onDone }: OnboardingProps) {
           </button>
 
         </div>
-        <div className="pb-4" />
+        <div className="flex justify-center pb-6">
+          <button
+            type="button"
+            onClick={() => setLocale(locale === "fr" ? "en" : "fr")}
+            className="text-sm font-medium text-gray-500 transition-colors hover:text-gray-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+          >
+            {locale === "fr" ? "English" : "Français"}
+          </button>
+        </div>
       </div>
     );
   }
