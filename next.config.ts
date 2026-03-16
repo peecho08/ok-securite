@@ -3,12 +3,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   async rewrites() {
-    return [
-      {
-        source: "/__clerk/:path*",
-        destination: "https://frontend-api.clerk.services/:path*",
-      },
-    ];
+    return [];
   },
   async headers() {
     return [
@@ -23,12 +18,12 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://*.clerk.accounts.dev https://*.clerk.com https://clerk.ok-chantier.com https://challenges.cloudflare.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://*.clerk.accounts.dev https://*.clerk.com https://clerk.ok-securite.com https://challenges.cloudflare.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' data: blob: https://*.clerk.com https://img.clerk.com https://clerk.ok-chantier.com https://*.supabase.co https://*.google.com https://*.googleapis.com",
+              "img-src 'self' data: blob: https://*.clerk.com https://img.clerk.com https://*.supabase.co https://*.google.com https://*.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://clerk.ok-chantier.com https://api.stripe.com https://*.sentry.io https://*.google.com https://*.googleapis.com https://*.vercel-insights.com https://*.vercel-analytics.com https://*.i.posthog.com",
-              "frame-src https://js.stripe.com https://*.clerk.accounts.dev https://*.clerk.com https://clerk.ok-chantier.com https://challenges.cloudflare.com",
+              "connect-src 'self' https://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://clerk.ok-securite.com https://api.stripe.com https://*.sentry.io https://*.google.com https://*.googleapis.com https://*.vercel-insights.com https://*.vercel-analytics.com https://*.i.posthog.com",
+              "frame-src https://js.stripe.com https://*.clerk.accounts.dev https://*.clerk.com https://clerk.ok-securite.com https://challenges.cloudflare.com",
               "worker-src 'self' blob:",
             ].join("; "),
           },

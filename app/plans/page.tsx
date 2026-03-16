@@ -3,16 +3,15 @@ import { MarketingShell } from "@/components/marketing-shell";
 import { PlansContent } from "./plans-content";
 
 export const metadata: Metadata = {
-  title: "Tarifs — OK Sécurité | Gratuit, Silver et Gold",
+  title: "Tarifs — OK Sécurité | Gratuit pendant le lancement",
   description:
-    "Choisissez le forfait OK Sécurité adapté à votre équipe. " +
-    "Listes de vérification CNESST gratuites, gestion d'équipe, listes personnalisées et rapports PDF professionnels. " +
-    "À partir de 0 $/mois.",
+    "OK Sécurité est gratuit pendant la période de lancement. " +
+    "Listes de vérification CNESST, gestion d'équipe, listes personnalisées et rapports PDF — tout inclus, sans frais.",
   alternates: { canonical: "https://ok-securite.com/plans" },
   openGraph: {
-    title: "Tarifs — OK Sécurité",
+    title: "Tarifs — OK Sécurité | Gratuit pendant le lancement",
     description:
-      "Forfaits Gratuit, Silver et Gold pour la sécurité en chantier. Listes CNESST, rapports PDF et gestion d'équipe.",
+      "Toutes les fonctionnalités incluses gratuitement pendant l'accès anticipé. Listes CNESST, rapports PDF et gestion d'équipe.",
     url: "https://ok-securite.com/plans",
   },
 };

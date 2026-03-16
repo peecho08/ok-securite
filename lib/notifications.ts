@@ -7,7 +7,7 @@ function getResend() {
   return key ? new Resend(key) : null;
 }
 
-const FROM_EMAIL = process.env.NOTIFICATION_FROM_EMAIL || "OK Sécurité <noreply@ok-chantier.com>";
+const FROM_EMAIL = process.env.NOTIFICATION_FROM_EMAIL || "OK Sécurité <noreply@ok-securite.com>";
 
 interface NotifyOptions {
   userId: string;
@@ -70,7 +70,7 @@ export async function notifyChecklistCompleted(
       type: "checklist_completed",
       title: `${workerName} a complété: ${taskTitle}`,
       body: `Liste de vérification complétée avec succès.`,
-      link: "/dashboard",
+      link: "/app/dashboard",
       email: profile?.email
         ? {
             to: profile.email,
@@ -116,7 +116,7 @@ export async function notifyReportSubmitted(
       type: "report_submitted",
       title: `Rapport: ${taskTitle} (${severityLabel})`,
       body: `${reporterName} a soumis un rapport d'incident.`,
-      link: "/dashboard",
+      link: "/app/dashboard",
       email: profile?.email
         ? {
             to: profile.email,
@@ -161,7 +161,7 @@ export async function notifyTeamJoined(
     type: "member_joined",
     title: `${newMemberName} a rejoint ${org.name}`,
     body: "Nouveau membre dans votre équipe.",
-    link: "/my-team",
+    link: "/app/my-team",
     email: creator?.email
       ? {
           to: creator.email,

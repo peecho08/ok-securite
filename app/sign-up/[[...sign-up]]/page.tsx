@@ -6,7 +6,7 @@ import { AuthShell } from "@/components/auth-shell";
 export default function SignUpPage() {
   return (
     <AuthShell>
-      <SignUp />
+      <SignUp forceRedirectUrl="/app" />
     </AuthShell>
   );
 }

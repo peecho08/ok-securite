@@ -1,9 +1,8 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 import { useLocale } from "@/lib/i18n";
-import { Check, Minus, Loader2 } from "lucide-react";
+import { Check, Minus } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 interface Feature {
@@ -23,57 +22,18 @@ export function PlansContent() {
 
 function PlansInner() {
   const { t } = useLocale();
-  const searchParams = useSearchParams();
-  const [loading, setLoading] = useState<string | null>(null);
-
-  const success = searchParams.get("success") === "true";
-  const canceled = searchParams.get("canceled") === "true";
 
   useEffect(() => {
-    trackEvent("plan_page_viewed", { success, canceled });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function handleCheckout(plan: string) {
-    setLoading(plan);
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setLoading(null);
-      }
-    } catch {
-      setLoading(null);
-    }
-  }
-
-  async function handlePortal() {
-    setLoading("portal");
-    try {
-      const res = await fetch("/api/stripe/portal", { method: "POST" });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setLoading(null);
-      }
-    } catch {
-      setLoading(null);
-    }
-  }
+    trackEvent("plan_page_viewed", { variant: "early_access" });
+  }, []);
 
   const features: Feature[] = [
     { labelKey: "plans.feat.checklists", free: t("plans.feat.checklists.val"), silver: t("plans.feat.checklists.val"), gold: t("plans.feat.checklists.val") },
     { labelKey: "plans.feat.pdf", free: true, silver: true, gold: true },
-    { labelKey: "plans.feat.custom", free: false, silver: t("plans.feat.custom.silver"), gold: t("plans.feat.custom.gold") },
-    { labelKey: "plans.feat.team", free: false, silver: t("plans.feat.team.silver"), gold: t("plans.feat.team.gold") },
-    { labelKey: "plans.feat.sites", free: false, silver: t("plans.feat.sites.silver"), gold: t("plans.feat.sites.gold") },
-    { labelKey: "plans.feat.dashboard", free: false, silver: true, gold: true },
+    { labelKey: "plans.feat.custom", free: t("plans.feat.custom.free"), silver: t("plans.feat.custom.silver"), gold: t("plans.feat.custom.gold") },
+    { labelKey: "plans.feat.team", free: t("plans.feat.team.free"), silver: t("plans.feat.team.silver"), gold: t("plans.feat.team.gold") },
+    { labelKey: "plans.feat.sites", free: t("plans.feat.sites.free"), silver: t("plans.feat.sites.silver"), gold: t("plans.feat.sites.gold") },
+    { labelKey: "plans.feat.dashboard", free: true, silver: true, gold: true },
     { labelKey: "plans.feat.support", free: false, silver: false, gold: true },
     { labelKey: "plans.feat.branding", free: false, silver: false, gold: true },
   ];
@@ -84,8 +44,9 @@ function PlansInner() {
       priceKey: "plans.free.price",
       descKey: "plans.free.desc",
       ctaKey: "plans.cta.free",
-      plan: null,
-      popular: false,
+      href: "/sign-up",
+      highlighted: true,
+      comingSoon: false,
       values: features.map((f) => f.free),
     },
     {
@@ -93,8 +54,9 @@ function PlansInner() {
       priceKey: "plans.silver.price",
       descKey: "plans.silver.desc",
       ctaKey: "plans.cta.silver",
-      plan: "silver",
-      popular: true,
+      href: null,
+      highlighted: false,
+      comingSoon: true,
       values: features.map((f) => f.silver),
     },
     {
@@ -102,8 +64,9 @@ function PlansInner() {
       priceKey: "plans.gold.price",
       descKey: "plans.gold.desc",
       ctaKey: "plans.cta.gold",
-      plan: "gold",
-      popular: false,
+      href: null,
+      highlighted: false,
+      comingSoon: true,
       values: features.map((f) => f.gold),
     },
   ];
@@ -120,30 +83,24 @@ function PlansInner() {
           </p>
         </div>
 
-        {success && (
-          <div className="mx-auto mb-8 max-w-md rounded-xl border border-green-200 bg-green-50 p-4 text-center text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
-            {t("plans.success")}
-          </div>
-        )}
-        {canceled && (
-          <div className="mx-auto mb-8 max-w-md rounded-xl border border-gray-200 bg-gray-50 p-4 text-center text-sm text-gray-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
-            {t("plans.canceled")}
-          </div>
-        )}
-
         <div className="grid gap-6 sm:grid-cols-3">
           {tiers.map((tier) => (
             <div
               key={tier.nameKey}
               className={`relative flex flex-col rounded-2xl border p-6 transition-shadow ${
-                tier.popular
+                tier.highlighted
                   ? "border-[var(--color-primary)] shadow-lg shadow-[var(--color-primary)]/10 dark:shadow-[var(--color-primary)]/5"
-                  : "border-gray-200 dark:border-neutral-700"
+                  : "border-gray-200 opacity-60 dark:border-neutral-700"
               }`}
             >
-              {tier.popular && (
+              {tier.highlighted && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--color-primary)] px-3 py-1 text-xs font-bold text-white">
                   {t("plans.popular")}
+                </span>
+              )}
+              {tier.comingSoon && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gray-400 px-3 py-1 text-xs font-bold text-white dark:bg-neutral-600">
+                  {t("plans.comingSoon")}
                 </span>
               )}
 
@@ -180,43 +137,25 @@ function PlansInner() {
                 })}
               </ul>
 
-              {tier.plan ? (
-                <button
-                  type="button"
-                  onClick={() => handleCheckout(tier.plan!)}
-                  disabled={loading !== null}
-                  className={`flex items-center justify-center gap-2 rounded-xl py-3 text-center font-heading text-sm font-bold transition-colors disabled:opacity-60 ${
-                    tier.popular
-                      ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dark)]"
-                      : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
-                  }`}
-                >
-                  {loading === tier.plan && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {t(tier.ctaKey)}
-                </button>
-              ) : (
+              {tier.href ? (
                 <a
-                  href="/sign-up"
-                  className="block rounded-xl border border-gray-200 bg-white py-3 text-center font-heading text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                  href={tier.href}
+                  className="block rounded-xl bg-[var(--color-primary)] py-3 text-center font-heading text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
                 >
                   {t(tier.ctaKey)}
                 </a>
+              ) : (
+                <span className="block cursor-default rounded-xl border border-gray-200 bg-gray-100 py-3 text-center font-heading text-sm font-bold text-gray-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-500">
+                  {t(tier.ctaKey)}
+                </span>
               )}
             </div>
           ))}
         </div>
 
-        <div className="mt-8 text-center">
-          <button
-            type="button"
-            onClick={handlePortal}
-            disabled={loading !== null}
-            className="text-sm text-gray-500 underline transition-colors hover:text-gray-700 dark:text-neutral-400 dark:hover:text-neutral-200"
-          >
-            {loading === "portal" && <Loader2 className="mr-1 inline h-3 w-3 animate-spin" />}
-            {t("plans.manageSubscription")}
-          </button>
-        </div>
+        <p className="mt-10 text-center text-sm text-gray-500 dark:text-neutral-400">
+          {t("plans.launchNote")}
+        </p>
       </div>
     </section>
   );

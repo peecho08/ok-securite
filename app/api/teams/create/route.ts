@@ -59,7 +59,7 @@ export async function POST(req: Request) {
 
     return Response.json({
       org,
-      inviteUrl: `/join/${org.invite_token}`,
+      inviteUrl: `/app/join/${org.invite_token}`,
     });
   } catch (err) {
     console.error("POST /api/teams/create:", err);

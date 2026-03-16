@@ -23,7 +23,7 @@ export function ActiveTasks({ activeTasks, onAbandon }: ActiveTasksProps) {
         {activeTasks.map(({ task, checked, total }, i) => (
           <div key={task.id} className="animate-slide-in-up relative" style={{ animationDelay: `${i * 80}ms` }}>
             <Link
-              href={`/tasks/${task.id}?resume=1`}
+              href={`/app/tasks/${task.id}?resume=1`}
               className="flex items-center gap-4 rounded-2xl border-2 border-primary/20 bg-primary/5 p-4 transition-colors hover:border-primary/30 active:bg-primary/10 dark:border-primary/25 dark:bg-primary/10 dark:hover:border-primary/40 animate-green-pulse"
             >
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-primary shadow-sm dark:bg-primary/20 dark:text-primary">

@@ -32,12 +32,14 @@ export interface PlanLimits {
   branding: boolean;
 }
 
+// During early access, free tier gets full access (same as gold).
+// Revert to restricted limits when paid plans go live.
 export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
   free: {
-    customChecklists: 0,
-    sites: 0,
-    teamMembers: 0,
-    dashboard: false,
+    customChecklists: Infinity,
+    sites: Infinity,
+    teamMembers: Infinity,
+    dashboard: true,
     prioritySupport: false,
     branding: false,
   },

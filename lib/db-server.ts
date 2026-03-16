@@ -17,8 +17,10 @@ export async function updateProfileRoleServer(
 ): Promise<void> {
   const { error } = await supabaseAdmin()
     .from("profiles")
-    .update({ role, updated_at: new Date().toISOString() })
-    .eq("id", userId);
+    .upsert(
+      { id: userId, role, updated_at: new Date().toISOString() },
+      { onConflict: "id" }
+    );
   if (error) console.error("updateProfileRoleServer:", error.message);
 }
 

@@ -37,7 +37,7 @@ export function SupervisorHome() {
     setTeamName(getTeamName() || t("supervisor.defaultTeamName"));
     const token = getInviteToken();
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    setInviteUrl(token ? `${origin}/join/${token}` : "");
+    setInviteUrl(token ? `${origin}/app/join/${token}` : "");
     setHistory(getHistory());
     setWorkerNameState(getWorkerName());
     fetch("/api/teams/sites")
@@ -113,7 +113,7 @@ export function SupervisorHome() {
             </div>
             <div className="py-2 pb-[env(safe-area-inset-bottom)]">
               <Link
-                href="/my-team"
+                href="/app/my-team"
                 onClick={() => setShowMenu(false)}
                 className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
               >
@@ -121,7 +121,7 @@ export function SupervisorHome() {
                 {t("team.title")}
               </Link>
               <Link
-                href="/create-team?edit-tasks"
+                href="/app/create-team?edit-tasks"
                 onClick={() => setShowMenu(false)}
                 className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
               >
@@ -185,21 +185,21 @@ export function SupervisorHome() {
         {/* Quick links */}
         <section className="mb-5 grid grid-cols-2 gap-3">
           <Link
-            href="/my-team"
+            href="/app/my-team"
             className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
           >
             <Users className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
             <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{t("supervisor.manageTeam")}</span>
           </Link>
           <Link
-            href="/dashboard"
+            href="/app/dashboard"
             className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
           >
             <ClipboardList className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
             <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{t("menu.dashboard")}</span>
           </Link>
           <Link
-            href="/my-sites"
+            href="/app/my-sites"
             className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
           >
             <MapPin className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
@@ -209,7 +209,7 @@ export function SupervisorHome() {
             </span>
           </Link>
           <Link
-            href="/my-checklists"
+            href="/app/my-checklists"
             className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
           >
             <PenLine className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
@@ -261,7 +261,7 @@ export function SupervisorHome() {
             <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center dark:border-neutral-600 dark:bg-neutral-800">
               <p className="text-sm text-gray-500 dark:text-neutral-400">{t("supervisor.noInviteYet")}</p>
               <Link
-                href="/create-team"
+                href="/app/create-team"
                 className="mt-3 inline-block rounded-lg bg-[var(--color-primary)] px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
               >
                 {t("supervisor.generateInvite")}
@@ -285,7 +285,7 @@ export function SupervisorHome() {
               {history.map((entry, i) => (
                 <Link
                   key={`${entry.taskId}-${entry.completedAt}-${i}`}
-                  href={entry.id ? `/history/${entry.id}` : "/history"}
+                  href={entry.id ? `/app/history/${entry.id}` : "/app/history"}
                   className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-3 transition-colors active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-700"
                 >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-neutral-700 dark:text-neutral-400">

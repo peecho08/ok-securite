@@ -46,7 +46,7 @@ export function AppHeader({ workerName }: AppHeaderProps) {
   }, [showMenu]);
 
   async function handleJoinTeam() {
-    const token = joinLink.trim().replace(/.*\/join\/?/i, "").trim();
+    const token = joinLink.trim().replace(/.*\/(?:app\/)?join\/?/i, "").trim();
     if (!token) {
       setJoinError(t("joinTeam.invalidLink"));
       return;
@@ -86,7 +86,7 @@ export function AppHeader({ workerName }: AppHeaderProps) {
         <div className="flex items-center justify-between gap-4">
           <button
             type="button"
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/app")}
             className="flex shrink-0 cursor-pointer transition-opacity hover:opacity-80"
             aria-label={t("nav.refresh")}
           >
@@ -145,7 +145,7 @@ export function AppHeader({ workerName }: AppHeaderProps) {
                             body: JSON.stringify({ role: "worker" }),
                           });
                           setShowMenu(false);
-                          window.location.href = "/";
+                          window.location.href = "/app";
                         }}
                         className="shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
                       >
@@ -162,7 +162,7 @@ export function AppHeader({ workerName }: AppHeaderProps) {
                             body: JSON.stringify({ role: "supervisor" }),
                           });
                           setShowMenu(false);
-                          window.location.href = "/";
+                          window.location.href = "/app";
                         }}
                         className="shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
                       >
@@ -229,7 +229,7 @@ export function AppHeader({ workerName }: AppHeaderProps) {
                       <ExternalLink className="h-4 w-4 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-3.5 sm:w-3.5" />
                     </button>
                     <Link
-                      href="/history"
+                      href="/app/history"
                       onClick={() => setShowMenu(false)}
                       className="flex min-h-[52px] items-center gap-4 px-5 py-3 text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
@@ -239,7 +239,7 @@ export function AppHeader({ workerName }: AppHeaderProps) {
                       {t("menu.history")}
                     </Link>
                     <Link
-                      href="/bien-etre"
+                      href="/app/bien-etre"
                       onClick={() => setShowMenu(false)}
                       className="flex min-h-[52px] items-center gap-4 px-5 py-3 text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >
@@ -249,7 +249,7 @@ export function AppHeader({ workerName }: AppHeaderProps) {
                       {t("menu.wellbeing")}
                     </Link>
                     <Link
-                      href="/dashboard"
+                      href="/app/dashboard"
                       onClick={() => setShowMenu(false)}
                       className="flex min-h-[52px] items-center gap-4 px-5 py-3 text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
                     >

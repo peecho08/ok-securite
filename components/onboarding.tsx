@@ -21,7 +21,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
   const [joinError, setJoinError] = useState("");
 
   function handleJoinSubmit() {
-    const token = joinLink.trim().replace(/.*\/join\/?/i, "").trim();
+    const token = joinLink.trim().replace(/.*\/(?:app\/)?join\/?/i, "").trim();
     if (!token) {
       setJoinError(t("joinTeam.invalidLink"));
       return;

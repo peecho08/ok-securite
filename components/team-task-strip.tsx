@@ -32,7 +32,7 @@ export function TeamTaskStrip({ tasks: tasksProp }: TeamTaskStripProps) {
             return (
               <Link
                 key={task.id}
-                href={`/tasks/${task.id}`}
+                href={`/app/tasks/${task.id}`}
                 className="flex w-64 shrink-0 items-center gap-3.5 rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-400 active:border-gray-500 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-500 dark:active:border-neutral-400"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300">

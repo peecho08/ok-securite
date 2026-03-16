@@ -3,11 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useClerk } from "@clerk/nextjs";
+import { LogOut } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { setActiveRole, setRoleChoiceDone } from "@/lib/storage";
 
 export function ChooseRole() {
   const { locale, setLocale, t } = useLocale();
+  const { signOut } = useClerk();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
 
@@ -32,7 +35,7 @@ export function ChooseRole() {
       setRoleChoiceDone();
 
       if (role === "supervisor") {
-        router.push("/create-team");
+        router.push("/app/create-team");
       } else {
         router.refresh();
       }
@@ -85,13 +88,24 @@ export function ChooseRole() {
           </button>
         </div>
       </div>
-      <button
-        type="button"
-        onClick={() => setLocale(locale === "fr" ? "en" : "fr")}
-        className="pb-6 pt-2 text-sm font-medium text-gray-500 transition-colors hover:text-gray-700 dark:text-neutral-400 dark:hover:text-neutral-200"
-      >
-        {locale === "fr" ? "English" : "Français"}
-      </button>
+      <div className="flex items-center gap-4 pb-6 pt-2">
+        <button
+          type="button"
+          onClick={() => setLocale(locale === "fr" ? "en" : "fr")}
+          className="text-sm font-medium text-gray-500 transition-colors hover:text-gray-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+        >
+          {locale === "fr" ? "English" : "Français"}
+        </button>
+        <span className="text-gray-300 dark:text-neutral-600">|</span>
+        <button
+          type="button"
+          onClick={() => signOut({ redirectUrl: "/sign-in" })}
+          className="flex items-center gap-1.5 text-sm font-medium text-red-500 transition-colors hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+        >
+          <LogOut className="h-3.5 w-3.5" />
+          {t("auth.signOut")}
+        </button>
+      </div>
     </div>
   );
 }

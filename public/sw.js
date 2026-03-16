@@ -1,6 +1,6 @@
 const CACHE_NAME = "okchantier-v1";
 
-const PRECACHE_URLS = ["/", "/history"];
+const PRECACHE_URLS = ["/app", "/app/history"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
