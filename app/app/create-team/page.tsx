@@ -10,7 +10,7 @@ import { setSupervisorOrg, setActiveRole, setWorkerName, setCompanyLogo, getTeam
 import { persistRole } from "@/lib/hooks/use-db-role";
 import { tasks } from "@/data/tasks";
 import { categoryLabels, categoryLabelsEn, type TaskCategory } from "@/types";
-import { ArrowLeft, Upload, Check, Copy, Mail, MessageSquare, Search } from "lucide-react";
+import { ArrowLeft, Upload, Check, Copy, Mail, MessageSquare, Search, Loader2 } from "lucide-react";
 import { TaskIcon } from "@/components/task-icon";
 import { InviteQRCode } from "@/components/invite-qr-code";
 
@@ -194,6 +194,7 @@ export default function CreateTeamPage() {
   const searchParams = useSearchParams();
   const { user } = useUser();
   const redirectUrl = searchParams.get("redirect_url");
+  const pendingPlan = searchParams.get("plan") as "silver" | "gold" | null;
   const isEditTasks = searchParams.has("edit-tasks");
   const [supervisorName, setSupervisorName] = useState("");
   const [supervisorEmail, setSupervisorEmailState] = useState("");
@@ -235,6 +236,30 @@ export default function CreateTeamPage() {
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supervisorEmail.trim());
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  async function handleCheckout() {
+    if (!pendingPlan) return;
+    setCheckoutLoading(true);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: pendingPlan }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.error("Checkout error:", data.error);
+        setCheckoutLoading(false);
+        window.location.href = "/app";
+      }
+    } catch {
+      setCheckoutLoading(false);
+      window.location.href = "/app";
+    }
+  }
 
   if (isEditTasks) {
     return <TaskPicker editMode onDone={() => { window.location.href = "/app"; }} />;
@@ -350,12 +375,24 @@ export default function CreateTeamPage() {
             </div>
           </div>
           {inviteUrl && <InviteQRCode url={inviteUrl} teamName={displayName} />}
-          <Link
-            href={redirectUrl || "/app"}
-            className="mt-8 block w-full rounded-xl bg-[var(--color-primary)] py-3.5 text-center font-heading text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
-          >
-            {t("createTeam.done")}
-          </Link>
+          {pendingPlan ? (
+            <button
+              type="button"
+              onClick={handleCheckout}
+              disabled={checkoutLoading}
+              className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] py-3.5 font-heading text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)] disabled:opacity-60"
+            >
+              {checkoutLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {t("createTeam.done")}
+            </button>
+          ) : (
+            <Link
+              href={redirectUrl || "/app"}
+              className="mt-8 block w-full rounded-xl bg-[var(--color-primary)] py-3.5 text-center font-heading text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
+            >
+              {t("createTeam.done")}
+            </Link>
+          )}
         </main>
       </div>
     );

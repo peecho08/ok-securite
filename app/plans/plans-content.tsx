@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useLocale } from "@/lib/i18n";
-import { Check, Minus, Loader2 } from "lucide-react";
+import { Check, Minus, Loader2, X } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 interface Feature {
@@ -28,6 +28,7 @@ function PlansInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const success = searchParams.get("success") === "true";
   const canceled = searchParams.get("canceled") === "true";
@@ -40,6 +41,7 @@ function PlansInner() {
 
   const handleSubscribe = useCallback(async (plan: "silver" | "gold") => {
     setLoadingPlan(plan);
+    setCheckoutError(null);
     trackEvent("plan_checkout_started", { plan });
     try {
       const res = await fetch("/api/stripe/checkout", {
@@ -52,15 +54,21 @@ function PlansInner() {
         window.location.href = data.url;
       } else if (data.error === "Create a team first") {
         router.push(`/app/create-team?redirect_url=${encodeURIComponent(`/plans?plan=${plan}`)}`);
+      } else if (data.error === "plan_not_configured") {
+        setCheckoutError(t("plans.error.config"));
+        setLoadingPlan(null);
+      } else if (data.error === "stripe_error") {
+        setCheckoutError(t("plans.error.stripe").replace("{message}", data.message || ""));
+        setLoadingPlan(null);
       } else {
-        alert(data.error || "Something went wrong");
+        setCheckoutError(t("plans.error.generic"));
         setLoadingPlan(null);
       }
     } catch {
-      alert("Something went wrong");
+      setCheckoutError(t("plans.error.generic"));
       setLoadingPlan(null);
     }
-  }, [router]);
+  }, [router, t]);
 
   useEffect(() => {
     if (pendingPlan && isSignedIn && !autoTriggered && !success && !canceled) {
@@ -114,7 +122,7 @@ function PlansInner() {
       priceKey: "plans.silver.price",
       descKey: "plans.silver.desc",
       ctaKey: isSignedIn ? "plans.cta.silver" : "plans.cta.signUpFirst",
-      href: isSignedIn ? null : `/sign-up?redirect_url=${encodeURIComponent("/plans?plan=silver")}`,
+      href: isSignedIn ? null : `/sign-up?redirect_url=${encodeURIComponent("/app/create-team?plan=silver")}`,
       plan: isSignedIn ? "silver" : null,
       highlighted: true,
       showPerMonth: true,
@@ -125,7 +133,7 @@ function PlansInner() {
       priceKey: "plans.gold.price",
       descKey: "plans.gold.desc",
       ctaKey: isSignedIn ? "plans.cta.gold" : "plans.cta.signUpFirst",
-      href: isSignedIn ? null : `/sign-up?redirect_url=${encodeURIComponent("/plans?plan=gold")}`,
+      href: isSignedIn ? null : `/sign-up?redirect_url=${encodeURIComponent("/app/create-team?plan=gold")}`,
       plan: isSignedIn ? "gold" : null,
       highlighted: false,
       showPerMonth: true,
@@ -153,6 +161,14 @@ function PlansInner() {
         {canceled && (
           <div className="mb-8 rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-center text-sm font-medium text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
             {t("plans.canceled")}
+          </div>
+        )}
+        {checkoutError && (
+          <div className="mb-8 flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+            <span>{checkoutError}</span>
+            <button type="button" onClick={() => setCheckoutError(null)} className="shrink-0 rounded-full p-0.5 transition-colors hover:bg-red-100 dark:hover:bg-red-900/50">
+              <X className="h-4 w-4" />
+            </button>
           </div>
         )}
 

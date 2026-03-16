@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getStripe, PLANS, type PlanId } from "@/lib/stripe";
 import { APP_URL } from "@/lib/urls";
 import { z } from "zod";
+import Stripe from "stripe";
 
 const TRIAL_DAYS = 14;
 
@@ -24,6 +25,11 @@ export async function POST(req: Request) {
     const { plan } = parsed.data;
     const planConfig = PLANS[plan as PlanId];
 
+    if (!planConfig.priceId) {
+      console.error(`Missing STRIPE_${plan.toUpperCase()}_PRICE_ID env var`);
+      return Response.json({ error: "plan_not_configured" }, { status: 500 });
+    }
+
     const { data: profile } = await supabaseAdmin()
       .from("profiles")
       .select("org_id, email")
@@ -38,7 +44,7 @@ export async function POST(req: Request) {
       .from("subscriptions")
       .select("stripe_customer_id, stripe_subscription_id")
       .eq("org_id", profile.org_id)
-      .single();
+      .maybeSingle();
 
     if (existingSub?.stripe_subscription_id) {
       return Response.json({ error: "Already subscribed. Manage via billing portal." }, { status: 400 });
@@ -78,6 +84,9 @@ export async function POST(req: Request) {
     return Response.json({ url: session.url });
   } catch (err) {
     console.error("POST /api/stripe/checkout:", err);
+    if (err instanceof Stripe.errors.StripeError) {
+      return Response.json({ error: "stripe_error", message: err.message }, { status: 502 });
+    }
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

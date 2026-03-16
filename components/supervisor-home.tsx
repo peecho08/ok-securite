@@ -10,11 +10,12 @@ import { getTeamName, getInviteToken, getWorkerName, setWorkerName, getHistory, 
 
 import type { Task } from "@/types";
 import { TaskIcon } from "@/components/task-icon";
-import { Copy, Check, Users, ClipboardList, ExternalLink, Mail, MessageSquare, MapPin, ListChecks, PenLine, LogOut, FileText, ImageIcon } from "lucide-react";
+import { Copy, Check, Users, ClipboardList, ExternalLink, Mail, MessageSquare, MapPin, ListChecks, PenLine, LogOut, FileText, ImageIcon, QrCode, ChevronDown, ArrowUpCircle } from "lucide-react";
 import { WeeklyRecap } from "@/components/weekly-recap";
 import { getDailyFact } from "@/lib/safety-facts";
 import { trackEvent } from "@/lib/analytics";
 import { InviteQRCode } from "@/components/invite-qr-code";
+import { usePlan } from "@/lib/hooks/use-plan";
 
 export function SupervisorHome() {
   const { locale, setLocale, t } = useLocale();
@@ -32,6 +33,8 @@ export function SupervisorHome() {
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [loadingActivity, setLoadingActivity] = useState(true);
+  const [showQR, setShowQR] = useState(false);
+  const { plan, loading: planLoading } = usePlan();
 
   useEffect(() => {
     if (showMenu) {
@@ -161,6 +164,22 @@ export function SupervisorHome() {
               <p className="text-sm text-gray-500 dark:text-neutral-400">{t("menu.supervisor")}</p>
             </div>
             <div className="py-2 pb-[env(safe-area-inset-bottom)]">
+              {!planLoading && plan !== "gold" && (
+                <Link
+                  href="/plans"
+                  onClick={() => setShowMenu(false)}
+                  className="mx-3 mb-2 flex items-center gap-3 rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-3 transition-colors active:from-amber-100 active:to-orange-100 dark:border-amber-700/40 dark:from-amber-950/40 dark:to-orange-950/40 dark:active:from-amber-950/60 dark:active:to-orange-950/60"
+                >
+                  <ArrowUpCircle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-amber-900 dark:text-amber-200">{t("menu.upgrade")}</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400/80">{t("menu.upgradeSub")}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-amber-200/80 px-2 py-0.5 text-[11px] font-bold uppercase text-amber-800 dark:bg-amber-800/40 dark:text-amber-300">
+                    {plan === "free" ? t("upgrade.badge.free") : t("upgrade.badge.silver")}
+                  </span>
+                </Link>
+              )}
               <Link
                 href="/app/my-team"
                 onClick={() => setShowMenu(false)}
@@ -368,7 +387,20 @@ export function SupervisorHome() {
               </Link>
             </div>
           )}
-          {inviteUrl && <InviteQRCode url={inviteUrl} teamName={teamName} />}
+          {inviteUrl && (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowQR((v) => !v)}
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:active:bg-neutral-600"
+              >
+                <QrCode className="h-4 w-4" />
+                {showQR ? t("qr.hideCode") : t("qr.showCode")}
+                <ChevronDown className={`h-4 w-4 transition-transform ${showQR ? "rotate-180" : ""}`} />
+              </button>
+              {showQR && <InviteQRCode url={inviteUrl} teamName={teamName} />}
+            </>
+          )}
         </section>
 
         {/* Weekly recap */}

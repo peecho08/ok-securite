@@ -31,6 +31,14 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.rewrite(url);
   }
 
+  if (pathname === "/app/create-team" && request.nextUrl.searchParams.get("plan")) {
+    await auth.protect();
+    const plan = request.nextUrl.searchParams.get("plan")!;
+    const response = NextResponse.next();
+    response.cookies.set("pending_plan", plan, { maxAge: 600, path: "/" });
+    return response;
+  }
+
   if (pathname.startsWith("/app/join/")) {
     const { userId } = await auth();
     if (!userId) {

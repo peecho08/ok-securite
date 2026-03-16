@@ -50,6 +50,8 @@ const fr: Record<string, string | string[]> = {
   "menu.joinTeamHint": "Collez le lien d'invitation de votre superviseur.",
   "menu.joinTeamSuccess": "Vous avez rejoint l'équipe !",
   "menu.editProfile": "Modifier mon profil",
+  "menu.upgrade": "Améliorer mon forfait",
+  "menu.upgradeSub": "Débloquez plus de fonctionnalités",
 
   // ── Role choice ─────────────────────────────────────────
   "role.chooseTitle": "Vous êtes…",
@@ -244,6 +246,8 @@ const fr: Record<string, string | string[]> = {
   "supervisor.generateInvite": "Créer mon équipe",
   "supervisor.inviteMessage": "Rejoignez notre équipe sur OK Sécurité :",
   "supervisor.inviteEmailSubject": "Invitation OK Sécurité",
+  "qr.showCode": "Afficher le code QR",
+  "qr.hideCode": "Masquer le code QR",
   "qr.scanToJoin": "Scannez pour rejoindre l'équipe",
   "qr.scanInstruction": "Ouvrez l'appareil photo de votre téléphone et pointez-le vers le code QR pour rejoindre l'équipe.",
   "qr.downloadPrint": "Télécharger pour impression",
@@ -508,6 +512,9 @@ const fr: Record<string, string | string[]> = {
   "plans.feat.bulkPdf": "Export PDF en lot",
   "plans.feat.weeklyEmail": "Rapport hebdomadaire par courriel",
   "plans.yes": "Oui",
+  "plans.error.generic": "Une erreur est survenue. Veuillez réessayer.",
+  "plans.error.config": "Ce forfait n'est pas encore disponible. Contactez-nous.",
+  "plans.error.stripe": "Erreur de paiement : {message}",
   "plans.launchNote": "Tous les forfaits payants incluent un essai gratuit de 14 jours. Annulez à tout moment.",
 
   // ── Legal ──────────────────────────────────────────────
@@ -631,6 +638,8 @@ const en: Record<string, string | string[]> = {
   "menu.joinTeamHint": "Paste the invite link from your supervisor.",
   "menu.joinTeamSuccess": "You joined the team!",
   "menu.editProfile": "Edit my profile",
+  "menu.upgrade": "Upgrade plan",
+  "menu.upgradeSub": "Unlock more features",
 
   // ── Role choice ─────────────────────────────────────────
   "role.chooseTitle": "You are…",
@@ -825,6 +834,8 @@ const en: Record<string, string | string[]> = {
   "supervisor.generateInvite": "Create my team",
   "supervisor.inviteMessage": "Join our team on OK Sécurité:",
   "supervisor.inviteEmailSubject": "OK Sécurité Invitation",
+  "qr.showCode": "Show QR code",
+  "qr.hideCode": "Hide QR code",
   "qr.scanToJoin": "Scan to join the team",
   "qr.scanInstruction": "Open your phone camera and point it at the QR code to join the team.",
   "qr.downloadPrint": "Download for print",
@@ -1089,6 +1100,9 @@ const en: Record<string, string | string[]> = {
   "plans.feat.bulkPdf": "Bulk PDF export",
   "plans.feat.weeklyEmail": "Weekly email report",
   "plans.yes": "Yes",
+  "plans.error.generic": "Something went wrong. Please try again.",
+  "plans.error.config": "This plan is not yet available. Contact us.",
+  "plans.error.stripe": "Payment error: {message}",
   "plans.launchNote": "All paid plans include a 14-day free trial. Cancel anytime.",
 
   // ── Legal ──────────────────────────────────────────────

@@ -5,7 +5,7 @@ import { PwaRegister } from "./pwa-register";
 import { OfflineIndicator } from "@/components/offline-indicator";
 import { SplashScreen } from "@/components/splash-screen";
 import { ChooseRole } from "@/components/choose-role";
-import { getProfileServer } from "@/lib/db-server";
+import { getProfileServer, updateProfileRoleServer } from "@/lib/db-server";
 
 export default async function AppLayout({
   children,
@@ -17,9 +17,17 @@ export default async function AppLayout({
 
   const cookieStore = await cookies();
   const hasPendingJoin = !!cookieStore.get("pending_join")?.value;
+  const pendingPlan = cookieStore.get("pending_plan")?.value;
 
   const profile = await getProfileServer(userId);
   const needsRoleSelection = !profile || profile.role === null;
+
+  let showRolePicker = needsRoleSelection && !hasPendingJoin;
+
+  if (showRolePicker && pendingPlan) {
+    await updateProfileRoleServer(userId, "supervisor");
+    showRolePicker = false;
+  }
 
   return (
     <>
@@ -41,7 +49,7 @@ export default async function AppLayout({
           }}
         />
         <div className="relative z-[2] mx-auto min-h-dvh w-full max-w-3xl bg-white shadow-sm dark:bg-neutral-900 dark:shadow-none">
-          {needsRoleSelection && !hasPendingJoin ? <ChooseRole /> : children}
+          {showRolePicker ? <ChooseRole /> : children}
         </div>
       </SplashScreen>
       <PwaRegister />
