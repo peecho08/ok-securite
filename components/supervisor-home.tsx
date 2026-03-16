@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
 import { useClerk } from "@clerk/nextjs";
@@ -35,6 +36,15 @@ export function SupervisorHome() {
   const [loadingActivity, setLoadingActivity] = useState(true);
   const [showQR, setShowQR] = useState(false);
   const { plan, loading: planLoading } = usePlan();
+  const searchParams = useSearchParams();
+  const [showUpgradeSuccess, setShowUpgradeSuccess] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("upgraded") === "true") {
+      setShowUpgradeSuccess(true);
+      window.history.replaceState({}, "", "/app");
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (showMenu) {
@@ -301,6 +311,15 @@ export function SupervisorHome() {
       )}
 
       <main className="flex-1 px-5 py-5 sm:px-8">
+        {showUpgradeSuccess && (
+          <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300">
+            <span>{t("plans.success")}</span>
+            <button type="button" onClick={() => setShowUpgradeSuccess(false)} className="shrink-0 rounded-full p-0.5 transition-colors hover:bg-green-100 dark:hover:bg-green-900/50">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+        )}
+
         {/* Quick links */}
         <section className="mb-5 grid grid-cols-2 gap-3">
           <Link

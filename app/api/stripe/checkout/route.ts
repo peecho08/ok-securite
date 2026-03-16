@@ -73,7 +73,7 @@ export async function POST(req: Request) {
         trial_period_days: TRIAL_DAYS,
       },
       allow_promotion_codes: true,
-      success_url: `${origin}/plans?success=true`,
+      success_url: `${origin}/app?upgraded=true`,
       cancel_url: `${origin}/plans?canceled=true`,
       metadata: {
         org_id: profile.org_id,
