@@ -49,6 +49,13 @@ export async function POST(req: Request) {
       );
     }
 
+    await supabaseAdmin()
+      .from("profiles")
+      .upsert(
+        { id: userId, role: "worker", org_id: org.id, updated_at: new Date().toISOString() },
+        { onConflict: "id" }
+      );
+
     const { error: memberError } = await supabaseAdmin()
       .from("org_members")
       .upsert(
@@ -59,11 +66,6 @@ export async function POST(req: Request) {
     if (memberError) {
       return Response.json({ error: memberError.message }, { status: 500 });
     }
-
-    await supabaseAdmin()
-      .from("profiles")
-      .update({ org_id: org.id, role: "worker" })
-      .eq("id", userId);
 
     const { data: profile } = await supabaseAdmin()
       .from("profiles")
