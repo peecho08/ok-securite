@@ -31,6 +31,8 @@ function PlansInner() {
 
   const success = searchParams.get("success") === "true";
   const canceled = searchParams.get("canceled") === "true";
+  const pendingPlan = searchParams.get("plan") as "silver" | "gold" | null;
+  const [autoTriggered, setAutoTriggered] = useState(false);
 
   useEffect(() => {
     trackEvent("plan_page_viewed");
@@ -49,7 +51,7 @@ function PlansInner() {
       if (data.url) {
         window.location.href = data.url;
       } else if (data.error === "Create a team first") {
-        router.push("/app/create-team?redirect_url=/plans");
+        router.push(`/app/create-team?redirect_url=${encodeURIComponent(`/plans?plan=${plan}`)}`);
       } else {
         alert(data.error || "Something went wrong");
         setLoadingPlan(null);
@@ -58,7 +60,14 @@ function PlansInner() {
       alert("Something went wrong");
       setLoadingPlan(null);
     }
-  }, []);
+  }, [router]);
+
+  useEffect(() => {
+    if (pendingPlan && isSignedIn && !autoTriggered && !success && !canceled) {
+      setAutoTriggered(true);
+      handleSubscribe(pendingPlan);
+    }
+  }, [pendingPlan, isSignedIn, autoTriggered, success, canceled, handleSubscribe]);
 
   const features: Feature[] = [
     { labelKey: "plans.feat.checklists", free: t("plans.feat.checklists.val"), silver: t("plans.feat.checklists.val"), gold: t("plans.feat.checklists.val") },
@@ -105,7 +114,7 @@ function PlansInner() {
       priceKey: "plans.silver.price",
       descKey: "plans.silver.desc",
       ctaKey: isSignedIn ? "plans.cta.silver" : "plans.cta.signUpFirst",
-      href: isSignedIn ? null : "/sign-up?redirect_url=/plans",
+      href: isSignedIn ? null : `/sign-up?redirect_url=${encodeURIComponent("/plans?plan=silver")}`,
       plan: isSignedIn ? "silver" : null,
       highlighted: true,
       showPerMonth: true,
@@ -116,7 +125,7 @@ function PlansInner() {
       priceKey: "plans.gold.price",
       descKey: "plans.gold.desc",
       ctaKey: isSignedIn ? "plans.cta.gold" : "plans.cta.signUpFirst",
-      href: isSignedIn ? null : "/sign-up?redirect_url=/plans",
+      href: isSignedIn ? null : `/sign-up?redirect_url=${encodeURIComponent("/plans?plan=gold")}`,
       plan: isSignedIn ? "gold" : null,
       highlighted: false,
       showPerMonth: true,
