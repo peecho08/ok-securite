@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { TaskIcon } from "@/components/task-icon";
 import { usePlan } from "@/lib/hooks/use-plan";
@@ -88,8 +88,38 @@ export default function DashboardPage() {
             <UpgradeBanner messageKey="upgrade.dashboard" />
           </div>
         ) : loading || planLoading ? (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="h-6 w-6 animate-spin text-muted" />
+          <div className="space-y-6 animate-pulse">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-gray-200 p-5 dark:border-neutral-700">
+                <div className="h-8 w-16 rounded bg-gray-200 dark:bg-neutral-700" />
+                <div className="mt-2 h-4 w-24 rounded bg-gray-200 dark:bg-neutral-700" />
+              </div>
+              <div className="rounded-2xl border border-gray-200 p-5 dark:border-neutral-700">
+                <div className="h-8 w-16 rounded bg-gray-200 dark:bg-neutral-700" />
+                <div className="mt-2 h-4 w-24 rounded bg-gray-200 dark:bg-neutral-700" />
+              </div>
+            </div>
+            <div className="rounded-2xl border border-gray-200 p-4 dark:border-neutral-700">
+              <div className="mb-3 h-3 w-32 rounded bg-gray-200 dark:bg-neutral-700" />
+              <div className="flex items-end gap-3" style={{ height: 120 }}>
+                {Array.from({ length: 7 }).map((_, i) => (
+                  <div key={i} className="flex flex-1 justify-center">
+                    <div className="w-full max-w-[28px] rounded-md bg-gray-200 dark:bg-neutral-700" style={{ height: `${30 + Math.random() * 50}%` }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 rounded-xl border border-gray-200 p-3.5 dark:border-neutral-700">
+                  <div className="h-10 w-10 rounded-lg bg-gray-200 dark:bg-neutral-700" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-3/4 rounded bg-gray-200 dark:bg-neutral-700" />
+                    <div className="h-3 w-1/2 rounded bg-gray-200 dark:bg-neutral-700" />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : !hasData ? (
           <div className="py-16 text-center">

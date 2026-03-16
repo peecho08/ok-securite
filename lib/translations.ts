@@ -517,6 +517,28 @@ const fr: Record<string, string | string[]> = {
   "upgrade.badge.free": "Accès anticipé",
   "upgrade.badge.silver": "Argent",
   "upgrade.badge.gold": "Or",
+
+  // ── Toasts ──────────────────────────────────────────────
+  "toast.siteAdded": "Chantier ajouté",
+  "toast.siteRemoved": "Chantier supprimé",
+  "toast.memberRemoved": "Membre retiré",
+  "toast.linkCopied": "Lien copié",
+  "toast.error": "Une erreur est survenue",
+  "toast.dataSaved": "Données enregistrées",
+  "toast.dataExported": "Données exportées",
+  "toast.accountDeleteRequested": "Demande de suppression envoyée",
+
+  // ── Account / Data ─────────────────────────────────────
+  "account.title": "Mon compte",
+  "account.exportData": "Exporter mes données",
+  "account.exportHint": "Télécharger toutes vos données en format JSON",
+  "account.deleteAccount": "Supprimer mon compte",
+  "account.deleteHint": "Supprimer définitivement votre compte et toutes vos données",
+  "account.deleteConfirm": "Êtes-vous sûr? Cette action est irréversible.",
+  "account.deleteConfirmButton": "Supprimer définitivement",
+  "account.exporting": "Exportation…",
+  "account.deleting": "Suppression…",
+  "account.unsubscribeHint": "Pour ne plus recevoir ces courriels, rendez-vous dans les paramètres de votre compte.",
 };
 
 const en: Record<string, string | string[]> = {
@@ -1038,6 +1060,28 @@ const en: Record<string, string | string[]> = {
   "upgrade.badge.free": "Early Access",
   "upgrade.badge.silver": "Silver",
   "upgrade.badge.gold": "Gold",
+
+  // ── Toasts ──────────────────────────────────────────────
+  "toast.siteAdded": "Site added",
+  "toast.siteRemoved": "Site removed",
+  "toast.memberRemoved": "Member removed",
+  "toast.linkCopied": "Link copied",
+  "toast.error": "Something went wrong",
+  "toast.dataSaved": "Data saved",
+  "toast.dataExported": "Data exported",
+  "toast.accountDeleteRequested": "Deletion request sent",
+
+  // ── Account / Data ─────────────────────────────────────
+  "account.title": "My account",
+  "account.exportData": "Export my data",
+  "account.exportHint": "Download all your data as a JSON file",
+  "account.deleteAccount": "Delete my account",
+  "account.deleteHint": "Permanently delete your account and all your data",
+  "account.deleteConfirm": "Are you sure? This action cannot be undone.",
+  "account.deleteConfirmButton": "Delete permanently",
+  "account.exporting": "Exporting…",
+  "account.deleting": "Deleting…",
+  "account.unsubscribeHint": "To stop receiving these emails, go to your account settings.",
 };
 
 export const translations: Record<string, Record<string, string | string[]>> = { fr, en };

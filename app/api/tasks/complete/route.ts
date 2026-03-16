@@ -2,19 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { notifyChecklistCompleted } from "@/lib/notifications";
-import { z } from "zod";
-
-const completeSchema = z.object({
-  taskId: z.string().min(1),
-  taskTitle: z.string().min(1),
-  taskIcon: z.string().optional(),
-  workerName: z.string().optional(),
-  siteName: z.string().optional(),
-  siteId: z.string().optional(),
-  checkedCount: z.number().int().min(0),
-  totalCount: z.number().int().min(1),
-  location: z.string().optional(),
-});
+import { completeChecklistSchema } from "@/lib/schemas";
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -22,7 +10,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const parsed = completeSchema.safeParse(await req.json());
+  const parsed = completeChecklistSchema.safeParse(await req.json());
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 });
   }

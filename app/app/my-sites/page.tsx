@@ -8,6 +8,7 @@ import { ArrowLeft, MapPin, Plus, Trash2 } from "lucide-react";
 import { usePlan, isPaid } from "@/lib/hooks/use-plan";
 import { UpgradeBanner, LimitBanner } from "@/components/upgrade-banner";
 import { trackEvent } from "@/lib/analytics";
+import { toast } from "sonner";
 
 interface SiteRow {
   id: string;
@@ -73,6 +74,9 @@ export default function MySitesPage() {
         setNewSiteLng(undefined);
         setShowAddSite(false);
         await fetchSites();
+        toast.success(t("toast.siteAdded"));
+      } else {
+        toast.error(t("toast.error"));
       }
     } finally {
       setSaving(false);
@@ -80,8 +84,13 @@ export default function MySitesPage() {
   }
 
   async function handleRemoveSite(id: string) {
-    await fetch(`/api/teams/sites?id=${id}`, { method: "DELETE" });
-    setSites((prev) => prev.filter((s) => s.id !== id));
+    const res = await fetch(`/api/teams/sites?id=${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setSites((prev) => prev.filter((s) => s.id !== id));
+      toast.success(t("toast.siteRemoved"));
+    } else {
+      toast.error(t("toast.error"));
+    }
   }
 
   return (
@@ -147,8 +156,17 @@ export default function MySitesPage() {
         )}
 
         {loading ? (
-          <div className="py-12 text-center">
-            <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+          <div className="space-y-2 animate-pulse">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-800">
+                <div className="h-8 w-8 rounded-lg bg-gray-200 dark:bg-neutral-700" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-3/4 rounded bg-gray-200 dark:bg-neutral-700" />
+                  <div className="h-3 w-1/2 rounded bg-gray-200 dark:bg-neutral-700" />
+                </div>
+                <div className="h-5 w-12 rounded-full bg-gray-200 dark:bg-neutral-700" />
+              </div>
+            ))}
           </div>
         ) : (
           <>

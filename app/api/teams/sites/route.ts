@@ -1,23 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getPlanLimits } from "@/lib/stripe";
-import { z } from "zod";
-
-const createSiteSchema = z.object({
-  name: z.string().min(1).max(200),
-  address: z.string().max(500).optional(),
-  lat: z.number().min(-90).max(90).optional().nullable(),
-  lng: z.number().min(-180).max(180).optional().nullable(),
-});
-
-const updateSiteSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1).max(200).optional(),
-  address: z.string().max(500).optional().nullable(),
-  lat: z.number().min(-90).max(90).optional().nullable(),
-  lng: z.number().min(-180).max(180).optional().nullable(),
-  active: z.boolean().optional(),
-});
+import { createSiteSchema, updateSiteSchema } from "@/lib/schemas";
 
 export async function GET() {
   try {
@@ -84,12 +68,12 @@ export async function POST(request: Request) {
       return Response.json({ error: "site_limit" }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { name, address, lat, lng } = body;
-
-    if (!name?.trim()) {
-      return Response.json({ error: "Name is required" }, { status: 400 });
+    const parsed = createSiteSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return Response.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+
+    const { name, address, lat, lng } = parsed.data;
 
     const { data: site, error } = await supabaseAdmin()
       .from("sites")
@@ -132,12 +116,12 @@ export async function PATCH(request: Request) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { id, ...patch } = body;
-
-    if (!id) {
-      return Response.json({ error: "Site ID required" }, { status: 400 });
+    const parsed = updateSiteSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return Response.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+
+    const { id, ...patch } = parsed.data;
 
     const { error } = await supabaseAdmin()
       .from("sites")

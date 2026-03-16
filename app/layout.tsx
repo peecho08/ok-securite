@@ -8,6 +8,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { CookieConsent } from "@/components/cookie-consent";
 import { PostHogProvider } from "@/components/posthog-provider";
 import { OrganizationJsonLd, SoftwareApplicationJsonLd } from "@/components/json-ld";
+import { Toaster } from "sonner";
 
 const rubik = Rubik({
   subsets: ["latin", "latin-ext"],
@@ -74,6 +75,12 @@ export default function RootLayout({
               <PostHogProvider>{children}</PostHogProvider>
             </ClerkProviderWithLocale>
             <CookieConsent />
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                className: "!rounded-xl !font-[var(--font-rubik)] !text-sm",
+              }}
+            />
           </I18nProvider>
         </ThemeProvider>
         <Analytics />

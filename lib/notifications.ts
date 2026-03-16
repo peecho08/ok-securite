@@ -2,6 +2,25 @@ import { Resend } from "resend";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { APP_URL } from "@/lib/urls";
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+const EMAIL_FOOTER = `
+  <div style="margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center">
+    <p style="font-size:11px;color:#9ca3af;margin:0">
+      <a href="${APP_URL}" style="color:#9ca3af;text-decoration:underline">OK Sécurité</a>
+    </p>
+    <p style="font-size:11px;color:#9ca3af;margin:4px 0 0">
+      Pour ne plus recevoir ces courriels, rendez-vous dans les paramètres de votre compte.
+    </p>
+  </div>
+`;
+
 function getResend() {
   const key = process.env.RESEND_API_KEY;
   return key ? new Resend(key) : null;
@@ -84,11 +103,12 @@ export async function notifyChecklistCompleted(
             html: `
               <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">
                 <h2 style="color:#22c55e;margin:0 0 16px">OK Sécurité</h2>
-                <p><strong>${workerName}</strong> a complété la liste de vérification <strong>${taskTitle}</strong>.</p>
+                <p><strong>${escapeHtml(workerName)}</strong> a complété la liste de vérification <strong>${escapeHtml(taskTitle)}</strong>.</p>
                 <a href="${APP_URL}/dashboard"
                    style="display:inline-block;margin-top:16px;padding:10px 24px;background:#22c55e;color:white;text-decoration:none;border-radius:8px;font-weight:bold">
                   Voir le tableau de bord
                 </a>
+                ${EMAIL_FOOTER}
               </div>
             `,
           }
@@ -130,12 +150,13 @@ export async function notifyReportSubmitted(
             html: `
               <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">
                 <h2 style="color:#ef4444;margin:0 0 16px">Rapport d'incident — OK Sécurité</h2>
-                <p><strong>${reporterName}</strong> a soumis un rapport pour <strong>${taskTitle}</strong>.</p>
-                <p>Sévérité: <strong style="color:${severity === "critical" || severity === "high" ? "#ef4444" : "#f59e0b"}">${severityLabel}</strong></p>
+                <p><strong>${escapeHtml(reporterName)}</strong> a soumis un rapport pour <strong>${escapeHtml(taskTitle)}</strong>.</p>
+                <p>Sévérité: <strong style="color:${severity === "critical" || severity === "high" ? "#ef4444" : "#f59e0b"}">${escapeHtml(severityLabel)}</strong></p>
                 <a href="${APP_URL}/dashboard"
                    style="display:inline-block;margin-top:16px;padding:10px 24px;background:#ef4444;color:white;text-decoration:none;border-radius:8px;font-weight:bold">
                   Voir les détails
                 </a>
+                ${EMAIL_FOOTER}
               </div>
             `,
           }
@@ -172,14 +193,15 @@ export async function notifyTeamJoined(
       ? {
           to: creator.email,
           subject: `OK Sécurité — ${newMemberName} a rejoint votre équipe`,
-          html: `
+            html: `
             <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">
               <h2 style="color:#22c55e;margin:0 0 16px">OK Sécurité</h2>
-              <p><strong>${newMemberName}</strong> a rejoint votre équipe <strong>${org.name}</strong>.</p>
+              <p><strong>${escapeHtml(newMemberName)}</strong> a rejoint votre équipe <strong>${escapeHtml(org.name)}</strong>.</p>
               <a href="${APP_URL}/my-team"
                  style="display:inline-block;margin-top:16px;padding:10px 24px;background:#22c55e;color:white;text-decoration:none;border-radius:8px;font-weight:bold">
                 Voir l'équipe
               </a>
+              ${EMAIL_FOOTER}
             </div>
           `,
         }

@@ -10,6 +10,7 @@ import {
   setCompanyLogo,
 } from "@/lib/storage";
 import { ArrowLeft, Copy, Check, Mail, MessageSquare, Users, Trophy, Globe, ImageIcon, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface MemberProfile {
   id: string;
@@ -79,9 +80,12 @@ export default function MyTeamPage() {
       });
       if (res.ok) {
         setMembers((prev) => prev.filter((m) => m.id !== memberId));
+        toast.success(t("toast.memberRemoved"));
+      } else {
+        toast.error(t("toast.error"));
       }
     } catch {
-      // silently fail
+      toast.error(t("toast.error"));
     } finally {
       setRemoving(false);
       setConfirmingRemove(null);
@@ -92,6 +96,7 @@ export default function MyTeamPage() {
     if (!inviteUrl) return;
     void navigator.clipboard.writeText(inviteUrl);
     setCopied(true);
+    toast.success(t("toast.linkCopied"));
     setTimeout(() => setCopied(false), 2000);
   }
 
@@ -252,8 +257,16 @@ export default function MyTeamPage() {
             {t("team.members")} {members.length > 0 && <span className="text-gray-400 dark:text-neutral-500">({members.length})</span>}
           </h2>
           {loading ? (
-            <div className="rounded-xl border border-gray-200 bg-white p-6 text-center dark:border-neutral-700 dark:bg-neutral-800">
-              <p className="text-sm text-gray-500 dark:text-neutral-400">…</p>
+            <div className="space-y-2 animate-pulse">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-800">
+                  <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-neutral-700" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-2/3 rounded bg-gray-200 dark:bg-neutral-700" />
+                    <div className="h-3 w-1/3 rounded bg-gray-200 dark:bg-neutral-700" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : members.length === 0 ? (
             <div className="rounded-xl border border-gray-200 bg-white p-6 text-center dark:border-neutral-700 dark:bg-neutral-800">
