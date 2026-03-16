@@ -71,9 +71,9 @@ export default function RootLayout({
             <ClerkProviderWithLocale>
               <PostHogProvider>{children}</PostHogProvider>
             </ClerkProviderWithLocale>
-            <CookieConsent />
           </I18nProvider>
         </ThemeProvider>
+        <CookieConsent />
         <Analytics />
       </body>
     </html>
