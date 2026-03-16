@@ -50,6 +50,7 @@ export function ClerkProviderWithLocale({ children }: { children: React.ReactNod
       key={locale}
       localization={locale === "fr" ? frFR : undefined}
       appearance={clerkAppearance}
+      {...(typeof window !== "undefined" ? { proxyUrl: "/__clerk" } : {})}
     >
       {children}
     </ClerkProvider>
