@@ -31,7 +31,7 @@ export async function notify({ userId, type, title, body, link, email }: NotifyO
     link: link ?? null,
   });
 
-  if (email) {
+    if (email) {
     const resend = getResend();
     if (resend) {
       try {
@@ -41,9 +41,12 @@ export async function notify({ userId, type, title, body, link, email }: NotifyO
           subject: email.subject,
           html: email.html,
         });
+        console.log(`Email sent to ${email.to}: ${email.subject}`);
       } catch (err) {
         console.error("Failed to send email:", err);
       }
+    } else {
+      console.warn("RESEND_API_KEY not configured — skipping email to", email.to);
     }
   }
 }
@@ -56,11 +59,14 @@ export async function notifyChecklistCompleted(
 ) {
   if (!orgId) return;
 
-  const { data: supervisors } = await supabaseAdmin()
+  const { data: supervisors, error: supError } = await supabaseAdmin()
     .from("org_members")
     .select("user_id, profiles(email, full_name)")
     .eq("org_id", orgId)
     .in("role", ["supervisor", "admin"]);
+
+  if (supError) console.error("Failed to fetch supervisors for org", orgId, supError.message);
+  console.log(`notifyChecklistCompleted: found ${supervisors?.length ?? 0} supervisors for org ${orgId}`);
 
   for (const sup of supervisors ?? []) {
     const profiles = sup.profiles as unknown as { email: string; full_name: string } | { email: string; full_name: string }[] | null;

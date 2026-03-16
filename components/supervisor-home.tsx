@@ -43,13 +43,35 @@ export function SupervisorHome() {
     const token = getInviteToken();
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     setInviteUrl(token ? `${origin}/app/join/${token}` : "");
-    setHistory(getHistory());
     setWorkerNameState(getWorkerName());
     fetch("/api/teams/sites")
       .then((r) => r.json())
       .then((data) => setSites(data.sites ?? []))
       .catch(() => {});
     setCustomTasks(getCustomTasks());
+
+    fetch("/api/dashboard")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.recentActivity?.length) {
+          setHistory(data.recentActivity.map((e: Record<string, unknown>) => ({
+            id: e.id as string,
+            taskId: e.taskId as string,
+            taskTitle: e.taskTitle as string,
+            taskIcon: e.taskIcon as string,
+            workerName: e.workerName as string,
+            checkedCount: e.checkedCount as number,
+            totalCount: e.totalCount as number,
+            completedAt: e.completedAt as string,
+            siteName: e.siteName as string | undefined,
+          })));
+        } else {
+          setHistory(getHistory());
+        }
+      })
+      .catch(() => {
+        setHistory(getHistory());
+      });
   }, [t]);
 
   function handleCopy() {
