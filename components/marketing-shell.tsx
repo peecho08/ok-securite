@@ -23,6 +23,12 @@ function MarketingNav() {
         </Link>
         <div className="flex items-center gap-4">
           <Link
+            href="/checklists"
+            className="text-sm font-medium text-white/80 transition-colors hover:text-white"
+          >
+            {t("mkt.nav.checklists")}
+          </Link>
+          <Link
             href="/plans"
             className="text-sm font-medium text-white/80 transition-colors hover:text-white"
           >
@@ -55,6 +61,9 @@ function MarketingFooter() {
       <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-neutral-400">
+            <Link href="/checklists" className="transition-colors hover:text-gray-700 dark:hover:text-neutral-200">
+              {t("mkt.nav.checklists")}
+            </Link>
             <Link href="/plans" className="transition-colors hover:text-gray-700 dark:hover:text-neutral-200">
               {t("mkt.nav.plans")}
             </Link>

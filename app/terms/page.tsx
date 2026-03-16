@@ -3,6 +3,7 @@ import { MarketingShell } from "@/components/marketing-shell";
 export const metadata = {
   title: "Conditions d'utilisation — OK Sécurité",
   description: "Conditions d'utilisation de l'application OK Sécurité.",
+  alternates: { canonical: "https://ok-securite.com/terms" },
 };
 
 export default function TermsPage() {

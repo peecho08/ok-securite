@@ -7,6 +7,7 @@ import { ClerkProviderWithLocale } from "@/components/clerk-provider-with-locale
 import { Analytics } from "@vercel/analytics/next";
 import { CookieConsent } from "@/components/cookie-consent";
 import { PostHogProvider } from "@/components/posthog-provider";
+import { OrganizationJsonLd, SoftwareApplicationJsonLd } from "@/components/json-ld";
 
 const rubik = Rubik({
   subsets: ["latin", "latin-ext"],
@@ -30,21 +31,19 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "OK Sécurité",
   },
-  metadataBase: new URL("https://ok-chantier.com"),
+  metadataBase: new URL("https://ok-securite.com"),
   openGraph: {
     title: "OK Sécurité",
     description: "Listes de vérification sécurité — rapide et fiable",
-    url: "https://ok-chantier.com",
+    url: "https://ok-securite.com",
     siteName: "OK Sécurité",
-    images: [{ url: "/ok-yellow-white.svg", width: 512, height: 512 }],
     locale: "fr_CA",
     type: "website",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "OK Sécurité",
     description: "Listes de vérification sécurité — rapide et fiable",
-    images: ["/ok-yellow-white.svg"],
   },
 };
 
@@ -62,6 +61,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${rubik.variable} ${workSans.variable}`}>
+      <head>
+        <OrganizationJsonLd />
+        <SoftwareApplicationJsonLd />
+      </head>
       <body className="bg-[var(--color-surface)] text-[#111] dark:bg-neutral-950 dark:text-neutral-100">
         <ThemeProvider>
           <I18nProvider>

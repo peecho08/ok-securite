@@ -398,6 +398,7 @@ const fr: Record<string, string | string[]> = {
 
   // ── Marketing site ──────────────────────────────────────
   "mkt.nav.try": "Essayer",
+  "mkt.nav.checklists": "Listes",
   "mkt.nav.plans": "Tarifs",
   "mkt.hero.title": "Sécurité chantier. Simplifiée.",
   "mkt.hero.subtitle": "Listes de vérification CNESST, rapports PDF et gestion d'équipe — tout dans une seule app.",
@@ -477,12 +478,12 @@ const fr: Record<string, string | string[]> = {
   // ── Legal ──────────────────────────────────────────────
   "legal.terms": "Conditions",
   "legal.privacy": "Confidentialité",
-  "cookie.message": "Ce site utilise des témoins essentiels pour son fonctionnement.",
-  "cookie.analyticsMessage": "Nous utilisons aussi des témoins d'analytique pour améliorer l'expérience.",
-  "cookie.learnMore": "En savoir plus",
+  "cookie.message": "Même en numérique, on suit les règles.",
+  "cookie.analyticsMessage": "Des témoins essentiels gardent le site debout — et des témoins d'analytique nous aident à bâtir une meilleure expérience. Pas d'inspection surprise, promis.",
+  "cookie.learnMore": "Politique de confidentialité",
   "cookie.accept": "Accepter",
-  "cookie.acceptAll": "Tout accepter",
-  "cookie.essentialOnly": "Essentiels seulement",
+  "cookie.acceptAll": "Ça roule",
+  "cookie.essentialOnly": "Le strict nécessaire",
 
   // ── Upgrade / plan gating ──────────────────────────────
   "upgrade.title": "Fonctionnalité payante",
@@ -898,6 +899,7 @@ const en: Record<string, string | string[]> = {
 
   // ── Marketing site ──────────────────────────────────────
   "mkt.nav.try": "Try it",
+  "mkt.nav.checklists": "Checklists",
   "mkt.nav.plans": "Pricing",
   "mkt.hero.title": "Construction Safety. Simplified.",
   "mkt.hero.subtitle": "CNESST checklists, PDF reports, and team management — all in one app.",
@@ -977,12 +979,12 @@ const en: Record<string, string | string[]> = {
   // ── Legal ──────────────────────────────────────────────
   "legal.terms": "Terms",
   "legal.privacy": "Privacy",
-  "cookie.message": "This site uses essential cookies for its operation.",
-  "cookie.analyticsMessage": "We also use analytics cookies to improve the experience.",
-  "cookie.learnMore": "Learn more",
+  "cookie.message": "Even online, we follow the rules.",
+  "cookie.analyticsMessage": "Essential cookies keep the site standing — and analytics cookies help us build a better experience. No surprise inspections, promise.",
+  "cookie.learnMore": "Privacy policy",
   "cookie.accept": "Accept",
-  "cookie.acceptAll": "Accept all",
-  "cookie.essentialOnly": "Essential only",
+  "cookie.acceptAll": "All good",
+  "cookie.essentialOnly": "Just the essentials",
 
   // ── Upgrade / plan gating ──────────────────────────────
   "upgrade.title": "Paid feature",

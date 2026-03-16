@@ -3,6 +3,7 @@ import { MarketingShell } from "@/components/marketing-shell";
 export const metadata = {
   title: "Politique de confidentialité — OK Sécurité",
   description: "Politique de confidentialité de l'application OK Sécurité.",
+  alternates: { canonical: "https://ok-securite.com/privacy" },
 };
 
 export default function PrivacyPage() {
