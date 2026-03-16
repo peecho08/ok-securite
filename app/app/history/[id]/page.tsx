@@ -52,7 +52,40 @@ export default function HistoryDetailPage() {
 
   const dateLocale = locale === "en" ? "en-CA" : "fr-FR";
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="flex min-h-dvh flex-col dark:bg-neutral-900">
+        <header className="sticky top-0 z-10 border-b border-gray-100 bg-white px-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 animate-pulse rounded-full bg-gray-200 dark:bg-neutral-700" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="h-5 w-3/5 animate-pulse rounded bg-gray-200 dark:bg-neutral-700" />
+              <div className="h-3 w-2/5 animate-pulse rounded bg-gray-100 dark:bg-neutral-700/60" />
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 px-5 py-5 sm:px-8">
+          <div className="rounded-xl border border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between border-b border-gray-100 px-4 py-3 last:border-b-0 dark:border-neutral-700"
+              >
+                <div className="h-3.5 w-20 animate-pulse rounded bg-gray-100 dark:bg-neutral-700/60" />
+                <div className="h-3.5 w-28 animate-pulse rounded bg-gray-200 dark:bg-neutral-700" />
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 space-y-3">
+            <div className="h-3 w-32 animate-pulse rounded bg-gray-200 dark:bg-neutral-700" />
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-9 w-full animate-pulse rounded-lg bg-gray-100 dark:bg-neutral-700/40" />
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (!entry) {
     return (

@@ -7,8 +7,9 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
 import { getActiveRole, setActiveRole, getWorkerOrgId, setWorkerOrgId, getTeamName } from "@/lib/storage";
+import { isSoundEnabled, setSoundEnabled } from "@/lib/sounds";
 import { useClerk } from "@clerk/nextjs";
-import { ClipboardList, ExternalLink, LogOut, UserPlus } from "lucide-react";
+import { ClipboardList, ExternalLink, LogOut, UserPlus, Volume2, VolumeX } from "lucide-react";
 import { MusicPlayer } from "@/components/music-player";
 
 interface AppHeaderProps {
@@ -27,9 +28,11 @@ export function AppHeader({ workerName }: AppHeaderProps) {
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinSuccess, setJoinSuccess] = useState(false);
   const [hasTeam, setHasTeam] = useState(true);
+  const [soundOn, setSoundOn] = useState(true);
 
   useEffect(() => {
     setHasTeam(!!getWorkerOrgId());
+    setSoundOn(isSoundEnabled());
   }, [showMenu]);
 
   useEffect(() => {
@@ -255,6 +258,19 @@ export function AppHeader({ workerName }: AppHeaderProps) {
                         </svg>
                       )}
                       {t("menu.theme")}
+                    </button>
+                    <button
+                      onClick={() => { const next = !soundOn; setSoundEnabled(next); setSoundOn(next); }}
+                      className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
+                    >
+                      {soundOn
+                        ? <Volume2 className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" />
+                        : <VolumeX className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" />
+                      }
+                      {t("menu.sounds")}
+                      <span className={`ml-auto text-xs font-medium ${soundOn ? "text-primary" : "text-gray-400 dark:text-neutral-500"}`}>
+                        {soundOn ? "ON" : "OFF"}
+                      </span>
                     </button>
                     <button
                       onClick={() => { setLocale(locale === "fr" ? "en" : "fr"); setShowMenu(false); }}

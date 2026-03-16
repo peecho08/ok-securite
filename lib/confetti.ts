@@ -12,17 +12,20 @@ interface Particle {
   shape: "rect" | "circle";
 }
 
-const COLORS = [
-  "#22c55e", // green
-  "#4ade80", // light green
-  "#ffffff", // white
-  "#86efac", // soft mint
-  "#16a34a", // deep green
-  "#bbf7d0", // pale green
-  "#dcfce7", // cream green
+const GREEN_COLORS = [
+  "#22c55e", "#4ade80", "#ffffff", "#86efac",
+  "#16a34a", "#bbf7d0", "#dcfce7",
 ];
 
-export function fireConfetti() {
+const GOLD_COLORS = [
+  "#fbbf24", "#f59e0b", "#ffffff", "#fde68a",
+  "#d97706", "#fef3c7", "#fffbeb",
+];
+
+export type ConfettiTheme = "green" | "gold";
+
+export function fireConfetti(theme: ConfettiTheme = "green") {
+  const COLORS = theme === "gold" ? GOLD_COLORS : GREEN_COLORS;
   const canvas = document.createElement("canvas");
   canvas.style.cssText =
     "position:fixed;inset:0;z-index:9999;pointer-events:none;width:100%;height:100%";

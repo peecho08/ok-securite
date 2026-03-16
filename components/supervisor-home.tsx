@@ -11,7 +11,10 @@ import { getTeamName, getInviteToken, getWorkerName, setWorkerName, getHistory, 
 import type { Task } from "@/types";
 import { TaskIcon } from "@/components/task-icon";
 import { Copy, Check, Users, ClipboardList, ExternalLink, Mail, MessageSquare, MapPin, ListChecks, PenLine, LogOut, FileText, ImageIcon } from "lucide-react";
+import { WeeklyRecap } from "@/components/weekly-recap";
+import { getDailyFact } from "@/lib/safety-facts";
 import { trackEvent } from "@/lib/analytics";
+import { InviteQRCode } from "@/components/invite-qr-code";
 
 export function SupervisorHome() {
   const { locale, setLocale, t } = useLocale();
@@ -28,6 +31,7 @@ export function SupervisorHome() {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
+  const [loadingActivity, setLoadingActivity] = useState(true);
 
   useEffect(() => {
     if (showMenu) {
@@ -73,7 +77,8 @@ export function SupervisorHome() {
       })
       .catch(() => {
         setHistory(getHistory());
-      });
+      })
+      .finally(() => setLoadingActivity(false));
   }, [t]);
 
   function handleCopy() {
@@ -363,7 +368,36 @@ export function SupervisorHome() {
               </Link>
             </div>
           )}
+          {inviteUrl && <InviteQRCode url={inviteUrl} teamName={teamName} />}
         </section>
+
+        {/* Weekly recap */}
+        <WeeklyRecap
+          mode="supervisor"
+          serverHistory={history.map((e) => ({
+            completedAt: e.completedAt,
+            checkedCount: e.checkedCount,
+            workerName: e.workerName,
+          }))}
+        />
+
+        {/* Safety fact of the day */}
+        {(() => {
+          const fact = getDailyFact();
+          return (
+            <section className="mb-5 rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
+                {t("safetyFact.title")}
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-gray-700 dark:text-neutral-200">
+                {locale === "en" ? fact.en : fact.fr}
+              </p>
+              <p className="mt-1.5 text-[11px] text-muted">
+                {t("safetyFact.source")} : {fact.source}
+              </p>
+            </section>
+          );
+        })()}
 
         {/* Recent completions */}
         <section className="mt-6">
@@ -371,7 +405,20 @@ export function SupervisorHome() {
             <ClipboardList className="h-3.5 w-3.5" />
             {t("dashboard.recentActivity")}
           </h2>
-          {history.length === 0 ? (
+          {loadingActivity ? (
+            <div className="space-y-2">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-3 dark:border-neutral-700 dark:bg-neutral-800">
+                  <div className="h-8 w-8 shrink-0 animate-pulse rounded-lg bg-gray-200 dark:bg-neutral-700" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <div className="h-3.5 w-3/5 animate-pulse rounded bg-gray-200 dark:bg-neutral-700" />
+                    <div className="h-3 w-2/5 animate-pulse rounded bg-gray-100 dark:bg-neutral-700/60" />
+                  </div>
+                  <div className="h-4 w-4 shrink-0 animate-pulse rounded bg-gray-100 dark:bg-neutral-700/60" />
+                </div>
+              ))}
+            </div>
+          ) : history.length === 0 ? (
             <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center dark:border-neutral-700 dark:bg-neutral-800">
               <p className="text-sm text-gray-500 dark:text-neutral-400">{t("supervisor.noActivity")}</p>
             </div>

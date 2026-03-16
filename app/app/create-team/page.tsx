@@ -12,6 +12,7 @@ import { tasks } from "@/data/tasks";
 import { categoryLabels, categoryLabelsEn, type TaskCategory } from "@/types";
 import { ArrowLeft, Upload, Check, Copy, Mail, MessageSquare, Search } from "lucide-react";
 import { TaskIcon } from "@/components/task-icon";
+import { InviteQRCode } from "@/components/invite-qr-code";
 
 function TaskPicker({ onDone, editMode }: { onDone: () => void; editMode: boolean }) {
   const { locale, t } = useLocale();
@@ -347,6 +348,7 @@ export default function CreateTeamPage() {
               </a>
             </div>
           </div>
+          {inviteUrl && <InviteQRCode url={inviteUrl} teamName={displayName} />}
           <Link
             href="/app"
             className="mt-8 block w-full rounded-xl bg-[var(--color-primary)] py-3.5 text-center font-heading text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"

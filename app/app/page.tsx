@@ -16,6 +16,8 @@ import { ActiveTasks } from "@/components/active-tasks";
 import { TaskList } from "@/components/task-list";
 import { Onboarding } from "@/components/onboarding";
 import { SupervisorHome } from "@/components/supervisor-home";
+import { WeeklyRecap } from "@/components/weekly-recap";
+import { getDailyFact } from "@/lib/safety-facts";
 import { trackEvent } from "@/lib/analytics";
 
 const categoryOrder: TaskCategory[] = [
@@ -156,6 +158,8 @@ export default function HomePage() {
     return keys[Math.floor(Math.random() * keys.length)];
   });
 
+  const dailyFact = useMemo(() => getDailyFact(), []);
+
   const handleAbandon = useCallback((taskId: string) => {
     if (!confirm(t("home.abandonConfirm"))) return;
     clearProgress(taskId);
@@ -209,6 +213,22 @@ export default function HomePage() {
 
             {!query && activeTasks.length > 0 && (
               <ActiveTasks activeTasks={activeTasks} onAbandon={handleAbandon} />
+            )}
+
+            {!query && <WeeklyRecap />}
+
+            {!query && activeTasks.length === 0 && (
+              <section className="mb-5 rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
+                  {t("safetyFact.title")}
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-gray-700 dark:text-neutral-200">
+                  {locale === "en" ? dailyFact.en : dailyFact.fr}
+                </p>
+                <p className="mt-1.5 text-[11px] text-muted">
+                  {t("safetyFact.source")} : {dailyFact.source}
+                </p>
+              </section>
             )}
 
             {!query && teamTasks.length > 0 && (

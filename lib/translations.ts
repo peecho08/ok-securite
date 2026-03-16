@@ -244,6 +244,9 @@ const fr: Record<string, string | string[]> = {
   "supervisor.generateInvite": "Créer mon équipe",
   "supervisor.inviteMessage": "Rejoignez notre équipe sur OK Sécurité :",
   "supervisor.inviteEmailSubject": "Invitation OK Sécurité",
+  "qr.scanToJoin": "Scannez pour rejoindre l'équipe",
+  "qr.scanInstruction": "Ouvrez l'appareil photo de votre téléphone et pointez-le vers le code QR pour rejoindre l'équipe.",
+  "qr.downloadPrint": "Télécharger pour impression",
   "supervisor.leaderboard": "Classement de l'équipe",
   "supervisor.completions": "complétions",
 
@@ -525,6 +528,27 @@ const fr: Record<string, string | string[]> = {
   "upgrade.badge.silver": "Argent",
   "upgrade.badge.gold": "Or",
 
+  // ── Milestones ────────────────────────────────────────────
+  "milestone.10": "10 inspections complétées. La sécurité devient une habitude.",
+  "milestone.25": "25 inspections ! Ton engagement fait la différence.",
+  "milestone.50": "50 inspections. Un demi-centenaire de sécurité !",
+  "milestone.100": "100 inspections. Tu es un modèle sur le chantier.",
+  "milestone.250": "250 inspections. Légende de la sécurité.",
+
+  // ── Weekly recap ─────────────────────────────────────────
+  "recap.title": "Ta semaine en sécurité",
+  "recap.completions": "inspections",
+  "recap.itemsChecked": "points vérifiés",
+  "recap.workers": "travailleurs",
+  "recap.encouragement": "Chaque inspection compte. Continue comme ça.",
+
+  // ── Safety fact ──────────────────────────────────────────
+  "safetyFact.title": "Saviez-vous que…",
+  "safetyFact.source": "Source",
+
+  // ── Sound toggle ─────────────────────────────────────────
+  "menu.sounds": "Sons",
+
   // ── Toasts ──────────────────────────────────────────────
   "toast.siteAdded": "Chantier ajouté",
   "toast.siteRemoved": "Chantier supprimé",
@@ -794,6 +818,9 @@ const en: Record<string, string | string[]> = {
   "supervisor.generateInvite": "Create my team",
   "supervisor.inviteMessage": "Join our team on OK Sécurité:",
   "supervisor.inviteEmailSubject": "OK Sécurité Invitation",
+  "qr.scanToJoin": "Scan to join the team",
+  "qr.scanInstruction": "Open your phone camera and point it at the QR code to join the team.",
+  "qr.downloadPrint": "Download for print",
   "supervisor.leaderboard": "Team leaderboard",
   "supervisor.completions": "completions",
 
@@ -1074,6 +1101,27 @@ const en: Record<string, string | string[]> = {
   "upgrade.badge.free": "Early Access",
   "upgrade.badge.silver": "Silver",
   "upgrade.badge.gold": "Gold",
+
+  // ── Milestones ────────────────────────────────────────────
+  "milestone.10": "10 inspections completed. Safety is becoming a habit.",
+  "milestone.25": "25 inspections! Your commitment makes a difference.",
+  "milestone.50": "50 inspections. Half a century of safety!",
+  "milestone.100": "100 inspections. You're a role model on site.",
+  "milestone.250": "250 inspections. Safety legend.",
+
+  // ── Weekly recap ─────────────────────────────────────────
+  "recap.title": "Your week in safety",
+  "recap.completions": "inspections",
+  "recap.itemsChecked": "items checked",
+  "recap.workers": "workers",
+  "recap.encouragement": "Every inspection counts. Keep it up.",
+
+  // ── Safety fact ──────────────────────────────────────────
+  "safetyFact.title": "Did you know?",
+  "safetyFact.source": "Source",
+
+  // ── Sound toggle ─────────────────────────────────────────
+  "menu.sounds": "Sounds",
 
   // ── Toasts ──────────────────────────────────────────────
   "toast.siteAdded": "Site added",

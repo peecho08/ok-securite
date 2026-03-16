@@ -14,6 +14,7 @@ import { getLogoPngDataUrl } from "@/lib/pdf-logo";
 import { ArrowLeft, AlertTriangle, Check, ChevronRight, Download, MapPin, Camera, X, FileText } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { compressImage } from "@/lib/compress-image";
+import { playTick, playPhaseComplete } from "@/lib/sounds";
 
 
 function haptic(pattern: number | number[] = 15) {
@@ -181,6 +182,7 @@ export default function TaskPage() {
 
     if (newlyCompleted && userToggledRef.current) {
       haptic(HAPTIC_PHASE);
+      playPhaseComplete();
 
       const completedIdx = phases.findIndex((g) => g.phase === newlyCompleted);
       const nextPhase = phases[completedIdx + 1];
@@ -199,6 +201,7 @@ export default function TaskPage() {
   const toggleCheck = useCallback((id: string) => {
     const wasChecked = checked.has(id);
     haptic(wasChecked ? HAPTIC_UNCHECK : HAPTIC_CHECK);
+    if (!wasChecked) playTick();
     userToggledRef.current = true;
     setChecked((prev) => {
       const next = new Set(prev);

@@ -11,6 +11,7 @@ import {
 } from "@/lib/storage";
 import { ArrowLeft, Copy, Check, Mail, MessageSquare, Users, Trophy, Globe, ImageIcon, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { InviteQRCode } from "@/components/invite-qr-code";
 
 interface MemberProfile {
   id: string;
@@ -248,6 +249,7 @@ export default function MyTeamPage() {
               </Link>
             </div>
           )}
+          {inviteUrl && <InviteQRCode url={inviteUrl} teamName={org?.name} />}
         </section>
 
         {/* Team members */}

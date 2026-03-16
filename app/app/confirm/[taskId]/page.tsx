@@ -15,7 +15,9 @@ import { TaskIcon } from "@/components/task-icon";
 import { Download } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { fireConfetti } from "@/lib/confetti";
+import { playCelebration, playMilestone } from "@/lib/sounds";
 import { trackEvent } from "@/lib/analytics";
+import { getHistory } from "@/lib/storage";
 
 export default function ConfirmPage() {
   const { taskId } = useParams<{ taskId: string }>();
@@ -218,9 +220,23 @@ export default function ConfirmPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task, phases, checkedIds, naIds, checkedCount, naCount, items, workerName, timestamp, time, taskId, now, locale, t, locationLabel, siteName]);
 
+  const MILESTONES = [250, 100, 50, 25, 10] as const;
+  const [milestoneCount, setMilestoneCount] = useState<number | null>(null);
+
   useEffect(() => {
+    const history = getHistory();
+    const count = history.length + 1;
+    const hit = MILESTONES.find((m) => count === m) ?? null;
+    setMilestoneCount(hit);
+
     const timer = setTimeout(() => {
-      fireConfetti();
+      if (hit) {
+        fireConfetti("gold");
+        playMilestone();
+      } else {
+        fireConfetti();
+        playCelebration();
+      }
       try { navigator?.vibrate?.([10, 30, 10, 30, 40]); } catch { /* unsupported */ }
     }, 600);
     return () => clearTimeout(timer);
@@ -381,6 +397,17 @@ export default function ConfirmPage() {
         <p className="animate-confirm-card mt-3 text-sm text-muted">
           {wellDoneMsg}
         </p>
+
+        {milestoneCount && (
+          <div className="animate-milestone-glow mt-4 w-full max-w-md rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50 px-4 py-3 text-center dark:border-amber-700 dark:from-amber-950/40 dark:to-yellow-950/30">
+            <p className="font-heading text-lg font-bold text-amber-700 dark:text-amber-400">
+              {milestoneCount}
+            </p>
+            <p className="text-sm text-amber-600 dark:text-amber-300">
+              {t(`milestone.${milestoneCount}`)}
+            </p>
+          </div>
+        )}
       </main>
 
       <div className="animate-confirm-footer border-t border-gray-100 px-5 py-3 dark:border-neutral-800 sm:px-8">
