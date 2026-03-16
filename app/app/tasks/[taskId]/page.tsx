@@ -859,7 +859,7 @@ export default function TaskPage() {
                   </button>
                 </div>
               )
-            ) : (
+            ) : !planInfo.loading ? (
               <a
                 href="/plans"
                 className="mt-3 flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-amber-300 bg-amber-50/50 py-3.5 text-sm font-medium text-amber-700 transition-colors active:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/20 dark:text-amber-400"
@@ -867,7 +867,7 @@ export default function TaskPage() {
                 <Lock className="h-4 w-4" />
                 {t("task.addPhoto")} — {t("upgrade.cta")}
               </a>
-            )}
+            ) : null}
           </section>
         )}
       </main>
