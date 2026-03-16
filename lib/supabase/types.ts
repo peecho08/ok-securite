@@ -2,7 +2,7 @@ export interface Profile {
   id: string;
   email: string | null;
   full_name: string | null;
-  role: "worker" | "supervisor";
+  role: "worker" | "supervisor" | null;
   org_id: string | null;
   avatar_url: string | null;
   created_at: string;
@@ -15,6 +15,7 @@ export interface Organization {
   invite_token: string;
   logo_url: string | null;
   website: string | null;
+  team_tasks: string[];
   created_by: string | null;
   created_at: string;
 }

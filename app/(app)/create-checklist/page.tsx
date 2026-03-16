@@ -7,6 +7,7 @@ import { useLocale } from "@/lib/i18n";
 import { getCustomTasks, getCustomChecklist, saveCustomTask, deleteCustomTask } from "@/lib/storage";
 import type { Task, Checklist, ChecklistItem } from "@/types";
 import { ArrowLeft, AlertTriangle, Plus, Trash2, GripVertical } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 interface ItemDraft {
   key: string;
@@ -119,6 +120,11 @@ export default function CreateChecklistPage() {
     };
 
     saveCustomTask(task, checklist);
+    if (!editId) {
+      trackEvent("custom_checklist_created", {
+        item_count: validBefore.length + validAfter.length,
+      });
+    }
     router.push("/");
   }
 

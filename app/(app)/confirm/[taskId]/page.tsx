@@ -15,6 +15,7 @@ import { TaskIcon } from "@/components/task-icon";
 import { Download } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { fireConfetti } from "@/lib/confetti";
+import { trackEvent } from "@/lib/analytics";
 
 export default function ConfirmPage() {
   const { taskId } = useParams<{ taskId: string }>();
@@ -236,6 +237,14 @@ export default function ConfirmPage() {
       siteName: siteName || undefined,
       location: geoAddress || undefined,
     });
+    trackEvent("checklist_completed", {
+      task_id: taskId,
+      checked_count: checkedCount,
+      na_count: naCount,
+      total_items: items,
+      has_site: !!siteName,
+      has_worker_name: !!workerName,
+    });
     setSaved(true);
   }, [task, taskId, workerName, items, now, saved, progressLoaded, locale, siteName, geoAddress, geoLoading]);
 
@@ -381,7 +390,10 @@ export default function ConfirmPage() {
           </div>
         )}
         <button
-          onClick={generatePdf}
+          onClick={() => {
+            trackEvent("pdf_downloaded", { task_id: taskId });
+            generatePdf();
+          }}
           className="mb-2 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-gray-800 py-3 font-heading text-sm font-bold tracking-wide transition-colors active:bg-gray-100 dark:border-neutral-300 dark:text-neutral-100 dark:active:bg-neutral-700"
         >
           <Download className="h-4 w-4" />

@@ -5,11 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
-import { getTeamName, getInviteToken, getWorkerName, setActiveRole, clearWorkerOnboardingDone, getHistory, getSites, getCustomTasks, type HistoryEntry, type ConstructionSite } from "@/lib/storage";
+import { getTeamName, getInviteToken, getWorkerName, getHistory, getCustomTasks, type HistoryEntry } from "@/lib/storage";
 
 import type { Task } from "@/types";
 import { TaskIcon } from "@/components/task-icon";
 import { Copy, Check, Users, ClipboardList, ExternalLink, Mail, MessageSquare, MapPin, ListChecks, PenLine } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 export function SupervisorHome() {
   const { locale, setLocale, t } = useLocale();
@@ -20,7 +21,7 @@ export function SupervisorHome() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [workerName, setWorkerNameState] = useState("");
   const [showMenu, setShowMenu] = useState(false);
-  const [sites, setSites] = useState<ConstructionSite[]>([]);
+  const [sites, setSites] = useState<{ id: string; name: string; address?: string | null; active: boolean }[]>([]);
   const [customTasks, setCustomTasks] = useState<Task[]>([]);
 
   useEffect(() => {
@@ -39,21 +40,19 @@ export function SupervisorHome() {
     setInviteUrl(token ? `${origin}/join/${token}` : "");
     setHistory(getHistory());
     setWorkerNameState(getWorkerName());
-    setSites(getSites());
+    fetch("/api/teams/sites")
+      .then((r) => r.json())
+      .then((data) => setSites(data.sites ?? []))
+      .catch(() => {});
     setCustomTasks(getCustomTasks());
   }, [t]);
 
   function handleCopy() {
     if (!inviteUrl) return;
     void navigator.clipboard.writeText(inviteUrl);
+    trackEvent("invite_link_copied");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }
-
-  function switchToWorker() {
-    setActiveRole("worker");
-    clearWorkerOnboardingDone();
-    window.location.href = "/";
   }
 
   const dateLocale = locale === "en" ? "en-CA" : "fr-FR";
@@ -108,18 +107,9 @@ export function SupervisorHome() {
             onTouchEnd={(e) => { const dy = e.changedTouches[0].clientY - Number((e.currentTarget as HTMLElement).dataset.touchY ?? 0); if (dy > 60) setShowMenu(false); }}
           >
             <div className="mx-auto mb-2 mt-3 h-1 w-12 rounded-full bg-gray-200" aria-hidden="true" />
-            <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-neutral-700">
-              <div className="min-w-0">
-                <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{workerName || t("menu.supervisor")}</p>
-                <p className="text-sm text-gray-500 dark:text-neutral-400">{t("menu.supervisor")}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => { switchToWorker(); setShowMenu(false); }}
-                className="shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
-              >
-                {t("menu.switchToWorker")}
-              </button>
+            <div className="border-b border-gray-100 px-5 py-4 dark:border-neutral-700">
+              <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{workerName || t("menu.supervisor")}</p>
+              <p className="text-sm text-gray-500 dark:text-neutral-400">{t("menu.supervisor")}</p>
             </div>
             <div className="py-2 pb-[env(safe-area-inset-bottom)]">
               <Link

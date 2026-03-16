@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { I18nProvider, useLocale } from "@/lib/i18n";
+import { APP_URL } from "@/lib/urls";
 
 function MarketingNav() {
   const { locale, setLocale, t } = useLocale();
@@ -35,7 +36,7 @@ function MarketingNav() {
             {locale === "fr" ? "EN" : "FR"}
           </button>
           <a
-            href="https://app.ok-chantier.com"
+            href={APP_URL}
             className="rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
           >
             {t("mkt.nav.try")}
@@ -56,6 +57,12 @@ function MarketingFooter() {
           <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-neutral-400">
             <Link href="/plans" className="transition-colors hover:text-gray-700 dark:hover:text-neutral-200">
               {t("mkt.nav.plans")}
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-gray-700 dark:hover:text-neutral-200">
+              {t("legal.terms")}
+            </Link>
+            <Link href="/privacy" className="transition-colors hover:text-gray-700 dark:hover:text-neutral-200">
+              {t("legal.privacy")}
             </Link>
           </div>
           <p className="text-xs text-gray-400 dark:text-neutral-500">

@@ -1,49 +1,87 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
-import { getSites, addSite, removeSite, type ConstructionSite } from "@/lib/storage";
 import { PlaceAutocomplete } from "@/components/address-autocomplete";
 import { ArrowLeft, MapPin, Plus, Trash2 } from "lucide-react";
+import { usePlan, isPaid } from "@/lib/hooks/use-plan";
+import { UpgradeBanner, LimitBanner } from "@/components/upgrade-banner";
+import { trackEvent } from "@/lib/analytics";
+
+interface SiteRow {
+  id: string;
+  name: string;
+  address: string | null;
+  lat: number | null;
+  lng: number | null;
+  active: boolean;
+  created_at: string;
+}
 
 export default function MySitesPage() {
   const { t } = useLocale();
-  const [sites, setSites] = useState<ConstructionSite[]>([]);
+  const planInfo = usePlan();
+  const [sites, setSites] = useState<SiteRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddSite, setShowAddSite] = useState(false);
   const [newSiteName, setNewSiteName] = useState("");
   const [newSiteAddress, setNewSiteAddress] = useState("");
   const [newSiteLat, setNewSiteLat] = useState<number | undefined>();
   const [newSiteLng, setNewSiteLng] = useState<number | undefined>();
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    setSites(getSites());
+  const fetchSites = useCallback(async () => {
+    try {
+      const res = await fetch("/api/teams/sites");
+      if (res.ok) {
+        const data = await res.json();
+        setSites(data.sites ?? []);
+      }
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  function handleAddSite() {
+  useEffect(() => {
+    fetchSites();
+  }, [fetchSites]);
+
+  const canAddSite = isPaid(planInfo.plan) && sites.length < planInfo.sites;
+  const atLimit = isPaid(planInfo.plan) && sites.length >= planInfo.sites && planInfo.sites !== Infinity;
+
+  async function handleAddSite() {
     const name = newSiteName.trim();
-    if (!name) return;
-    const site: ConstructionSite = {
-      id: Math.random().toString(36).slice(2, 12),
-      name,
-      address: newSiteAddress.trim() || undefined,
-      lat: newSiteLat,
-      lng: newSiteLng,
-      active: true,
-      createdAt: new Date().toISOString(),
-    };
-    addSite(site);
-    setSites(getSites());
-    setNewSiteName("");
-    setNewSiteAddress("");
-    setNewSiteLat(undefined);
-    setNewSiteLng(undefined);
-    setShowAddSite(false);
+    if (!name || saving) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/teams/sites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          address: newSiteAddress.trim() || null,
+          lat: newSiteLat ?? null,
+          lng: newSiteLng ?? null,
+        }),
+      });
+      if (res.ok) {
+        trackEvent("site_created", { site_name: name });
+        setNewSiteName("");
+        setNewSiteAddress("");
+        setNewSiteLat(undefined);
+        setNewSiteLng(undefined);
+        setShowAddSite(false);
+        await fetchSites();
+      }
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function handleRemoveSite(id: string) {
-    removeSite(id);
-    setSites(getSites());
+  async function handleRemoveSite(id: string) {
+    await fetch(`/api/teams/sites?id=${id}`, { method: "DELETE" });
+    setSites((prev) => prev.filter((s) => s.id !== id));
   }
 
   return (
@@ -59,6 +97,11 @@ export default function MySitesPage() {
       </header>
 
       <main className="px-5 pb-10 sm:px-8">
+        {!planInfo.loading && !isPaid(planInfo.plan) ? (
+          <div className="py-8">
+            <UpgradeBanner messageKey="upgrade.sites" />
+          </div>
+        ) : (<>
         {showAddSite && (
           <div className="mb-4 rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-800">
             <PlaceAutocomplete
@@ -94,7 +137,7 @@ export default function MySitesPage() {
               <button
                 type="button"
                 onClick={handleAddSite}
-                disabled={!newSiteName.trim()}
+                disabled={!newSiteName.trim() || saving}
                 className="flex-1 rounded-lg bg-[var(--color-primary)] py-2 text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
               >
                 {t("site.add")}
@@ -103,48 +146,59 @@ export default function MySitesPage() {
           </div>
         )}
 
-        {sites.length > 0 && (
-          <div className="space-y-2">
-            {sites.map((site) => {
-              const active = site.active !== false;
-              return (
-                <div
-                  key={site.id}
-                  className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-800"
-                >
-                  <Link
-                    href={`/sites/${site.id}`}
-                    className="flex min-w-0 flex-1 items-center gap-3"
-                  >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-neutral-700 dark:text-neutral-400">
-                      <MapPin className="h-4 w-4" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-heading text-sm font-semibold leading-tight">{site.name}</p>
-                      {site.address && <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-neutral-400">{site.address}</p>}
-                    </div>
-                  </Link>
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${active ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary" : "bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"}`}>
-                    {active ? t("siteDetail.active") : t("siteDetail.inactive")}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveSite(site.id)}
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-neutral-500 dark:hover:bg-red-950 dark:hover:text-red-400"
-                    aria-label={t("site.remove")}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              );
-            })}
+        {loading ? (
+          <div className="py-12 text-center">
+            <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
           </div>
+        ) : (
+          <>
+            {sites.length > 0 && (
+              <div className="space-y-2">
+                {sites.map((site) => (
+                  <div
+                    key={site.id}
+                    className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-800"
+                  >
+                    <Link
+                      href={`/sites/${site.id}`}
+                      className="flex min-w-0 flex-1 items-center gap-3"
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-neutral-700 dark:text-neutral-400">
+                        <MapPin className="h-4 w-4" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-heading text-sm font-semibold leading-tight">{site.name}</p>
+                        {site.address && <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-neutral-400">{site.address}</p>}
+                      </div>
+                    </Link>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${site.active ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary" : "bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"}`}>
+                      {site.active ? t("siteDetail.active") : t("siteDetail.inactive")}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSite(site.id)}
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-neutral-500 dark:hover:bg-red-950 dark:hover:text-red-400"
+                      aria-label={t("site.remove")}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {sites.length === 0 && !showAddSite && (
+              <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center dark:border-neutral-700 dark:bg-neutral-800">
+                <MapPin className="mx-auto mb-2 h-8 w-8 text-gray-300 dark:text-neutral-600" />
+                <p className="text-sm text-gray-500 dark:text-neutral-400">{t("site.empty")}</p>
+              </div>
+            )}
+          </>
         )}
 
-        {sites.length === 0 && !showAddSite && (
-          <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center dark:border-neutral-700 dark:bg-neutral-800">
-            <MapPin className="mx-auto mb-2 h-8 w-8 text-gray-300 dark:text-neutral-600" />
-            <p className="text-sm text-gray-500 dark:text-neutral-400">{t("site.empty")}</p>
+        {atLimit && (
+          <div className="mt-3">
+            <LimitBanner messageKey="upgrade.sitesLimit" />
           </div>
         )}
 
@@ -152,12 +206,14 @@ export default function MySitesPage() {
           <button
             type="button"
             onClick={() => setShowAddSite(true)}
-            className={`flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 bg-white py-4 text-sm text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-600 dark:hover:text-neutral-300 ${sites.length > 0 ? "mt-3" : ""}`}
+            disabled={!canAddSite}
+            className={`flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 bg-white py-4 text-sm text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-600 dark:hover:text-neutral-300 ${sites.length > 0 ? "mt-3" : ""}`}
           >
             <Plus className="h-4 w-4" />
             {t("site.add")}
           </button>
         )}
+        </>)}
       </main>
     </div>
   );

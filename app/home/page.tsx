@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
+import { APP_URL } from "@/lib/urls";
 import { ClipboardCheck, CheckCircle, FileText, Quote, HardHat, Truck, Factory, Flame, Lock } from "lucide-react";
 import { MarketingShell } from "@/components/marketing-shell";
 
@@ -33,7 +34,7 @@ function MarketingHomeContent() {
             {t("mkt.hero.subtitle")}
           </p>
           <a
-            href="https://app.ok-chantier.com"
+            href={APP_URL}
             className="mt-8 inline-block rounded-xl bg-[var(--color-primary)] px-8 py-4 font-heading text-base font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)] sm:text-lg"
           >
             {t("mkt.hero.cta")}
@@ -131,7 +132,7 @@ function MarketingHomeContent() {
         </p>
         <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <a
-            href="https://app.ok-chantier.com"
+            href={APP_URL}
             className="rounded-xl bg-[var(--color-primary)] px-8 py-3.5 font-heading text-base font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
           >
             {t("mkt.hero.cta")}

@@ -17,7 +17,6 @@ const isProtectedRoute = createRouteMatcher([
   "/create-team(.*)",
   "/create-checklist(.*)",
   "/confirm(.*)",
-  "/report(.*)",
   "/history(.*)",
   "/tasks(.*)",
   "/sites(.*)",

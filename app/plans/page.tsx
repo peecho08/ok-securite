@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
 import { Check, Minus, Loader2 } from "lucide-react";
 import { MarketingShell } from "@/components/marketing-shell";
+import { trackEvent } from "@/lib/analytics";
 
 interface Feature {
   labelKey: string;
@@ -16,7 +17,9 @@ interface Feature {
 export default function PlansPage() {
   return (
     <MarketingShell>
-      <PlansContent />
+      <Suspense>
+        <PlansContent />
+      </Suspense>
     </MarketingShell>
   );
 }
@@ -28,6 +31,10 @@ function PlansContent() {
 
   const success = searchParams.get("success") === "true";
   const canceled = searchParams.get("canceled") === "true";
+
+  useEffect(() => {
+    trackEvent("plan_page_viewed", { success, canceled });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleCheckout(plan: string) {
     setLoading(plan);

@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/lib/i18n";
 import { ClerkProviderWithLocale } from "@/components/clerk-provider-with-locale";
 import { Analytics } from "@vercel/analytics/next";
+import { CookieConsent } from "@/components/cookie-consent";
+import { PostHogProvider } from "@/components/posthog-provider";
 
 const rubik = Rubik({
   subsets: ["latin", "latin-ext"],
@@ -63,9 +65,12 @@ export default function RootLayout({
       <body className="bg-[var(--color-surface)] text-[#111] dark:bg-neutral-950 dark:text-neutral-100">
         <ThemeProvider>
           <I18nProvider>
-            <ClerkProviderWithLocale>{children}</ClerkProviderWithLocale>
+            <ClerkProviderWithLocale>
+              <PostHogProvider>{children}</PostHogProvider>
+            </ClerkProviderWithLocale>
           </I18nProvider>
         </ThemeProvider>
+        <CookieConsent />
         <Analytics />
       </body>
     </html>

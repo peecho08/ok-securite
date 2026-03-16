@@ -5,15 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
-import { setSupervisorOrg, setActiveRole, setWorkerName, setCompanyLogo, getTeamName, getInviteToken, getDashboardSecret, getTeamTasks, setTeamTasks, clearRoleChoiceDone, setSupervisorEmail } from "@/lib/storage";
+import { setSupervisorOrg, setActiveRole, setWorkerName, setCompanyLogo, getTeamName, getInviteToken, getDashboardSecret, getSupervisorOrgId, getTeamTasks, setTeamTasks, clearRoleChoiceDone, setSupervisorEmail } from "@/lib/storage";
+import { persistRole } from "@/lib/hooks/use-db-role";
 import { tasks } from "@/data/tasks";
 import { categoryLabels, categoryLabelsEn, type TaskCategory } from "@/types";
 import { ArrowLeft, Upload, Check, Copy, Mail, MessageSquare, Search } from "lucide-react";
 import { TaskIcon } from "@/components/task-icon";
-
-function randomId() {
-  return Math.random().toString(36).slice(2, 12);
-}
 
 function TaskPicker({ onDone, editMode }: { onDone: () => void; editMode: boolean }) {
   const { locale, t } = useLocale();
@@ -54,7 +51,16 @@ function TaskPicker({ onDone, editMode }: { onDone: () => void; editMode: boolea
   }
 
   function handleSave() {
-    setTeamTasks(Array.from(selected));
+    const taskArray = Array.from(selected);
+    setTeamTasks(taskArray);
+    const orgId = getSupervisorOrgId();
+    if (orgId) {
+      fetch("/api/teams/tasks", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orgId, taskIds: taskArray }),
+      }).catch(console.error);
+    }
     onDone();
   }
 
@@ -213,6 +219,8 @@ export default function CreateTeamPage() {
   const displayName = savedTeamName || teamName;
 
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supervisorEmail.trim());
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState("");
 
   if (isEditTasks) {
     return <TaskPicker editMode onDone={() => { window.location.href = "/"; }} />;
@@ -222,19 +230,41 @@ export default function CreateTeamPage() {
     return <TaskPicker editMode={false} onDone={() => setStep("invite")} />;
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const name = teamName.trim();
     if (!name || !isEmailValid) return;
-    const orgId = randomId();
-    const inv = randomId();
-    const dash = randomId();
-    setSupervisorOrg(orgId, name, inv, dash);
-    if (supervisorName.trim()) setWorkerName(supervisorName.trim());
-    if (supervisorEmail.trim()) setSupervisorEmail(supervisorEmail.trim());
-    if (fetchedLogo) setCompanyLogo(fetchedLogo);
-    setActiveRole("supervisor");
-    setStep("tasks");
+
+    setCreating(true);
+    setCreateError("");
+
+    try {
+      const res = await fetch("/api/teams/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setCreateError(data.error || "Failed to create team");
+        return;
+      }
+
+      const { org } = await res.json();
+      const localDashId = Math.random().toString(36).slice(2, 12);
+      setSupervisorOrg(org.id, name, org.invite_token, localDashId);
+      if (supervisorName.trim()) setWorkerName(supervisorName.trim());
+      if (supervisorEmail.trim()) setSupervisorEmail(supervisorEmail.trim());
+      if (fetchedLogo) setCompanyLogo(fetchedLogo);
+      setActiveRole("supervisor");
+      persistRole("supervisor");
+      setStep("tasks");
+    } catch {
+      setCreateError("Network error");
+    } finally {
+      setCreating(false);
+    }
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -424,12 +454,15 @@ export default function CreateTeamPage() {
               </div>
             </button>
           </div>
+          {createError && (
+            <p className="mt-2 text-sm font-medium text-red-500">{createError}</p>
+          )}
           <button
             type="submit"
-            disabled={!teamName.trim() || !isEmailValid}
+            disabled={!teamName.trim() || !isEmailValid || creating}
             className="mt-2 w-full rounded-xl bg-[var(--color-primary)] py-3.5 font-heading text-base font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)] disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 dark:disabled:bg-neutral-700 dark:disabled:text-neutral-500"
           >
-            {t("createTeam.create")}
+            {creating ? "..." : t("createTeam.create")}
           </button>
         </form>
       </main>

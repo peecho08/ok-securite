@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { tasks } from "@/data/tasks";
 import { type TaskCategory } from "@/types";
 import { useLocale } from "@/lib/i18n";
 import { localCatLabel, localTitle, normalize } from "@/lib/locale-helpers";
-import { clearProgress, getActiveTaskProgress, getTeamTasks, getWorkerName, getActiveRole, getRoleChoiceDone, getWorkerOnboardingDone, getCustomTasks, getCustomChecklists } from "@/lib/storage";
+import { clearProgress, getActiveTaskProgress, getTeamTasks, getWorkerName, getWorkerOnboardingDone, getCustomTasks, getCustomChecklists, getActiveRole } from "@/lib/storage";
 
 import { checklists } from "@/data/checklists";
 import type { Task, Checklist } from "@/types";
@@ -15,6 +15,7 @@ import { ActiveTasks } from "@/components/active-tasks";
 import { TaskList } from "@/components/task-list";
 import { Onboarding } from "@/components/onboarding";
 import { SupervisorHome } from "@/components/supervisor-home";
+import { trackEvent } from "@/lib/analytics";
 
 const categoryOrder: TaskCategory[] = [
   "custom",
@@ -41,6 +42,7 @@ export default function HomePage() {
   const [showAllTasks, setShowAllTasks] = useState(false);
   const [customTasksList, setCustomTasksList] = useState<Task[]>([]);
   const [customChecklistsMap, setCustomChecklistsMap] = useState<Record<string, Checklist>>({});
+  const searchTrackedRef = useRef(false);
 
   const allTasks = useMemo(() => [...customTasksList, ...tasks], [customTasksList]);
   const allChecklists = useMemo(() => ({ ...checklists, ...customChecklistsMap }), [customChecklistsMap]);
@@ -51,10 +53,9 @@ export default function HomePage() {
     setWorkerNameState(getWorkerName());
     setCustomTasksList(getCustomTasks());
     setCustomChecklistsMap(getCustomChecklists());
-    const roleDone = getRoleChoiceDone();
     const supervisorMode = getActiveRole() === "supervisor";
     setIsSupervisor(supervisorMode);
-    if (!roleDone || (!supervisorMode && !getWorkerOnboardingDone())) setShowOnboarding(true);
+    if (!supervisorMode && !getWorkerOnboardingDone()) setShowOnboarding(true);
     setReady(true);
   }, []);
 
@@ -99,6 +100,14 @@ export default function HomePage() {
       })
       .filter(Boolean) as { task: Task; checked: number; total: number }[];
   }, [activeProgress, allTasks, allChecklists]);
+
+  useEffect(() => {
+    if (query.trim() && !searchTrackedRef.current) {
+      searchTrackedRef.current = true;
+      trackEvent("search_used");
+    }
+    if (!query.trim()) searchTrackedRef.current = false;
+  }, [query]);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return allTasks;

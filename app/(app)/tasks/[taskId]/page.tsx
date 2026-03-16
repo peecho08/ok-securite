@@ -7,11 +7,12 @@ import { tasks } from "@/data/tasks";
 import { checklists } from "@/data/checklists";
 import { checklistItemsEn, phaseTitlesEn } from "@/data/checklists-en";
 import type { Phase } from "@/types";
-import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress, getSites, getLastSiteId, setLastSiteId, getCustomTasks, getCustomChecklist, type ConstructionSite } from "@/lib/storage";
+import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress, getLastSiteId, setLastSiteId, getCustomTasks, getCustomChecklist } from "@/lib/storage";
 import { mergePhases } from "@/lib/locale-helpers";
 import { useLocale } from "@/lib/i18n";
 import { getLogoPngDataUrl } from "@/lib/pdf-logo";
 import { ArrowLeft, AlertTriangle, Camera, Check, ChevronRight, Download, MapPin } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 
 function haptic(pattern: number | number[] = 15) {
@@ -98,7 +99,7 @@ export default function TaskPage() {
   const [collapsed, setCollapsed] = useState<Set<Phase>>(new Set());
   const [expandedInfo, setExpandedInfo] = useState<string | null>(null);
   const [workerName, setWorkerName] = useState(getWorkerName);
-  const [availableSites, setAvailableSites] = useState<ConstructionSite[]>([]);
+  const [availableSites, setAvailableSites] = useState<{ id: string; name: string; address?: string | null; active: boolean }[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState("");
   const [showCriticalWarning, setShowCriticalWarning] = useState(false);
   const [scanState, setScanState] = useState<"idle" | "scanning" | "done">("idle");
@@ -127,12 +128,23 @@ export default function TaskPage() {
       clearProgress(taskId);
     }
     addRecentTask(taskId);
-    const sites = getSites();
-    setAvailableSites(sites);
-    const lastId = getLastSiteId();
-    if (lastId && sites.some((s) => s.id === lastId && s.active !== false)) {
-      setSelectedSiteId(lastId);
+    if (!shouldResume) {
+      trackEvent("checklist_started", {
+        task_id: taskId,
+        item_count: allItems.length,
+      });
     }
+    fetch("/api/teams/sites")
+      .then((r) => r.json())
+      .then((data) => {
+        const sites = data.sites ?? [];
+        setAvailableSites(sites);
+        const lastId = getLastSiteId();
+        if (lastId && sites.some((s: { id: string; active: boolean }) => s.id === lastId && s.active !== false)) {
+          setSelectedSiteId(lastId);
+        }
+      })
+      .catch(() => {});
   }, [taskId, shouldResume]);
 
   useEffect(() => {
@@ -235,6 +247,7 @@ export default function TaskPage() {
     const url = URL.createObjectURL(file);
     setScanPhoto(url);
     setScanState("scanning");
+    trackEvent("ai_scan_used", { task_id: taskId });
     e.target.value = "";
 
     if (DEMO_MODE) {

@@ -5,6 +5,8 @@ import { ArrowLeft, Flame } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { getWorkerName } from "@/lib/storage";
 import { TaskIcon } from "@/components/task-icon";
+import { usePlan } from "@/lib/hooks/use-plan";
+import { UpgradeBanner } from "@/components/upgrade-banner";
 
 function StatCard({ value, label, accent }: { value: string | number; label: string; accent?: boolean }) {
   return (
@@ -40,6 +42,7 @@ function getRecentDates(locale: string): string[] {
 
 export default function DashboardPage() {
   const { locale, t } = useLocale();
+  const { dashboard, loading } = usePlan();
 
   const currentUser = (typeof window !== "undefined" ? getWorkerName() : "") || "Claude";
   const dayLabels = getDayLabels(locale);
@@ -93,6 +96,11 @@ export default function DashboardPage() {
       </header>
 
       <main className="flex-1 px-5 py-6 sm:px-8">
+        {!loading && !dashboard ? (
+          <div className="py-12">
+            <UpgradeBanner messageKey="upgrade.dashboard" />
+          </div>
+        ) : (
         <div className="space-y-6">
           {/* Top stats */}
           <div className="grid grid-cols-2 gap-3">
@@ -185,6 +193,7 @@ export default function DashboardPage() {
             </div>
           </section>
         </div>
+        )}
       </main>
     </div>
   );

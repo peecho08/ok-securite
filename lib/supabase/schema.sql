@@ -20,6 +20,7 @@ create table if not exists organizations (
   invite_token text unique default encode(gen_random_bytes(12), 'hex'),
   logo_url text,
   website text,
+  team_tasks text[] default '{}',
   created_by text references profiles(id) on delete set null,
   created_at timestamptz default now()
 );
@@ -136,7 +137,8 @@ create table if not exists subscriptions (
   status text default 'active' check (status in ('active', 'past_due', 'canceled', 'trialing')),
   current_period_end timestamptz,
   created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  updated_at timestamptz default now(),
+  unique (org_id)
 );
 
 -- ── Indexes ────────────────────────────────────────────────────────
@@ -150,7 +152,16 @@ create index if not exists idx_notifications_user on notifications(user_id, read
 create index if not exists idx_reports_org on reports(org_id);
 create index if not exists idx_organizations_invite on organizations(invite_token);
 
+-- ── Migration: add team_tasks if missing ────────────────────────────
+-- ALTER TABLE organizations ADD COLUMN IF NOT EXISTS team_tasks text[] DEFAULT '{}';
+
 -- ── Row Level Security ─────────────────────────────────────────────
+-- NOTE: These RLS policies use auth.uid() (Supabase Auth). Since this
+-- app uses Clerk for authentication, auth.uid() will be NULL for
+-- browser-side calls. All mutations go through API routes using the
+-- service-role key (supabaseAdmin), which bypasses RLS entirely.
+-- These policies serve as a defense-in-depth layer if the anon key
+-- is ever used directly from the client.
 alter table profiles enable row level security;
 alter table organizations enable row level security;
 alter table org_members enable row level security;

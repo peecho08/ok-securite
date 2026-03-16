@@ -34,6 +34,14 @@ export async function upsertProfile(profile: Partial<Profile> & { id: string }) 
   if (error) console.error("upsertProfile:", error.message);
 }
 
+export async function updateProfileRole(userId: string, role: "worker" | "supervisor") {
+  const { error } = await supabase()
+    .from("profiles")
+    .update({ role, updated_at: new Date().toISOString() })
+    .eq("id", userId);
+  if (error) console.error("updateProfileRole:", error.message);
+}
+
 // ── Organizations ──────────────────────────────────────────────────
 
 export async function createOrganization(
@@ -100,7 +108,7 @@ export async function joinOrganization(orgId: string, userId: string, role = "wo
 
   await supabase()
     .from("profiles")
-    .update({ org_id: orgId })
+    .update({ org_id: orgId, role })
     .eq("id", userId);
 }
 

@@ -1,10 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { APP_URL } from "@/lib/urls";
 
 function getResend() {
   const key = process.env.RESEND_API_KEY;
@@ -27,7 +23,7 @@ interface NotifyOptions {
 }
 
 export async function notify({ userId, type, title, body, link, email }: NotifyOptions) {
-  await supabaseAdmin.from("notifications").insert({
+  await supabaseAdmin().from("notifications").insert({
     user_id: userId,
     type,
     title,
@@ -60,7 +56,7 @@ export async function notifyChecklistCompleted(
 ) {
   if (!orgId) return;
 
-  const { data: supervisors } = await supabaseAdmin
+  const { data: supervisors } = await supabaseAdmin()
     .from("org_members")
     .select("user_id, profiles(email, full_name)")
     .eq("org_id", orgId)
@@ -83,7 +79,7 @@ export async function notifyChecklistCompleted(
               <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">
                 <h2 style="color:#22c55e;margin:0 0 16px">OK Sécurité</h2>
                 <p><strong>${workerName}</strong> a complété la liste de vérification <strong>${taskTitle}</strong>.</p>
-                <a href="https://app.ok-chantier.com/dashboard"
+                <a href="${APP_URL}/dashboard"
                    style="display:inline-block;margin-top:16px;padding:10px 24px;background:#22c55e;color:white;text-decoration:none;border-radius:8px;font-weight:bold">
                   Voir le tableau de bord
                 </a>
@@ -104,7 +100,7 @@ export async function notifyReportSubmitted(
 ) {
   if (!orgId) return;
 
-  const { data: supervisors } = await supabaseAdmin
+  const { data: supervisors } = await supabaseAdmin()
     .from("org_members")
     .select("user_id, profiles(email, full_name)")
     .eq("org_id", orgId)
@@ -130,7 +126,7 @@ export async function notifyReportSubmitted(
                 <h2 style="color:#ef4444;margin:0 0 16px">Rapport d'incident — OK Sécurité</h2>
                 <p><strong>${reporterName}</strong> a soumis un rapport pour <strong>${taskTitle}</strong>.</p>
                 <p>Sévérité: <strong style="color:${severity === "critical" || severity === "high" ? "#ef4444" : "#f59e0b"}">${severityLabel}</strong></p>
-                <a href="https://app.ok-chantier.com/dashboard"
+                <a href="${APP_URL}/dashboard"
                    style="display:inline-block;margin-top:16px;padding:10px 24px;background:#ef4444;color:white;text-decoration:none;border-radius:8px;font-weight:bold">
                   Voir les détails
                 </a>
@@ -146,7 +142,7 @@ export async function notifyTeamJoined(
   newMemberName: string,
   orgId: string
 ) {
-  const { data: org } = await supabaseAdmin
+  const { data: org } = await supabaseAdmin()
     .from("organizations")
     .select("created_by, name")
     .eq("id", orgId)
@@ -154,7 +150,7 @@ export async function notifyTeamJoined(
 
   if (!org?.created_by) return;
 
-  const { data: creator } = await supabaseAdmin
+  const { data: creator } = await supabaseAdmin()
     .from("profiles")
     .select("email")
     .eq("id", org.created_by)
@@ -174,7 +170,7 @@ export async function notifyTeamJoined(
             <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">
               <h2 style="color:#22c55e;margin:0 0 16px">OK Sécurité</h2>
               <p><strong>${newMemberName}</strong> a rejoint votre équipe <strong>${org.name}</strong>.</p>
-              <a href="https://app.ok-chantier.com/my-team"
+              <a href="${APP_URL}/my-team"
                  style="display:inline-block;margin-top:16px;padding:10px 24px;background:#22c55e;color:white;text-decoration:none;border-radius:8px;font-weight:bold">
                 Voir l'équipe
               </a>

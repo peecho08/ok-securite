@@ -28,7 +28,11 @@ export default function JoinPage() {
 
         if (!res.ok) {
           const data = await res.json();
-          setError(data.error || t("joinTeam.invalidLink"));
+          if (data.error === "team_full") {
+            setError(t("upgrade.teamFull"));
+          } else {
+            setError(data.error || t("joinTeam.invalidLink"));
+          }
           return;
         }
 
@@ -36,6 +40,11 @@ export default function JoinPage() {
         setWorkerOrgId(org.id);
         setRoleChoiceDone();
         setActiveRole("worker");
+        await fetch("/api/profile/role", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ role: "worker" }),
+        });
         router.replace("/");
       } catch {
         setError(t("joinTeam.invalidLink"));

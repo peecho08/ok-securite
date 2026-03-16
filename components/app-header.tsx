@@ -6,9 +6,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
-import { getReportCount, getActiveRole, setActiveRole } from "@/lib/storage";
+import { getActiveRole, setActiveRole, getWorkerOrgId, setWorkerOrgId } from "@/lib/storage";
 import { useClerk } from "@clerk/nextjs";
-import { ClipboardList, ExternalLink, LogOut } from "lucide-react";
+import { ClipboardList, ExternalLink, LogOut, UserPlus } from "lucide-react";
 import { MusicPlayer } from "@/components/music-player";
 
 interface AppHeaderProps {
@@ -21,10 +21,15 @@ export function AppHeader({ workerName }: AppHeaderProps) {
   const { signOut } = useClerk();
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
-  const [reportCount, setReportCount] = useState(0);
+  const [showJoinForm, setShowJoinForm] = useState(false);
+  const [joinLink, setJoinLink] = useState("");
+  const [joinError, setJoinError] = useState("");
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [joinSuccess, setJoinSuccess] = useState(false);
+  const [hasTeam, setHasTeam] = useState(true);
 
   useEffect(() => {
-    setReportCount(getReportCount());
+    setHasTeam(!!getWorkerOrgId());
   }, [showMenu]);
 
   useEffect(() => {
@@ -32,9 +37,47 @@ export function AppHeader({ workerName }: AppHeaderProps) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
+      setShowJoinForm(false);
+      setJoinLink("");
+      setJoinError("");
+      setJoinSuccess(false);
     }
     return () => { document.body.style.overflow = ""; };
   }, [showMenu]);
+
+  async function handleJoinTeam() {
+    const token = joinLink.trim().replace(/.*\/join\/?/i, "").trim();
+    if (!token) {
+      setJoinError(t("joinTeam.invalidLink"));
+      return;
+    }
+    setJoinError("");
+    setJoinLoading(true);
+    try {
+      const res = await fetch("/api/teams/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setJoinError(data.error === "team_full" ? t("upgrade.teamFull") : (data.error || t("joinTeam.invalidLink")));
+        return;
+      }
+      const { org } = await res.json();
+      setWorkerOrgId(org.id);
+      setJoinSuccess(true);
+      setHasTeam(true);
+      setTimeout(() => {
+        setShowMenu(false);
+        window.location.reload();
+      }, 1200);
+    } catch {
+      setJoinError(t("joinTeam.invalidLink"));
+    } finally {
+      setJoinLoading(false);
+    }
+  }
 
   return (
     <>
@@ -94,7 +137,16 @@ export function AppHeader({ workerName }: AppHeaderProps) {
                     {getActiveRole() === "supervisor" ? (
                       <button
                         type="button"
-                        onClick={() => { setActiveRole("worker"); setShowMenu(false); router.push("/"); }}
+                        onClick={() => {
+                          setActiveRole("worker");
+                          fetch("/api/profile/role", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ role: "worker" }),
+                          });
+                          setShowMenu(false);
+                          window.location.href = "/";
+                        }}
                         className="shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
                       >
                         {t("menu.switchToWorker")}
@@ -102,13 +154,64 @@ export function AppHeader({ workerName }: AppHeaderProps) {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => { setActiveRole("supervisor"); setShowMenu(false); window.location.href = "/"; }}
+                        onClick={() => {
+                          setActiveRole("supervisor");
+                          fetch("/api/profile/role", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ role: "supervisor" }),
+                          });
+                          setShowMenu(false);
+                          window.location.href = "/";
+                        }}
                         className="shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
                       >
                         {t("menu.switchToSupervisor")}
                       </button>
                     )}
                   </div>
+                  {getActiveRole() === "worker" && !hasTeam && (
+                    <div className="border-b border-gray-100 px-5 py-4 dark:border-neutral-700">
+                      {joinSuccess ? (
+                        <p className="text-center text-sm font-medium text-green-600 dark:text-green-400">
+                          {t("menu.joinTeamSuccess")}
+                        </p>
+                      ) : showJoinForm ? (
+                        <div>
+                          <p className="mb-2 text-xs text-gray-500 dark:text-neutral-400">{t("menu.joinTeamHint")}</p>
+                          <input
+                            type="text"
+                            value={joinLink}
+                            onChange={(e) => { setJoinLink(e.target.value); setJoinError(""); }}
+                            placeholder={t("joinTeam.pastePlaceholder")}
+                            autoFocus
+                            className={`w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm outline-none placeholder:text-gray-400 focus:bg-white dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:bg-neutral-600 ${joinError ? "border-red-400" : "border-gray-200 focus:border-gray-400 dark:border-neutral-600"}`}
+                          />
+                          {joinError && <p className="mt-1.5 text-xs text-red-500">{joinError}</p>}
+                          <button
+                            type="button"
+                            onClick={handleJoinTeam}
+                            disabled={joinLoading}
+                            className="mt-2.5 w-full rounded-xl bg-[var(--color-primary)] py-2.5 text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)] disabled:opacity-60"
+                          >
+                            {joinLoading ? t("joinTeam.joining") : t("joinTeam.join")}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setShowJoinForm(true)}
+                          className="flex w-full items-center gap-3 rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-left transition-colors active:bg-gray-100 dark:border-neutral-600 dark:bg-neutral-700/50 dark:active:bg-neutral-700"
+                        >
+                          <UserPlus className="h-5 w-5 shrink-0 text-[var(--color-primary)]" />
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-neutral-100">{t("menu.joinTeam")}</p>
+                            <p className="text-xs text-gray-500 dark:text-neutral-400">{t("menu.joinTeamHint")}</p>
+                          </div>
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <div className="py-2 pb-[env(safe-area-inset-bottom)] sm:py-1 sm:pb-0">
                     <button
                       type="button"
@@ -144,23 +247,6 @@ export function AppHeader({ workerName }: AppHeaderProps) {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                       </svg>
                       {t("menu.wellbeing")}
-                    </Link>
-                    <Link
-                      href="/report/coffrage"
-                      onClick={() => setShowMenu(false)}
-                      className="flex min-h-[52px] items-center gap-4 px-5 py-3 text-base text-gray-700 transition-colors active:bg-gray-100 dark:text-neutral-200 dark:active:bg-neutral-700 sm:min-h-0 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-sm sm:hover:bg-gray-50 dark:sm:hover:bg-neutral-700"
-                    >
-                      <span className="relative">
-                        <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        {reportCount > 0 && (
-                          <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                            {reportCount > 9 ? "9+" : reportCount}
-                          </span>
-                        )}
-                      </span>
-                      {t("menu.report")}
                     </Link>
                     <Link
                       href="/dashboard"

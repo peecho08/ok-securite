@@ -34,7 +34,6 @@ const fr: Record<string, string | string[]> = {
   "menu.history": "Historique",
   "menu.dashboard": "Tableau de bord",
   "menu.wellbeing": "Bien-être",
-  "menu.report": "Signaler un incident",
   "menu.editFavorites": "Modifier mes favoris",
   "menu.acqFormations": "Formations ACQ",
   "menu.acqFormationsDesc": "Cours pour entrepreneurs en construction",
@@ -47,6 +46,9 @@ const fr: Record<string, string | string[]> = {
   "menu.switchToWorker": "Utiliser comme travailleur",
   "menu.supervisor": "Superviseur",
   "menu.manageTasks": "Gérer les tâches",
+  "menu.joinTeam": "Rejoindre une équipe",
+  "menu.joinTeamHint": "Collez le lien d'invitation de votre superviseur.",
+  "menu.joinTeamSuccess": "Vous avez rejoint l'équipe !",
 
   // ── Role choice ─────────────────────────────────────────
   "role.chooseTitle": "Vous êtes…",
@@ -128,8 +130,6 @@ const fr: Record<string, string | string[]> = {
   "task.na": "N/A",
   "task.markedNa": "Marqué N/A",
   "task.scanPhoto": "Analyser le chantier",
-  "task.acqCourseHeightTitle": "Sauvetage en hauteur niveau 1 - 27 février",
-  "task.acqCourseHeightDesc": "Formation ACQ — Sherbrooke",
   "task.scanTitle": "Analyse IA du chantier",
   "task.scanning": "Analyse en cours…",
   "task.scanDone": "Analyse terminée",
@@ -178,22 +178,6 @@ const fr: Record<string, string | string[]> = {
   "confirm.na": "N/A",
   "confirm.downloadPdf": "TÉLÉCHARGER EN PDF",
 
-
-  // ── Report ──────────────────────────────────────────────
-  "report.title": "Signaler un incident",
-  "report.severity": "Gravité",
-  "report.observation": "Observation",
-  "report.nearMiss": "Presqu'accident",
-  "report.incident": "Incident / Blessure",
-  "report.description": "Description",
-  "report.descriptionPlaceholder": "Décrivez la situation observée…",
-  "report.reporter": "Signalé par",
-  "report.reporterPlaceholder": "Votre nom (optionnel)",
-  "report.datetime": "Date et heure :",
-  "report.submit": "ENVOYER LE SIGNALEMENT",
-  "report.saved": "Rapport enregistré",
-  "report.savedDetail": "Votre signalement a été sauvegardé localement.",
-  "report.back": "Retour",
 
   // ── History ─────────────────────────────────────────────
   "history.title": "Historique",
@@ -365,6 +349,11 @@ const fr: Record<string, string | string[]> = {
   "error.subtitle": "Rechargez la page ou réessayez plus tard.",
   "error.retry": "Réessayer",
 
+  // ── 404 ───────────────────────────────────────────────
+  "notFound.title": "Page introuvable",
+  "notFound.subtitle": "La page que vous cherchez n'existe pas ou a été déplacée.",
+  "notFound.back": "Retour à l'accueil",
+
   // ── Password gate ──────────────────────────────────────
   "password.label": "Mot de passe",
   "password.placeholder": "Entrez le mot de passe",
@@ -455,8 +444,8 @@ const fr: Record<string, string | string[]> = {
   "plans.gold.desc": "Pour les entreprises",
   "plans.popular": "Populaire",
   "plans.cta.free": "Commencer",
-  "plans.cta.silver": "Essai gratuit",
-  "plans.cta.gold": "Essai gratuit",
+  "plans.cta.silver": "Essai gratuit 14 jours",
+  "plans.cta.gold": "Essai gratuit 14 jours",
   "plans.success": "Votre abonnement est activé ! Merci pour votre confiance.",
   "plans.canceled": "Le paiement a été annulé. Vous pouvez réessayer à tout moment.",
   "plans.manageSubscription": "Gérer mon abonnement",
@@ -484,6 +473,29 @@ const fr: Record<string, string | string[]> = {
   "plans.feat.branding.free": "—",
   "plans.feat.branding.silver": "—",
   "plans.yes": "Oui",
+
+  // ── Legal ──────────────────────────────────────────────
+  "legal.terms": "Conditions",
+  "legal.privacy": "Confidentialité",
+  "cookie.message": "Ce site utilise des témoins essentiels pour son fonctionnement.",
+  "cookie.analyticsMessage": "Nous utilisons aussi des témoins d'analytique pour améliorer l'expérience.",
+  "cookie.learnMore": "En savoir plus",
+  "cookie.accept": "Accepter",
+  "cookie.acceptAll": "Tout accepter",
+  "cookie.essentialOnly": "Essentiels seulement",
+
+  // ── Upgrade / plan gating ──────────────────────────────
+  "upgrade.title": "Fonctionnalité payante",
+  "upgrade.sites": "La gestion de chantiers est disponible avec le forfait Argent ou Or.",
+  "upgrade.checklists": "Les listes personnalisées sont disponibles avec le forfait Argent ou Or.",
+  "upgrade.dashboard": "Le tableau de bord est disponible avec le forfait Argent ou Or.",
+  "upgrade.teamFull": "Votre équipe a atteint la limite de membres pour votre forfait.",
+  "upgrade.sitesLimit": "Vous avez atteint la limite de chantiers pour votre forfait.",
+  "upgrade.checklistsLimit": "Vous avez atteint la limite de listes personnalisées pour votre forfait.",
+  "upgrade.cta": "Voir les forfaits",
+  "upgrade.badge.free": "Gratuit",
+  "upgrade.badge.silver": "Argent",
+  "upgrade.badge.gold": "Or",
 };
 
 const en: Record<string, string | string[]> = {
@@ -522,7 +534,6 @@ const en: Record<string, string | string[]> = {
   "menu.history": "History",
   "menu.dashboard": "Dashboard",
   "menu.wellbeing": "Well-being",
-  "menu.report": "Report an incident",
   "menu.editFavorites": "Edit my favorites",
   "menu.acqFormations": "ACQ Formations",
   "menu.acqFormationsDesc": "Courses for construction entrepreneurs",
@@ -535,6 +546,9 @@ const en: Record<string, string | string[]> = {
   "menu.switchToWorker": "Use as worker",
   "menu.supervisor": "Supervisor",
   "menu.manageTasks": "Manage tasks",
+  "menu.joinTeam": "Join a team",
+  "menu.joinTeamHint": "Paste the invite link from your supervisor.",
+  "menu.joinTeamSuccess": "You joined the team!",
 
   // ── Role choice ─────────────────────────────────────────
   "role.chooseTitle": "You are…",
@@ -616,8 +630,6 @@ const en: Record<string, string | string[]> = {
   "task.na": "N/A",
   "task.markedNa": "Marked N/A",
   "task.scanPhoto": "Analyze the job site",
-  "task.acqCourseHeightTitle": "Height rescue level 1 - Feb 27",
-  "task.acqCourseHeightDesc": "ACQ training — Sherbrooke",
   "task.scanTitle": "AI Site Analysis",
   "task.scanning": "Scanning…",
   "task.scanDone": "Scan complete",
@@ -666,22 +678,6 @@ const en: Record<string, string | string[]> = {
   "confirm.na": "N/A",
   "confirm.downloadPdf": "DOWNLOAD AS PDF",
 
-
-  // ── Report ──────────────────────────────────────────────
-  "report.title": "Report an incident",
-  "report.severity": "Severity",
-  "report.observation": "Observation",
-  "report.nearMiss": "Near miss",
-  "report.incident": "Incident / Injury",
-  "report.description": "Description",
-  "report.descriptionPlaceholder": "Describe the situation observed…",
-  "report.reporter": "Reported by",
-  "report.reporterPlaceholder": "Your name (optional)",
-  "report.datetime": "Date and time:",
-  "report.submit": "SUBMIT REPORT",
-  "report.saved": "Report saved",
-  "report.savedDetail": "Your report has been saved locally.",
-  "report.back": "Back",
 
   // ── History ─────────────────────────────────────────────
   "history.title": "History",
@@ -853,6 +849,11 @@ const en: Record<string, string | string[]> = {
   "error.subtitle": "Reload the page or try again later.",
   "error.retry": "Try again",
 
+  // ── 404 ───────────────────────────────────────────────
+  "notFound.title": "Page not found",
+  "notFound.subtitle": "The page you're looking for doesn't exist or has been moved.",
+  "notFound.back": "Back to home",
+
   // ── Password gate ──────────────────────────────────────
   "password.label": "Password",
   "password.placeholder": "Enter the password",
@@ -943,8 +944,8 @@ const en: Record<string, string | string[]> = {
   "plans.gold.desc": "For companies",
   "plans.popular": "Popular",
   "plans.cta.free": "Get started",
-  "plans.cta.silver": "Free trial",
-  "plans.cta.gold": "Free trial",
+  "plans.cta.silver": "14-day free trial",
+  "plans.cta.gold": "14-day free trial",
   "plans.success": "Your subscription is active! Thank you for your trust.",
   "plans.canceled": "Payment was canceled. You can try again at any time.",
   "plans.manageSubscription": "Manage my subscription",
@@ -972,6 +973,29 @@ const en: Record<string, string | string[]> = {
   "plans.feat.branding.free": "—",
   "plans.feat.branding.silver": "—",
   "plans.yes": "Yes",
+
+  // ── Legal ──────────────────────────────────────────────
+  "legal.terms": "Terms",
+  "legal.privacy": "Privacy",
+  "cookie.message": "This site uses essential cookies for its operation.",
+  "cookie.analyticsMessage": "We also use analytics cookies to improve the experience.",
+  "cookie.learnMore": "Learn more",
+  "cookie.accept": "Accept",
+  "cookie.acceptAll": "Accept all",
+  "cookie.essentialOnly": "Essential only",
+
+  // ── Upgrade / plan gating ──────────────────────────────
+  "upgrade.title": "Paid feature",
+  "upgrade.sites": "Site management is available on the Silver or Gold plan.",
+  "upgrade.checklists": "Custom checklists are available on the Silver or Gold plan.",
+  "upgrade.dashboard": "The dashboard is available on the Silver or Gold plan.",
+  "upgrade.teamFull": "Your team has reached the member limit for your current plan.",
+  "upgrade.sitesLimit": "You've reached the site limit for your current plan.",
+  "upgrade.checklistsLimit": "You've reached the custom checklists limit for your current plan.",
+  "upgrade.cta": "View plans",
+  "upgrade.badge.free": "Free",
+  "upgrade.badge.silver": "Silver",
+  "upgrade.badge.gold": "Gold",
 };
 
 export const translations: Record<string, Record<string, string | string[]>> = { fr, en };

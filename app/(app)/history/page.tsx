@@ -11,17 +11,17 @@ import { ArrowLeft } from "lucide-react";
 export default function HistoryPage() {
   const { locale, t } = useLocale();
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
+  const [role] = useState(() => getActiveRole());
 
   useEffect(() => {
     const all = getHistory();
-    const role = getActiveRole();
     if (role === "supervisor") {
       setEntries(all);
     } else {
       const name = getWorkerName();
       setEntries(name ? all.filter((e) => e.workerName === name) : all);
     }
-  }, []);
+  }, [role]);
 
   const dateLocale = locale === "en" ? "en-CA" : "fr-FR";
 

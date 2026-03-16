@@ -1,11 +1,6 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 interface ClerkUserEvent {
   data: {
@@ -49,26 +44,40 @@ export async function POST(req: Request) {
     return new Response("Invalid signature", { status: 400 });
   }
 
-  const { type, data } = evt;
-
-  if (type === "user.created" || type === "user.updated") {
+  try {
+    const { type, data } = evt;
     const email = data.email_addresses?.[0]?.email_address ?? null;
     const fullName = [data.first_name, data.last_name].filter(Boolean).join(" ") || null;
 
-    await supabaseAdmin.from("profiles").upsert(
-      {
+    if (type === "user.created") {
+      await supabaseAdmin().from("profiles").insert({
         id: data.id,
         email,
         full_name: fullName,
         avatar_url: data.image_url,
+        role: null,
         updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" }
-    );
-  }
+      });
+    }
 
-  if (type === "user.deleted") {
-    await supabaseAdmin.from("profiles").delete().eq("id", data.id);
+    if (type === "user.updated") {
+      await supabaseAdmin()
+        .from("profiles")
+        .update({
+          email,
+          full_name: fullName,
+          avatar_url: data.image_url,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", data.id);
+    }
+
+    if (type === "user.deleted") {
+      await supabaseAdmin().from("profiles").delete().eq("id", data.id);
+    }
+  } catch (err) {
+    console.error("Clerk webhook DB error:", err);
+    return new Response("Webhook handler error", { status: 500 });
   }
 
   return new Response("OK", { status: 200 });

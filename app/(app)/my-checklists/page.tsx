@@ -7,14 +7,20 @@ import { getCustomTasks, getCustomChecklist, deleteCustomTask } from "@/lib/stor
 import type { Task } from "@/types";
 import { TaskIcon } from "@/components/task-icon";
 import { ArrowLeft, PenLine, Plus, Trash2 } from "lucide-react";
+import { usePlan, isPaid } from "@/lib/hooks/use-plan";
+import { UpgradeBanner, LimitBanner } from "@/components/upgrade-banner";
 
 export default function MyChecklistsPage() {
   const { t } = useLocale();
+  const planInfo = usePlan();
   const [customTasks, setCustomTasks] = useState<Task[]>([]);
 
   useEffect(() => {
     setCustomTasks(getCustomTasks());
   }, []);
+
+  const canAdd = isPaid(planInfo.plan) && customTasks.length < planInfo.customChecklists;
+  const atLimit = isPaid(planInfo.plan) && customTasks.length >= planInfo.customChecklists && planInfo.customChecklists !== Infinity;
 
   return (
     <div className="relative z-[2] mx-auto min-h-dvh w-full max-w-3xl bg-white shadow-sm dark:bg-neutral-900 dark:shadow-none">
@@ -29,6 +35,11 @@ export default function MyChecklistsPage() {
       </header>
 
       <main className="px-5 pb-10 sm:px-8">
+        {!planInfo.loading && !isPaid(planInfo.plan) ? (
+          <div className="py-8">
+            <UpgradeBanner messageKey="upgrade.checklists" />
+          </div>
+        ) : (<>
         {customTasks.length > 0 && (
           <div className="space-y-2">
             {customTasks.map((ct) => {
@@ -73,17 +84,25 @@ export default function MyChecklistsPage() {
           <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center dark:border-neutral-700 dark:bg-neutral-800">
             <PenLine className="mx-auto mb-2 h-8 w-8 text-gray-300 dark:text-neutral-600" />
             <p className="mb-4 text-sm text-gray-500 dark:text-neutral-400">{t("supervisor.noChecklists")}</p>
-            <Link
-              href="/create-checklist"
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
-            >
-              <Plus className="h-4 w-4" />
-              {t("supervisor.createChecklist")}
-            </Link>
+            {canAdd && (
+              <Link
+                href="/create-checklist"
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
+              >
+                <Plus className="h-4 w-4" />
+                {t("supervisor.createChecklist")}
+              </Link>
+            )}
           </div>
         )}
 
-        {customTasks.length > 0 && (
+        {atLimit && (
+          <div className="mt-3">
+            <LimitBanner messageKey="upgrade.checklistsLimit" />
+          </div>
+        )}
+
+        {customTasks.length > 0 && canAdd && (
           <Link
             href="/create-checklist"
             className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 bg-white py-4 text-sm font-medium text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-600 dark:hover:text-neutral-300"
@@ -92,6 +111,7 @@ export default function MyChecklistsPage() {
             {t("supervisor.createChecklist")}
           </Link>
         )}
+        </>)}
       </main>
     </div>
   );

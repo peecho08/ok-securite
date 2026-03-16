@@ -389,17 +389,7 @@ export function setCompanyLogo(dataUrl: string) {
   } catch { /* quota exceeded */ }
 }
 
-// ── Construction sites ────────────────────────────────────────────
-
-export interface ConstructionSite {
-  id: string;
-  name: string;
-  address?: string;
-  lat?: number;
-  lng?: number;
-  active?: boolean;
-  createdAt?: string;
-}
+// ── Last selected site (remembers last picker choice) ─────────────
 
 const LAST_SITE_KEY = key("last-site-id");
 
@@ -412,79 +402,6 @@ export function setLastSiteId(id: string): void {
   if (!s) return;
   if (id) s.setItem(LAST_SITE_KEY, id);
   else s.removeItem(LAST_SITE_KEY);
-}
-
-const SITES_KEY = key("construction-sites");
-
-export function getSites(): ConstructionSite[] {
-  const s = safeStorage();
-  if (!s) return [];
-  try {
-    const raw = s.getItem(SITES_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function addSite(site: ConstructionSite) {
-  const s = safeStorage();
-  if (!s) return;
-  try {
-    const sites = getSites();
-    sites.push(site);
-    s.setItem(SITES_KEY, JSON.stringify(sites));
-  } catch { /* quota exceeded */ }
-}
-
-export function getSite(id: string): ConstructionSite | null {
-  return getSites().find((s) => s.id === id) ?? null;
-}
-
-export function updateSite(id: string, patch: Partial<ConstructionSite>) {
-  const s = safeStorage();
-  if (!s) return;
-  try {
-    const sites = getSites().map((site) =>
-      site.id === id ? { ...site, ...patch } : site
-    );
-    s.setItem(SITES_KEY, JSON.stringify(sites));
-  } catch { /* ignore */ }
-}
-
-export function removeSite(id: string) {
-  const s = safeStorage();
-  if (!s) return;
-  try {
-    const sites = getSites().filter((site) => site.id !== id);
-    s.setItem(SITES_KEY, JSON.stringify(sites));
-  } catch { /* ignore */ }
-}
-
-// ── Reports ───────────────────────────────────────────────────────
-
-const REPORTS_KEY = key("reports");
-
-export interface Report {
-  taskId: string;
-  taskTitle: string;
-  severity: string;
-  description: string;
-  reporter: string;
-  timestamp: string;
-}
-
-export function getReports(): Report[] {
-  try {
-    const raw = localStorage.getItem(REPORTS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function getReportCount(): number {
-  return getReports().length;
 }
 
 // ── Custom checklists (supervisor-created) ─────────────────────────
@@ -556,7 +473,6 @@ export function resetAllForFreshStart(): void {
   const prefix = `${PREFIX}:`;
   const preserve = new Set([
     key("team-tasks"),
-    key("construction-sites"),
     key("team-name"),
     key("supervisor-org-id"),
     key("invite-token"),

@@ -1,54 +1,81 @@
 import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { notifyTeamJoined } from "@/lib/notifications";
+import { checkLimitServer } from "@/lib/db-server";
+import { z } from "zod";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const schema = z.object({
+  token: z.string().min(1).max(100).trim(),
+});
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
-  if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const { userId } = await auth();
+    if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { token } = await req.json();
-  if (!token || typeof token !== "string") {
-    return Response.json({ error: "Invite token is required" }, { status: 400 });
-  }
+    const body = await req.json().catch(() => null);
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return Response.json({ error: "Invite token is required" }, { status: 400 });
+    }
 
-  const { data: org } = await supabaseAdmin
-    .from("organizations")
-    .select("*")
-    .eq("invite_token", token.trim())
-    .single();
+    const { token } = parsed.data;
 
-  if (!org) {
-    return Response.json({ error: "Invalid invite link" }, { status: 404 });
-  }
+    const { data: org } = await supabaseAdmin()
+      .from("organizations")
+      .select("*")
+      .eq("invite_token", token)
+      .single();
 
-  const { error: memberError } = await supabaseAdmin
-    .from("org_members")
-    .upsert(
-      { org_id: org.id, user_id: userId, role: "worker" },
-      { onConflict: "org_id,user_id" }
+    if (!org) {
+      return Response.json({ error: "Invalid invite link" }, { status: 404 });
+    }
+
+    const { count: memberCount } = await supabaseAdmin()
+      .from("org_members")
+      .select("*", { count: "exact", head: true })
+      .eq("org_id", org.id);
+
+    const { allowed, plan, limit } = await checkLimitServer(
+      org.id,
+      "teamMembers",
+      memberCount ?? 0
     );
 
-  if (memberError) {
-    return Response.json({ error: memberError.message }, { status: 500 });
+    if (!allowed) {
+      return Response.json(
+        { error: "team_full", plan, limit },
+        { status: 403 }
+      );
+    }
+
+    const { error: memberError } = await supabaseAdmin()
+      .from("org_members")
+      .upsert(
+        { org_id: org.id, user_id: userId, role: "worker" },
+        { onConflict: "org_id,user_id" }
+      );
+
+    if (memberError) {
+      return Response.json({ error: memberError.message }, { status: 500 });
+    }
+
+    await supabaseAdmin()
+      .from("profiles")
+      .update({ org_id: org.id, role: "worker" })
+      .eq("id", userId);
+
+    const { data: profile } = await supabaseAdmin()
+      .from("profiles")
+      .select("full_name")
+      .eq("id", userId)
+      .single();
+
+    notifyTeamJoined(profile?.full_name || "Nouveau membre", org.id).catch(console.error);
+
+    return Response.json({ org: { id: org.id, name: org.name } });
+  } catch (err) {
+    console.error("POST /api/teams/join:", err);
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  await supabaseAdmin
-    .from("profiles")
-    .update({ org_id: org.id })
-    .eq("id", userId);
-
-  const { data: profile } = await supabaseAdmin
-    .from("profiles")
-    .select("full_name")
-    .eq("id", userId)
-    .single();
-
-  notifyTeamJoined(profile?.full_name || "Nouveau membre", org.id).catch(console.error);
-
-  return Response.json({ org: { id: org.id, name: org.name } });
 }
