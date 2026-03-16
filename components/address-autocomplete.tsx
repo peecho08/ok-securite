@@ -94,7 +94,7 @@ export function PlaceAutocomplete({
       return;
     }
     serviceRef.current.getPlacePredictions(
-      { input, types: ["establishment"], componentRestrictions: { country: "ca" } },
+      { input, componentRestrictions: { country: "ca" } },
       (predictions: Prediction[] | null, status: string) => {
         if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
           setSuggestions(predictions.slice(0, 5));
