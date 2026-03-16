@@ -67,7 +67,8 @@ export async function notifyChecklistCompleted(
     .in("role", ["supervisor", "admin"]);
 
   for (const sup of supervisors ?? []) {
-    const profile = sup.profiles as { email: string; full_name: string } | null;
+    const profiles = sup.profiles as unknown as { email: string; full_name: string } | { email: string; full_name: string }[] | null;
+    const profile = Array.isArray(profiles) ? profiles[0] : profiles;
     await notify({
       userId: sup.user_id as string,
       type: "checklist_completed",
@@ -112,7 +113,8 @@ export async function notifyReportSubmitted(
   const severityLabel = severity === "critical" ? "CRITIQUE" : severity === "high" ? "ÉLEVÉE" : severity;
 
   for (const sup of supervisors ?? []) {
-    const profile = sup.profiles as { email: string; full_name: string } | null;
+    const profiles = sup.profiles as unknown as { email: string; full_name: string } | { email: string; full_name: string }[] | null;
+    const profile = Array.isArray(profiles) ? profiles[0] : profiles;
     await notify({
       userId: sup.user_id as string,
       type: "report_submitted",

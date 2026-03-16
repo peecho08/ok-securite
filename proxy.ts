@@ -5,6 +5,8 @@ const MARKETING_HOSTS = new Set([
   "ok-chantier.com",
   "www.ok-chantier.com",
   "ok-chantier.vercel.app",
+  "ok-securite.com",
+  "www.ok-securite.com",
 ]);
 
 const isProtectedRoute = createRouteMatcher([

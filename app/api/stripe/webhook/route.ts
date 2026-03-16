@@ -34,6 +34,7 @@ export async function POST(req: Request) {
 
       if (orgId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const periodEnd = (subscription as unknown as { current_period_end: number }).current_period_end;
 
         await supabaseAdmin.from("subscriptions").upsert(
           {
@@ -42,9 +43,7 @@ export async function POST(req: Request) {
             stripe_subscription_id: subscriptionId,
             plan,
             status: "active",
-            current_period_end: new Date(
-              subscription.current_period_end * 1000
-            ).toISOString(),
+            current_period_end: new Date(periodEnd * 1000).toISOString(),
             updated_at: new Date().toISOString(),
           },
           { onConflict: "org_id" }
@@ -55,6 +54,7 @@ export async function POST(req: Request) {
 
     case "customer.subscription.updated": {
       const subscription = event.data.object as Stripe.Subscription;
+      const periodEnd = (subscription as unknown as { current_period_end: number }).current_period_end;
       const { data: sub } = await supabaseAdmin
         .from("subscriptions")
         .select("org_id")
@@ -69,9 +69,7 @@ export async function POST(req: Request) {
                     subscription.status === "past_due" ? "past_due" :
                     subscription.status === "canceled" ? "canceled" :
                     subscription.status === "trialing" ? "trialing" : "active",
-            current_period_end: new Date(
-              subscription.current_period_end * 1000
-            ).toISOString(),
+            current_period_end: new Date(periodEnd * 1000).toISOString(),
             updated_at: new Date().toISOString(),
           })
           .eq("stripe_subscription_id", subscription.id);

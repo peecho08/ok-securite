@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
-import { Check, Minus } from "lucide-react";
+import { Check, Minus, Loader2 } from "lucide-react";
 import { MarketingShell } from "@/components/marketing-shell";
 
 interface Feature {
@@ -21,6 +23,45 @@ export default function PlansPage() {
 
 function PlansContent() {
   const { t } = useLocale();
+  const searchParams = useSearchParams();
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const success = searchParams.get("success") === "true";
+  const canceled = searchParams.get("canceled") === "true";
+
+  async function handleCheckout(plan: string) {
+    setLoading(plan);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setLoading(null);
+      }
+    } catch {
+      setLoading(null);
+    }
+  }
+
+  async function handlePortal() {
+    setLoading("portal");
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setLoading(null);
+      }
+    } catch {
+      setLoading(null);
+    }
+  }
 
   const features: Feature[] = [
     { labelKey: "plans.feat.checklists", free: t("plans.feat.checklists.val"), silver: t("plans.feat.checklists.val"), gold: t("plans.feat.checklists.val") },
@@ -39,6 +80,7 @@ function PlansContent() {
       priceKey: "plans.free.price",
       descKey: "plans.free.desc",
       ctaKey: "plans.cta.free",
+      plan: null,
       popular: false,
       values: features.map((f) => f.free),
     },
@@ -47,6 +89,7 @@ function PlansContent() {
       priceKey: "plans.silver.price",
       descKey: "plans.silver.desc",
       ctaKey: "plans.cta.silver",
+      plan: "silver",
       popular: true,
       values: features.map((f) => f.silver),
     },
@@ -55,6 +98,7 @@ function PlansContent() {
       priceKey: "plans.gold.price",
       descKey: "plans.gold.desc",
       ctaKey: "plans.cta.gold",
+      plan: "gold",
       popular: false,
       values: features.map((f) => f.gold),
     },
@@ -72,7 +116,17 @@ function PlansContent() {
           </p>
         </div>
 
-        {/* Cards */}
+        {success && (
+          <div className="mx-auto mb-8 max-w-md rounded-xl border border-green-200 bg-green-50 p-4 text-center text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+            {t("plans.success")}
+          </div>
+        )}
+        {canceled && (
+          <div className="mx-auto mb-8 max-w-md rounded-xl border border-gray-200 bg-gray-50 p-4 text-center text-sm text-gray-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
+            {t("plans.canceled")}
+          </div>
+        )}
+
         <div className="grid gap-6 sm:grid-cols-3">
           {tiers.map((tier) => (
             <div
@@ -122,18 +176,42 @@ function PlansContent() {
                 })}
               </ul>
 
-              <a
-                href="https://app.ok-chantier.com"
-                className={`block rounded-xl py-3 text-center font-heading text-sm font-bold transition-colors ${
-                  tier.popular
-                    ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dark)]"
-                    : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
-                }`}
-              >
-                {t(tier.ctaKey)}
-              </a>
+              {tier.plan ? (
+                <button
+                  type="button"
+                  onClick={() => handleCheckout(tier.plan!)}
+                  disabled={loading !== null}
+                  className={`flex items-center justify-center gap-2 rounded-xl py-3 text-center font-heading text-sm font-bold transition-colors disabled:opacity-60 ${
+                    tier.popular
+                      ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dark)]"
+                      : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                  }`}
+                >
+                  {loading === tier.plan && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {t(tier.ctaKey)}
+                </button>
+              ) : (
+                <a
+                  href="/sign-up"
+                  className="block rounded-xl border border-gray-200 bg-white py-3 text-center font-heading text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                >
+                  {t(tier.ctaKey)}
+                </a>
+              )}
             </div>
           ))}
+        </div>
+
+        <div className="mt-8 text-center">
+          <button
+            type="button"
+            onClick={handlePortal}
+            disabled={loading !== null}
+            className="text-sm text-gray-500 underline transition-colors hover:text-gray-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+          >
+            {loading === "portal" && <Loader2 className="mr-1 inline h-3 w-3 animate-spin" />}
+            {t("plans.manageSubscription")}
+          </button>
         </div>
       </div>
     </section>
