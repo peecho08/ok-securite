@@ -23,6 +23,8 @@ const clerkAppearance = {
     socialButtonsBlockButton: "!bg-white !text-neutral-800 font-bold hover:!bg-neutral-100 !border-0 !rounded-xl !py-3 !min-h-[44px]",
     socialButtonsBlockButtonText: "font-heading text-sm font-bold !text-neutral-800",
     socialButtonsIconButton: "!bg-white !border-0 hover:!bg-neutral-100 !rounded-xl !min-h-[44px] !min-w-[44px]",
+    socialButtonsBlockButton__apple: "!hidden",
+    socialButtonsIconButton__apple: "!hidden",
     formButtonPrimary: "!bg-[#22c55e] !text-[#1E2324] font-heading !font-bold hover:!bg-[#16a34a] !rounded-xl !py-3.5 !text-sm !min-h-[46px]",
     formFieldInput: "!bg-white/12 !border-white/25 !text-white placeholder:!text-white/50 !rounded-xl !py-3 !min-h-[44px] !text-sm",
     formFieldLabel: "!text-white/90 text-sm font-medium",
