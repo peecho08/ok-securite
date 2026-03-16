@@ -35,9 +35,7 @@ export default clerkMiddleware(async (auth, request) => {
     if (!userId) {
       const signUpUrl = new URL("/sign-up", request.url);
       signUpUrl.searchParams.set("redirect_url", pathname);
-      const response = NextResponse.redirect(signUpUrl);
-      response.cookies.set("pending_join", pathname, { maxAge: 300, path: "/" });
-      return response;
+      return NextResponse.redirect(signUpUrl);
     }
     const response = NextResponse.next();
     response.cookies.set("pending_join", pathname, { maxAge: 300, path: "/" });
@@ -46,14 +44,6 @@ export default clerkMiddleware(async (auth, request) => {
 
   if (isProtectedRoute(request)) {
     await auth.protect();
-  }
-
-  const pendingJoin = request.cookies.get("pending_join")?.value;
-  if (pendingJoin && pathname === "/app" && !pathname.startsWith("/app/join/")) {
-    const joinUrl = new URL(pendingJoin, request.url);
-    const response = NextResponse.redirect(joinUrl);
-    response.cookies.delete("pending_join");
-    return response;
   }
 });
 

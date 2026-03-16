@@ -45,6 +45,7 @@ export default function JoinPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ role: "worker" }),
         });
+        document.cookie = "pending_join=; path=/; max-age=0";
         window.location.href = "/app";
       } catch {
         setError(t("joinTeam.invalidLink"));
