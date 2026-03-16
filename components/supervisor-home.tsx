@@ -156,6 +156,15 @@ export function SupervisorHome() {
             <PenLine className="h-3 w-3" />
             {t("menu.editProfile")}
           </button>
+          {!planLoading && (
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+              plan === "gold" ? "bg-amber-400/30 text-amber-100" :
+              plan === "silver" ? "bg-blue-400/30 text-blue-100" :
+              "bg-white/15 text-white/70"
+            }`}>
+              {plan === "gold" ? t("upgrade.badge.gold") : plan === "silver" ? t("upgrade.badge.silver") : t("upgrade.badge.free")}
+            </span>
+          )}
         </div>
       </header>
 
@@ -174,7 +183,18 @@ export function SupervisorHome() {
             <div className="mx-auto mb-2 mt-3 h-1 w-12 rounded-full bg-gray-200" aria-hidden="true" />
             <div className="border-b border-gray-100 px-5 py-4 dark:border-neutral-700">
               <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{workerName || t("menu.supervisor")}</p>
-              <p className="text-sm text-gray-500 dark:text-neutral-400">{t("menu.supervisor")}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-gray-500 dark:text-neutral-400">{t("menu.supervisor")}</p>
+                {!planLoading && (
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                    plan === "gold" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" :
+                    plan === "silver" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" :
+                    "bg-gray-100 text-gray-500 dark:bg-neutral-700 dark:text-neutral-400"
+                  }`}>
+                    {plan === "gold" ? t("upgrade.badge.gold") : plan === "silver" ? t("upgrade.badge.silver") : t("upgrade.badge.free")}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="py-2 pb-[env(safe-area-inset-bottom)]">
               {!planLoading && plan !== "gold" && (
