@@ -1,18 +1,18 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { translations } from "@/lib/translations";
 
-function getLocale(): "fr" | "en" {
-  try {
-    const stored = localStorage.getItem("okchantier:language");
-    if (stored === "en") return "en";
-  } catch {}
-  return "fr";
-}
-
 export default function NotFound() {
-  const locale = typeof window !== "undefined" ? getLocale() : "fr";
+  const [locale, setLocale] = useState<"fr" | "en">("fr");
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("okchantier:language") === "en") setLocale("en");
+    } catch {}
+  }, []);
+
   const t = (key: string) =>
     (translations[locale]?.[key] as string) ?? (translations.fr[key] as string) ?? key;
 
