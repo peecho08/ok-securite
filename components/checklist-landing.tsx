@@ -19,6 +19,7 @@ import {
 import { APP_URL } from "@/lib/urls";
 import type { Locale } from "@/lib/i18n";
 import type { Task } from "@/types";
+import { TaskIcon } from "@/components/task-icon";
 
 // ── Locale helpers (server-side, no hooks) ─────────────
 
@@ -134,7 +135,9 @@ function TaskCard({ task, locale }: { task: Task; locale: Locale }) {
       href={getTaskPath(task.id, locale)}
       className="group rounded-xl border border-gray-200 bg-white p-5 transition-all hover:border-[var(--color-primary)]/30 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-[var(--color-primary)]/30"
     >
-      <div className="mb-3 text-2xl">{task.icon}</div>
+      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-600 group-hover:bg-[var(--color-primary)]/10 group-hover:text-[var(--color-primary)] dark:bg-neutral-700 dark:text-neutral-300">
+        <TaskIcon taskId={task.id} className="h-5 w-5" />
+      </div>
       <h3 className="font-heading text-base font-bold transition-colors group-hover:text-[var(--color-primary)]">
         {tTitle(task, locale)}
       </h3>
@@ -385,8 +388,10 @@ export function TaskLanding({
       />
 
       <div className="mb-10">
-        <span className="text-4xl">{task.icon}</span>
-        <h1 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+          <TaskIcon taskId={task.id} className="h-7 w-7" />
+        </div>
+        <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
           {l(locale, "Liste de vérification — ", "Safety checklist — ")}
           {title}
         </h1>
