@@ -75,7 +75,7 @@ export async function POST(req: Request) {
 
     notifyTeamJoined(profile?.full_name || "Nouveau membre", org.id).catch(console.error);
 
-    return Response.json({ org: { id: org.id, name: org.name } });
+    return Response.json({ org: { id: org.id, name: org.name, teamTasks: org.team_tasks ?? [] } });
   } catch (err) {
     console.error("POST /api/teams/join:", err);
     return Response.json({ error: "Internal server error" }, { status: 500 });

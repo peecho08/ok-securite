@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
-import { getActiveRole, setActiveRole, getWorkerOrgId, setWorkerOrgId } from "@/lib/storage";
+import { getActiveRole, setActiveRole, getWorkerOrgId, setWorkerOrgId, getTeamName } from "@/lib/storage";
 import { useClerk } from "@clerk/nextjs";
 import { ClipboardList, ExternalLink, LogOut, UserPlus } from "lucide-react";
 import { MusicPlayer } from "@/components/music-player";
@@ -132,7 +132,7 @@ export function AppHeader({ workerName }: AppHeaderProps) {
                   <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-neutral-700">
                     <div className="min-w-0">
                       <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{workerName || (getActiveRole() === "supervisor" ? t("menu.supervisor") : t("menu.worker"))}</p>
-                      <p className="text-sm text-gray-500 dark:text-neutral-400">{getActiveRole() === "supervisor" ? t("menu.supervisor") : t("menu.worker")}</p>
+                      <p className="text-sm text-gray-500 dark:text-neutral-400">{getActiveRole() === "supervisor" ? t("menu.supervisor") : (getTeamName() || t("menu.worker"))}</p>
                     </div>
                     {getActiveRole() === "supervisor" ? (
                       <button

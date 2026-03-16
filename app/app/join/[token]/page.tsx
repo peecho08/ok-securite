@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { setWorkerOrgId, setRoleChoiceDone, setActiveRole } from "@/lib/storage";
+import { setWorkerOrgId, setRoleChoiceDone, setActiveRole, setTeamName, setTeamTasks } from "@/lib/storage";
 import { useLocale } from "@/lib/i18n";
 
 export default function JoinPage() {
@@ -38,6 +38,8 @@ export default function JoinPage() {
 
         const { org } = await res.json();
         setWorkerOrgId(org.id);
+        setTeamName(org.name);
+        setTeamTasks(org.teamTasks || []);
         setRoleChoiceDone();
         setActiveRole("worker");
         await fetch("/api/profile/role", {
