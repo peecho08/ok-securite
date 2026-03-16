@@ -18,11 +18,11 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://*.clerk.accounts.dev https://*.clerk.com https://clerk.ok-securite.com https://challenges.cloudflare.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://*.clerk.accounts.dev https://*.clerk.com https://clerk.ok-securite.com https://challenges.cloudflare.com https://*.i.posthog.com https://us-assets.i.posthog.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https://*.clerk.com https://img.clerk.com https://*.supabase.co https://*.google.com https://*.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://clerk.ok-securite.com https://api.stripe.com https://*.sentry.io https://*.google.com https://*.googleapis.com https://*.vercel-insights.com https://*.vercel-analytics.com https://*.i.posthog.com",
+              "connect-src 'self' https://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://clerk.ok-securite.com https://api.stripe.com https://*.sentry.io https://*.google.com https://*.googleapis.com https://*.vercel-insights.com https://*.vercel-analytics.com https://*.i.posthog.com https://challenges.cloudflare.com",
               "frame-src https://js.stripe.com https://*.clerk.accounts.dev https://*.clerk.com https://clerk.ok-securite.com https://challenges.cloudflare.com",
               "worker-src 'self' blob:",
             ].join("; "),

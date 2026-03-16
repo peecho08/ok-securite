@@ -13,10 +13,12 @@ export function ChooseRole() {
   const { signOut } = useClerk();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handlePickRole(role: "supervisor" | "worker") {
     if (saving) return;
     setSaving(true);
+    setError(null);
 
     try {
       const res = await fetch("/api/profile/role", {
@@ -26,7 +28,10 @@ export function ChooseRole() {
       });
 
       if (!res.ok) {
-        console.error("Failed to save role");
+        const data = await res.json().catch(() => null);
+        const msg = data?.error || `Error ${res.status}`;
+        console.error("Failed to save role:", msg);
+        setError(msg);
         setSaving(false);
         return;
       }
@@ -41,6 +46,7 @@ export function ChooseRole() {
       }
     } catch (err) {
       console.error("Error saving role:", err);
+      setError(err instanceof Error ? err.message : "Network error");
       setSaving(false);
     }
   }
@@ -67,6 +73,11 @@ export function ChooseRole() {
         <h1 className="mt-6 font-heading text-xl font-bold text-black dark:text-neutral-100">
           {t("role.chooseTitle")}
         </h1>
+        {error && (
+          <div className="mt-4 w-full max-w-sm rounded-lg bg-red-500/15 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+            {error}
+          </div>
+        )}
         <div className="mt-6 grid w-full max-w-sm grid-cols-2 gap-3">
           <button
             type="button"
