@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
 import { APP_URL } from "@/lib/urls";
+import { MusicPlayer } from "@/components/music-player";
 import { ClipboardCheck, CheckCircle, FileText, Quote, HardHat, Truck, Factory, Flame, Lock } from "lucide-react";
 
 export function MarketingHomeContent() {
@@ -110,6 +111,13 @@ export function MarketingHomeContent() {
               {t("mkt.testimonial.role")}
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Song */}
+      <section className="bg-gray-50 px-5 py-12 dark:bg-neutral-900 sm:px-8">
+        <div className="mx-auto max-w-md">
+          <MusicPlayer />
         </div>
       </section>
 
