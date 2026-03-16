@@ -193,6 +193,7 @@ export default function CreateTeamPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useUser();
+  const redirectUrl = searchParams.get("redirect_url");
   const isEditTasks = searchParams.has("edit-tasks");
   const [supervisorName, setSupervisorName] = useState("");
   const [supervisorEmail, setSupervisorEmailState] = useState("");
@@ -350,7 +351,7 @@ export default function CreateTeamPage() {
           </div>
           {inviteUrl && <InviteQRCode url={inviteUrl} teamName={displayName} />}
           <Link
-            href="/app"
+            href={redirectUrl || "/app"}
             className="mt-8 block w-full rounded-xl bg-[var(--color-primary)] py-3.5 text-center font-heading text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
           >
             {t("createTeam.done")}

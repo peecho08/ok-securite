@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useLocale } from "@/lib/i18n";
 import { Check, Minus, Loader2 } from "lucide-react";
@@ -26,6 +26,7 @@ function PlansInner() {
   const { t } = useLocale();
   const { isSignedIn } = useUser();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
   const success = searchParams.get("success") === "true";
@@ -47,6 +48,8 @@ function PlansInner() {
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+      } else if (data.error === "Create a team first") {
+        router.push("/app/create-team?redirect_url=/plans");
       } else {
         alert(data.error || "Something went wrong");
         setLoadingPlan(null);
