@@ -11,14 +11,18 @@ export function getStripe(): Stripe {
   return _stripe;
 }
 
+export type BillingInterval = "monthly" | "yearly";
+
 export const PLANS = {
   silver: {
     name: "Silver",
     get priceId() { return process.env.STRIPE_SILVER_PRICE_ID!; },
+    get yearlyPriceId() { return process.env.STRIPE_SILVER_YEARLY_PRICE_ID!; },
   },
   gold: {
     name: "Gold",
     get priceId() { return process.env.STRIPE_GOLD_PRICE_ID!; },
+    get yearlyPriceId() { return process.env.STRIPE_GOLD_YEARLY_PRICE_ID!; },
   },
 } as const;
 

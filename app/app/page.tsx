@@ -6,7 +6,7 @@ import { tasks } from "@/data/tasks";
 import { type TaskCategory } from "@/types";
 import { useLocale } from "@/lib/i18n";
 import { localCatLabel, localTitle, normalize } from "@/lib/locale-helpers";
-import { clearProgress, getActiveTaskProgress, getTeamTasks, getWorkerName, getWorkerOnboardingDone, getCustomTasks, getCustomChecklists, getActiveRole, getSupervisorOrgId } from "@/lib/storage";
+import { clearProgress, getActiveTaskProgress, getTeamTasks, getTeamName, getWorkerName, getWorkerOnboardingDone, getCustomTasks, getCustomChecklists, getActiveRole, getSupervisorOrgId, getWorkerOrgId, setWorkerOrgId, setTeamName, setTeamTasks } from "@/lib/storage";
 
 import { checklists } from "@/data/checklists";
 import type { Task, Checklist } from "@/types";
@@ -17,8 +17,8 @@ import { TaskList } from "@/components/task-list";
 import { Onboarding } from "@/components/onboarding";
 import { SupervisorHome } from "@/components/supervisor-home";
 import { WeeklyRecap } from "@/components/weekly-recap";
-import { getDailyFact } from "@/lib/safety-facts";
 import { trackEvent } from "@/lib/analytics";
+import { toast } from "sonner";
 
 const categoryOrder: TaskCategory[] = [
   "custom",
@@ -46,6 +46,7 @@ export default function HomePage() {
   const [showAllTasks, setShowAllTasks] = useState(false);
   const [customTasksList, setCustomTasksList] = useState<Task[]>([]);
   const [customChecklistsMap, setCustomChecklistsMap] = useState<Record<string, Checklist>>({});
+  const [teamNameLabel, setTeamNameLabel] = useState("");
   const searchTrackedRef = useRef(false);
 
   const allTasks = useMemo(() => [...customTasksList, ...tasks], [customTasksList]);
@@ -53,6 +54,7 @@ export default function HomePage() {
 
   useEffect(() => {
     setTeamTaskIds(getTeamTasks());
+    setTeamNameLabel(getTeamName());
     setActiveProgress(getActiveTaskProgress());
     setWorkerNameState(getWorkerName());
     setCustomTasksList(getCustomTasks());
@@ -62,6 +64,28 @@ export default function HomePage() {
     if (!supervisorMode && !getWorkerOnboardingDone()) setShowOnboarding(true);
     setReady(true);
   }, []);
+
+  useEffect(() => {
+    if (!ready || isSupervisor) return;
+    const localOrgId = getWorkerOrgId();
+    if (!localOrgId) return;
+    fetch("/api/profile/team-check")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.inTeam) {
+          if (data.teamTasks) { setTeamTasks(data.teamTasks); setTeamTaskIds(data.teamTasks); }
+          if (data.teamName) { setTeamName(data.teamName); setTeamNameLabel(data.teamName); }
+        } else {
+          setWorkerOrgId(null);
+          setTeamName("");
+          setTeamTasks([]);
+          setTeamTaskIds([]);
+          setTeamNameLabel("");
+          toast.info(t("menu.removedFromTeam"));
+        }
+      })
+      .catch(() => {});
+  }, [ready, isSupervisor, t]);
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -90,8 +114,8 @@ export default function HomePage() {
 
   const teamGrouped = useMemo(() => {
     if (teamTasks.length === 0) return [];
-    return [{ category: "team", label: t("home.myTasks"), tasks: teamTasks }];
-  }, [teamTasks, t]);
+    return [{ category: "team", label: teamNameLabel || t("home.myTasks"), tasks: teamTasks }];
+  }, [teamTasks, teamNameLabel, t]);
 
   const activeTasks = useMemo(() => {
     return activeProgress
@@ -158,7 +182,6 @@ export default function HomePage() {
     return keys[Math.floor(Math.random() * keys.length)];
   });
 
-  const dailyFact = useMemo(() => getDailyFact(), []);
 
   const handleAbandon = useCallback((taskId: string) => {
     if (!confirm(t("home.abandonConfirm"))) return;
@@ -217,19 +240,6 @@ export default function HomePage() {
 
             {!query && <WeeklyRecap />}
 
-            {!query && activeTasks.length === 0 && (
-              <section className="mb-5 rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
-                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-neutral-500">
-                  {t("safetyFact.title")}
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-gray-700 dark:text-neutral-200">
-                  {locale === "en" ? dailyFact.en : dailyFact.fr}
-                </p>
-                <p className="mt-1.5 text-[11px] text-muted">
-                  {t("safetyFact.source")} : {dailyFact.source}
-                </p>
-              </section>
-            )}
 
             {!query && teamTasks.length > 0 && (
               <>

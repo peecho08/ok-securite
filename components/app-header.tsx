@@ -36,6 +36,20 @@ export function AppHeader({ workerName }: AppHeaderProps) {
   }, [showMenu]);
 
   useEffect(() => {
+    if (getActiveRole() !== "worker") return;
+    if (!getWorkerOrgId()) { setHasTeam(false); return; }
+    fetch("/api/profile/team-check")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.inTeam) {
+          setWorkerOrgId(null);
+          setHasTeam(false);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (showMenu) {
       document.body.style.overflow = "hidden";
     } else {

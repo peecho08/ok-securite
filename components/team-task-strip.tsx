@@ -6,6 +6,7 @@ import { localTitle, localDesc } from "@/lib/locale-helpers";
 import type { Task } from "@/lib/locale-helpers";
 import { checklists } from "@/data/checklists";
 import { TaskIcon } from "@/components/task-icon";
+import { getTeamName } from "@/lib/storage";
 
 interface TeamTaskStripProps {
   tasks: (Task | undefined)[];
@@ -14,6 +15,7 @@ interface TeamTaskStripProps {
 export function TeamTaskStrip({ tasks: tasksProp }: TeamTaskStripProps) {
   const { locale, t } = useLocale();
   const tasks = tasksProp.filter((task): task is Task => task != null);
+  const teamName = typeof window !== "undefined" ? getTeamName() : "";
 
   if (tasks.length === 0) return null;
 
@@ -21,7 +23,7 @@ export function TeamTaskStrip({ tasks: tasksProp }: TeamTaskStripProps) {
     <section className="mb-6">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
-          {t("home.myTasks")}
+          {teamName || t("home.myTasks")}
         </h2>
       </div>
       <div className="relative">

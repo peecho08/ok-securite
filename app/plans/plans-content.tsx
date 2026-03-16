@@ -29,6 +29,7 @@ function PlansInner() {
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
 
   const success = searchParams.get("success") === "true";
   const canceled = searchParams.get("canceled") === "true";
@@ -42,12 +43,12 @@ function PlansInner() {
   const handleSubscribe = useCallback(async (plan: "silver" | "gold") => {
     setLoadingPlan(plan);
     setCheckoutError(null);
-    trackEvent("plan_checkout_started", { plan });
+    trackEvent("plan_checkout_started", { plan, billing });
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, billing }),
       });
       const data = await res.json();
       if (data.url) {
@@ -68,7 +69,7 @@ function PlansInner() {
       setCheckoutError(t("plans.error.generic"));
       setLoadingPlan(null);
     }
-  }, [router, t]);
+  }, [router, t, billing]);
 
   useEffect(() => {
     if (pendingPlan && isSignedIn && !autoTriggered && !success && !canceled) {
@@ -93,50 +94,67 @@ function PlansInner() {
     { labelKey: "plans.feat.support", free: false, silver: false, gold: true },
   ];
 
+  const yearlySavings = {
+    silver: "$58",
+    gold: "$158",
+  };
+
   type Tier = {
     nameKey: string;
-    priceKey: string;
+    monthlyPriceKey: string;
+    yearlyPriceKey: string;
+    yearlyPerMonthKey: string;
     descKey: string;
     ctaKey: string;
     href: string | null;
     plan: "silver" | "gold" | null;
     highlighted: boolean;
-    showPerMonth: boolean;
+    isPaid: boolean;
+    savings: string | null;
     values: (string | boolean)[];
   };
 
   const tiers: Tier[] = [
     {
       nameKey: "plans.free",
-      priceKey: "plans.free.price",
+      monthlyPriceKey: "plans.free.price",
+      yearlyPriceKey: "plans.free.price",
+      yearlyPerMonthKey: "plans.free.price",
       descKey: "plans.free.desc",
       ctaKey: "plans.cta.free",
       href: "/sign-up",
       plan: null,
       highlighted: false,
-      showPerMonth: false,
+      isPaid: false,
+      savings: null,
       values: features.map((f) => f.free),
     },
     {
       nameKey: "plans.silver",
-      priceKey: "plans.silver.price",
+      monthlyPriceKey: "plans.silver.price",
+      yearlyPriceKey: "plans.silver.yearlyPrice",
+      yearlyPerMonthKey: "plans.silver.yearlyPerMonth",
       descKey: "plans.silver.desc",
       ctaKey: isSignedIn ? "plans.cta.silver" : "plans.cta.signUpFirst",
       href: isSignedIn ? null : `/sign-up?redirect_url=${encodeURIComponent("/app/create-team?plan=silver")}`,
       plan: isSignedIn ? "silver" : null,
       highlighted: true,
-      showPerMonth: true,
+      isPaid: true,
+      savings: yearlySavings.silver,
       values: features.map((f) => f.silver),
     },
     {
       nameKey: "plans.gold",
-      priceKey: "plans.gold.price",
+      monthlyPriceKey: "plans.gold.price",
+      yearlyPriceKey: "plans.gold.yearlyPrice",
+      yearlyPerMonthKey: "plans.gold.yearlyPerMonth",
       descKey: "plans.gold.desc",
       ctaKey: isSignedIn ? "plans.cta.gold" : "plans.cta.signUpFirst",
       href: isSignedIn ? null : `/sign-up?redirect_url=${encodeURIComponent("/app/create-team?plan=gold")}`,
       plan: isSignedIn ? "gold" : null,
       highlighted: false,
-      showPerMonth: true,
+      isPaid: true,
+      savings: yearlySavings.gold,
       values: features.map((f) => f.gold),
     },
   ];
@@ -151,6 +169,38 @@ function PlansInner() {
           <p className="mx-auto mt-3 max-w-lg text-gray-600 dark:text-neutral-400">
             {t("plans.subtitle")}
           </p>
+        </div>
+
+        {/* Billing toggle */}
+        <div className="mb-10 flex items-center justify-center gap-3">
+          <span className={`text-sm font-medium transition-colors ${billing === "monthly" ? "text-gray-900 dark:text-neutral-100" : "text-gray-400 dark:text-neutral-500"}`}>
+            {t("plans.billingMonthly")}
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={billing === "yearly"}
+            onClick={() => setBilling((b) => b === "monthly" ? "yearly" : "monthly")}
+            className={`relative inline-flex h-7 w-[52px] shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 ${
+              billing === "yearly"
+                ? "bg-[var(--color-primary)]"
+                : "bg-gray-200 dark:bg-neutral-700"
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition-transform ${
+                billing === "yearly" ? "translate-x-[28px]" : "translate-x-1"
+              }`}
+            />
+          </button>
+          <span className={`text-sm font-medium transition-colors ${billing === "yearly" ? "text-gray-900 dark:text-neutral-100" : "text-gray-400 dark:text-neutral-500"}`}>
+            {t("plans.billingYearly")}
+          </span>
+          {billing === "yearly" && (
+            <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-700 dark:bg-green-900/40 dark:text-green-300">
+              -17%
+            </span>
+          )}
         </div>
 
         {success && (
@@ -193,14 +243,33 @@ function PlansInner() {
                 <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                   {t(tier.descKey)}
                 </p>
-                <p className="mt-4 flex items-baseline gap-1">
-                  <span className="font-heading text-3xl font-bold">{t(tier.priceKey)}</span>
-                  {tier.showPerMonth && (
-                    <span className="text-sm text-gray-500 dark:text-neutral-400">
-                      {t("plans.perMonth")}
-                    </span>
-                  )}
-                </p>
+                {billing === "yearly" && tier.isPaid ? (
+                  <div className="mt-4">
+                    <p className="flex items-baseline gap-1">
+                      <span className="font-heading text-3xl font-bold">{t(tier.yearlyPerMonthKey)}</span>
+                      <span className="text-sm text-gray-500 dark:text-neutral-400">
+                        {t("plans.perMonth")}
+                      </span>
+                    </p>
+                    <p className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">
+                      {t(tier.yearlyPriceKey)} {t("plans.perYear")}
+                    </p>
+                    {tier.savings && (
+                      <p className="mt-1 text-xs font-semibold text-green-600 dark:text-green-400">
+                        {t("plans.yearlySave").replace("{amount}", tier.savings)}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="mt-4 flex items-baseline gap-1">
+                    <span className="font-heading text-3xl font-bold">{t(tier.monthlyPriceKey)}</span>
+                    {tier.isPaid && (
+                      <span className="text-sm text-gray-500 dark:text-neutral-400">
+                        {t("plans.perMonth")}
+                      </span>
+                    )}
+                  </p>
+                )}
                 {tier.plan && (
                   <p className="mt-1 text-xs text-[var(--color-primary)]">
                     {t("plans.trial")}

@@ -74,36 +74,49 @@ export async function DELETE(req: Request) {
     const { memberId } = await req.json().catch(() => ({ memberId: null }));
     if (!memberId) return Response.json({ error: "Missing memberId" }, { status: 400 });
 
-    const { data: callerMembership } = await supabaseAdmin()
-      .from("org_members")
-      .select("org_id, role")
-      .eq("user_id", userId)
-      .single();
-
-    if (!callerMembership || !["supervisor", "admin"].includes(callerMembership.role)) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const { data: target } = await supabaseAdmin()
+    const { data: target, error: targetErr } = await supabaseAdmin()
       .from("org_members")
       .select("id, org_id, user_id")
       .eq("id", memberId)
       .single();
 
-    if (!target || target.org_id !== callerMembership.org_id) {
+    if (targetErr || !target) {
       return Response.json({ error: "Member not found" }, { status: 404 });
+    }
+
+    const { data: callerMembership, error: callerErr } = await supabaseAdmin()
+      .from("org_members")
+      .select("org_id, role")
+      .eq("user_id", userId)
+      .eq("org_id", target.org_id)
+      .single();
+
+    if (callerErr || !callerMembership || !["supervisor", "admin"].includes(callerMembership.role)) {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
     if (target.user_id === userId) {
       return Response.json({ error: "Cannot remove yourself" }, { status: 400 });
     }
 
-    await supabaseAdmin().from("org_members").delete().eq("id", memberId);
+    const { error: deleteErr } = await supabaseAdmin()
+      .from("org_members")
+      .delete()
+      .eq("id", memberId);
 
-    await supabaseAdmin()
+    if (deleteErr) {
+      console.error("DELETE org_members:", deleteErr);
+      return Response.json({ error: "Failed to remove member" }, { status: 500 });
+    }
+
+    const { error: profileErr } = await supabaseAdmin()
       .from("profiles")
       .update({ org_id: null, updated_at: new Date().toISOString() })
       .eq("id", target.user_id);
+
+    if (profileErr) {
+      console.error("UPDATE profiles.org_id:", profileErr);
+    }
 
     return Response.json({ ok: true });
   } catch (err) {

@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { getStripe, PLANS, type PlanId } from "@/lib/stripe";
+import { getStripe, PLANS, type PlanId, type BillingInterval } from "@/lib/stripe";
 import { APP_URL } from "@/lib/urls";
 import { z } from "zod";
 import Stripe from "stripe";
@@ -9,6 +9,7 @@ const TRIAL_DAYS = 14;
 
 const schema = z.object({
   plan: z.enum(["silver", "gold"]),
+  billing: z.enum(["monthly", "yearly"]).default("monthly"),
 });
 
 export async function POST(req: Request) {
@@ -22,11 +23,13 @@ export async function POST(req: Request) {
       return Response.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    const { plan } = parsed.data;
+    const { plan, billing } = parsed.data;
     const planConfig = PLANS[plan as PlanId];
+    const priceId = billing === "yearly" ? planConfig.yearlyPriceId : planConfig.priceId;
 
-    if (!planConfig.priceId) {
-      console.error(`Missing STRIPE_${plan.toUpperCase()}_PRICE_ID env var`);
+    if (!priceId) {
+      const envSuffix = billing === "yearly" ? "YEARLY_" : "";
+      console.error(`Missing STRIPE_${plan.toUpperCase()}_${envSuffix}PRICE_ID env var`);
       return Response.json({ error: "plan_not_configured" }, { status: 500 });
     }
 
@@ -68,7 +71,7 @@ export async function POST(req: Request) {
     const session = await getStripe().checkout.sessions.create({
       customer: customerId,
       mode: "subscription",
-      line_items: [{ price: planConfig.priceId, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: {
         trial_period_days: TRIAL_DAYS,
       },
@@ -78,6 +81,7 @@ export async function POST(req: Request) {
       metadata: {
         org_id: profile.org_id,
         plan,
+        billing,
       },
     });
 

@@ -17,6 +17,7 @@ import { getDailyFact } from "@/lib/safety-facts";
 import { trackEvent } from "@/lib/analytics";
 import { InviteQRCode } from "@/components/invite-qr-code";
 import { usePlan } from "@/lib/hooks/use-plan";
+import { MusicPlayer } from "@/components/music-player";
 
 export function SupervisorHome() {
   const { locale, setLocale, t } = useLocale();
@@ -261,6 +262,9 @@ export function SupervisorHome() {
                 <LogOut className="h-5 w-5 shrink-0" />
                 {t("auth.signOut")}
               </button>
+              <div className="mx-4 mt-2 mb-3">
+                <MusicPlayer />
+              </div>
             </div>
           </div>
         </>
