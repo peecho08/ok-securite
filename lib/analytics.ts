@@ -13,6 +13,7 @@ type AnalyticsEvent =
   | "subscription_activated"
   | "subscription_canceled"
   | "plan_page_viewed"
+  | "plan_checkout_started"
   | "pdf_downloaded"
   | "site_created"
   | "custom_checklist_created"

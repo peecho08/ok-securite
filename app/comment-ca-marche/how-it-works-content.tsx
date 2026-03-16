@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
 import { APP_URL } from "@/lib/urls";
-import { PlayCircle, Users, ClipboardList, BarChart3, FileCheck, UserPlus, ListChecks, CheckSquare, Send } from "lucide-react";
+import { Users, ClipboardList, BarChart3, FileCheck, UserPlus, ListChecks, CheckSquare, Send } from "lucide-react";
 
 type Persona = "employer" | "worker";
 
@@ -39,13 +39,7 @@ export function HowItWorksContent() {
           <p className="mx-auto mt-5 max-w-xl text-lg text-white/75 sm:text-xl">
             {t("mkt.hiw.subtitle")}
           </p>
-          <a
-            href="#"
-            className="mt-8 inline-flex items-center gap-2.5 rounded-xl border border-white/20 px-6 py-3 font-heading text-base font-bold text-white transition-colors hover:bg-white/10"
-          >
-            <PlayCircle className="h-5 w-5" />
-            {t("mkt.hiw.videoDemo")}
-          </a>
+{/* Video link hidden for now */}
         </div>
       </section>
 

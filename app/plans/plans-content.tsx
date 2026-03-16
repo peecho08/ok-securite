@@ -1,8 +1,10 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { useLocale } from "@/lib/i18n";
-import { Check, Minus } from "lucide-react";
+import { Check, Minus, Loader2 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 interface Feature {
@@ -22,51 +24,99 @@ export function PlansContent() {
 
 function PlansInner() {
   const { t } = useLocale();
+  const { isSignedIn } = useUser();
+  const searchParams = useSearchParams();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  const success = searchParams.get("success") === "true";
+  const canceled = searchParams.get("canceled") === "true";
 
   useEffect(() => {
-    trackEvent("plan_page_viewed", { variant: "early_access" });
+    trackEvent("plan_page_viewed");
+  }, []);
+
+  const handleSubscribe = useCallback(async (plan: "silver" | "gold") => {
+    setLoadingPlan(plan);
+    trackEvent("plan_checkout_started", { plan });
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || "Something went wrong");
+        setLoadingPlan(null);
+      }
+    } catch {
+      alert("Something went wrong");
+      setLoadingPlan(null);
+    }
   }, []);
 
   const features: Feature[] = [
     { labelKey: "plans.feat.checklists", free: t("plans.feat.checklists.val"), silver: t("plans.feat.checklists.val"), gold: t("plans.feat.checklists.val") },
-    { labelKey: "plans.feat.pdf", free: true, silver: true, gold: true },
+    { labelKey: "plans.feat.pdf", free: false, silver: true, gold: true },
+    { labelKey: "plans.feat.photos", free: false, silver: false, gold: true },
+    { labelKey: "plans.feat.emailNotif", free: false, silver: true, gold: true },
     { labelKey: "plans.feat.custom", free: t("plans.feat.custom.free"), silver: t("plans.feat.custom.silver"), gold: t("plans.feat.custom.gold") },
     { labelKey: "plans.feat.team", free: t("plans.feat.team.free"), silver: t("plans.feat.team.silver"), gold: t("plans.feat.team.gold") },
     { labelKey: "plans.feat.sites", free: t("plans.feat.sites.free"), silver: t("plans.feat.sites.silver"), gold: t("plans.feat.sites.gold") },
-    { labelKey: "plans.feat.dashboard", free: true, silver: true, gold: true },
-    { labelKey: "plans.feat.support", free: false, silver: false, gold: true },
+    { labelKey: "plans.feat.dashboard", free: false, silver: t("plans.feat.dashboard.silver"), gold: t("plans.feat.dashboard.gold") },
     { labelKey: "plans.feat.branding", free: false, silver: false, gold: true },
+    { labelKey: "plans.feat.csvExport", free: false, silver: false, gold: true },
+    { labelKey: "plans.feat.bulkPdf", free: false, silver: false, gold: true },
+    { labelKey: "plans.feat.weeklyEmail", free: false, silver: false, gold: true },
+    { labelKey: "plans.feat.support", free: false, silver: false, gold: true },
   ];
 
-  const tiers = [
+  type Tier = {
+    nameKey: string;
+    priceKey: string;
+    descKey: string;
+    ctaKey: string;
+    href: string | null;
+    plan: "silver" | "gold" | null;
+    highlighted: boolean;
+    showPerMonth: boolean;
+    values: (string | boolean)[];
+  };
+
+  const tiers: Tier[] = [
     {
       nameKey: "plans.free",
       priceKey: "plans.free.price",
       descKey: "plans.free.desc",
       ctaKey: "plans.cta.free",
       href: "/sign-up",
-      highlighted: true,
-      comingSoon: false,
+      plan: null,
+      highlighted: false,
+      showPerMonth: false,
       values: features.map((f) => f.free),
     },
     {
       nameKey: "plans.silver",
       priceKey: "plans.silver.price",
       descKey: "plans.silver.desc",
-      ctaKey: "plans.cta.silver",
-      href: null,
+      ctaKey: isSignedIn ? "plans.cta.silver" : "plans.cta.signUpFirst",
+      href: isSignedIn ? null : "/sign-up?redirect_url=/plans",
+      plan: isSignedIn ? "silver" : null,
       highlighted: false,
-      comingSoon: true,
+      showPerMonth: true,
       values: features.map((f) => f.silver),
     },
     {
       nameKey: "plans.gold",
       priceKey: "plans.gold.price",
       descKey: "plans.gold.desc",
-      ctaKey: "plans.cta.gold",
-      href: null,
-      highlighted: false,
-      comingSoon: true,
+      ctaKey: isSignedIn ? "plans.cta.gold" : "plans.cta.signUpFirst",
+      href: isSignedIn ? null : "/sign-up?redirect_url=/plans",
+      plan: isSignedIn ? "gold" : null,
+      highlighted: true,
+      showPerMonth: true,
       values: features.map((f) => f.gold),
     },
   ];
@@ -83,6 +133,17 @@ function PlansInner() {
           </p>
         </div>
 
+        {success && (
+          <div className="mb-8 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-center text-sm font-medium text-green-800 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300">
+            {t("plans.success")}
+          </div>
+        )}
+        {canceled && (
+          <div className="mb-8 rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-center text-sm font-medium text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+            {t("plans.canceled")}
+          </div>
+        )}
+
         <div className="grid gap-6 sm:grid-cols-3">
           {tiers.map((tier) => (
             <div
@@ -90,17 +151,12 @@ function PlansInner() {
               className={`relative flex flex-col rounded-2xl border p-6 transition-shadow ${
                 tier.highlighted
                   ? "border-[var(--color-primary)] shadow-lg shadow-[var(--color-primary)]/10 dark:shadow-[var(--color-primary)]/5"
-                  : "border-gray-200 opacity-60 dark:border-neutral-700"
+                  : "border-gray-200 dark:border-neutral-700"
               }`}
             >
               {tier.highlighted && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--color-primary)] px-3 py-1 text-xs font-bold text-white">
                   {t("plans.popular")}
-                </span>
-              )}
-              {tier.comingSoon && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gray-400 px-3 py-1 text-xs font-bold text-white dark:bg-neutral-600">
-                  {t("plans.comingSoon")}
                 </span>
               )}
 
@@ -109,9 +165,19 @@ function PlansInner() {
                 <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                   {t(tier.descKey)}
                 </p>
-                <p className="mt-4 font-heading text-3xl font-bold">
-                  {t(tier.priceKey)}
+                <p className="mt-4 flex items-baseline gap-1">
+                  <span className="font-heading text-3xl font-bold">{t(tier.priceKey)}</span>
+                  {tier.showPerMonth && (
+                    <span className="text-sm text-gray-500 dark:text-neutral-400">
+                      {t("plans.perMonth")}
+                    </span>
+                  )}
                 </p>
+                {tier.plan && (
+                  <p className="mt-1 text-xs text-[var(--color-primary)]">
+                    {t("plans.trial")}
+                  </p>
+                )}
               </div>
 
               <ul className="mb-8 flex-1 space-y-3">
@@ -140,15 +206,30 @@ function PlansInner() {
               {tier.href ? (
                 <a
                   href={tier.href}
-                  className="block rounded-xl bg-[var(--color-primary)] py-3 text-center font-heading text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
+                  className={`block rounded-xl py-3 text-center font-heading text-sm font-bold transition-colors ${
+                    tier.highlighted
+                      ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dark)]"
+                      : "border border-gray-200 bg-white hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                  }`}
                 >
                   {t(tier.ctaKey)}
                 </a>
-              ) : (
-                <span className="block cursor-default rounded-xl border border-gray-200 bg-gray-100 py-3 text-center font-heading text-sm font-bold text-gray-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-500">
+              ) : tier.plan ? (
+                <button
+                  onClick={() => handleSubscribe(tier.plan!)}
+                  disabled={loadingPlan !== null}
+                  className={`flex items-center justify-center gap-2 rounded-xl py-3 text-center font-heading text-sm font-bold transition-colors disabled:opacity-60 ${
+                    tier.highlighted
+                      ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dark)]"
+                      : "bg-gray-900 text-white hover:bg-gray-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
+                  }`}
+                >
+                  {loadingPlan === tier.plan && (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  )}
                   {t(tier.ctaKey)}
-                </span>
-              )}
+                </button>
+              ) : null}
             </div>
           ))}
         </div>

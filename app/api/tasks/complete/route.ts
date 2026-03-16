@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { notifyChecklistCompleted } from "@/lib/notifications";
 import { completeChecklistSchema } from "@/lib/schemas";
+import { getOrgPlanServer } from "@/lib/db-server";
+import { getPlanLimits } from "@/lib/stripe";
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -48,7 +50,11 @@ export async function POST(req: Request) {
   }
 
   try {
-    await notifyChecklistCompleted(userId, taskTitle, displayName, orgId);
+    const plan = orgId ? await getOrgPlanServer(orgId) : "free";
+    const limits = getPlanLimits(plan);
+    if (limits.emailNotifications) {
+      await notifyChecklistCompleted(userId, taskTitle, displayName, orgId);
+    }
   } catch (err) {
     console.error("Failed to notify supervisors:", err);
   }

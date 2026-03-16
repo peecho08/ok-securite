@@ -1,6 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getProfileServer, getOrgPlanServer } from "@/lib/db-server";
+import { getPlanLimits } from "@/lib/stripe";
 
 const MAX_SIZE = 2 * 1024 * 1024; // 2 MB after client compression
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -10,6 +12,13 @@ export async function POST(req: Request) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const profile = await getProfileServer(userId);
+  const plan = profile?.org_id ? await getOrgPlanServer(profile.org_id) : "free";
+  const limits = getPlanLimits(plan);
+  if (!limits.photoAttachments) {
+    return NextResponse.json({ error: "Photo attachments require the Gold plan" }, { status: 403 });
   }
 
   const formData = await req.formData();

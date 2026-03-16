@@ -9,7 +9,7 @@ import { checklistItemsEn, phaseTitlesEn } from "@/data/checklists-en";
 import { tasks } from "@/data/tasks";
 import { addHistory, clearProgress, loadProgress } from "@/lib/storage";
 import { getLogoPngDataUrl } from "@/lib/pdf-logo";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import { mergePhases } from "@/lib/locale-helpers";
 import { TaskIcon } from "@/components/task-icon";
 import { Download } from "lucide-react";
@@ -18,6 +18,7 @@ import { fireConfetti } from "@/lib/confetti";
 import { playCelebration, playMilestone } from "@/lib/sounds";
 import { trackEvent } from "@/lib/analytics";
 import { getHistory } from "@/lib/storage";
+import { usePlan } from "@/lib/hooks/use-plan";
 
 export default function ConfirmPage() {
   const { taskId } = useParams<{ taskId: string }>();
@@ -54,6 +55,7 @@ export default function ConfirmPage() {
   const [notified, setNotified] = useState(false);
   const [geoAddress, setGeoAddress] = useState("");
   const [geoLoading, setGeoLoading] = useState(true);
+  const planInfo = usePlan();
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -454,16 +456,26 @@ export default function ConfirmPage() {
             {t("confirm.notified")}
           </div>
         )}
-        <button
-          onClick={() => {
-            trackEvent("pdf_downloaded", { task_id: taskId });
-            generatePdf();
-          }}
-          className="mb-2 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-gray-800 py-3 font-heading text-sm font-bold tracking-wide transition-colors active:bg-gray-100 dark:border-neutral-300 dark:text-neutral-100 dark:active:bg-neutral-700"
-        >
-          <Download className="h-4 w-4" />
-          {t("confirm.downloadPdf")}
-        </button>
+        {planInfo.pdfExport ? (
+          <button
+            onClick={() => {
+              trackEvent("pdf_downloaded", { task_id: taskId });
+              generatePdf();
+            }}
+            className="mb-2 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-gray-800 py-3 font-heading text-sm font-bold tracking-wide transition-colors active:bg-gray-100 dark:border-neutral-300 dark:text-neutral-100 dark:active:bg-neutral-700"
+          >
+            <Download className="h-4 w-4" />
+            {t("confirm.downloadPdf")}
+          </button>
+        ) : !planInfo.loading ? (
+          <Link
+            href="/plans"
+            className="mb-2 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-amber-300 bg-amber-50 py-3 font-heading text-sm font-bold tracking-wide text-amber-800 transition-colors active:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-300"
+          >
+            <Lock className="h-4 w-4" />
+            {t("confirm.downloadPdf")} — {t("upgrade.cta")}
+          </Link>
+        ) : null}
         <Link
           href="/app"
           onClick={handleFinish}

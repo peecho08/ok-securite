@@ -28,26 +28,33 @@ export interface PlanLimits {
   sites: number;
   teamMembers: number;
   dashboard: boolean;
+  pdfExport: boolean;
+  photoAttachments: boolean;
+  emailNotifications: boolean;
   prioritySupport: boolean;
   branding: boolean;
 }
 
-// During early access, free tier gets full access (same as gold).
-// Revert to restricted limits when paid plans go live.
 export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
   free: {
-    customChecklists: Infinity,
-    sites: Infinity,
-    teamMembers: Infinity,
-    dashboard: true,
+    customChecklists: 0,
+    sites: 1,
+    teamMembers: 3,
+    dashboard: false,
+    pdfExport: false,
+    photoAttachments: false,
+    emailNotifications: false,
     prioritySupport: false,
     branding: false,
   },
   silver: {
-    customChecklists: 10,
-    sites: 3,
+    customChecklists: 3,
+    sites: Infinity,
     teamMembers: 10,
     dashboard: true,
+    pdfExport: true,
+    photoAttachments: false,
+    emailNotifications: true,
     prioritySupport: false,
     branding: false,
   },
@@ -56,6 +63,9 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     sites: Infinity,
     teamMembers: Infinity,
     dashboard: true,
+    pdfExport: true,
+    photoAttachments: true,
+    emailNotifications: true,
     prioritySupport: true,
     branding: true,
   },

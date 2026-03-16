@@ -11,10 +11,11 @@ import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress
 import { mergePhases } from "@/lib/locale-helpers";
 import { useLocale } from "@/lib/i18n";
 import { getLogoPngDataUrl } from "@/lib/pdf-logo";
-import { ArrowLeft, AlertTriangle, Check, ChevronRight, Download, MapPin, Camera, X, FileText } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Check, ChevronRight, Download, MapPin, Camera, X, FileText, Lock } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { compressImage } from "@/lib/compress-image";
 import { playTick, playPhaseComplete } from "@/lib/sounds";
+import { usePlan } from "@/lib/hooks/use-plan";
 
 
 function haptic(pattern: number | number[] = 15) {
@@ -111,6 +112,7 @@ export default function TaskPage() {
   const [imageUploading, setImageUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const planInfo = usePlan();
   const userToggledRef = useRef(false);
   const prevCompletedPhasesRef = useRef<Set<Phase>>(new Set());
   const phaseRefs = useRef<Map<Phase, HTMLElement>>(new Map());
@@ -729,40 +731,50 @@ export default function TaskPage() {
               className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-sm text-gray-800 placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-500"
             />
 
-            {!imagePreview ? (
-              <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 py-3.5 text-sm font-medium text-gray-500 transition-colors active:bg-gray-50 dark:border-neutral-600 dark:text-neutral-400 dark:active:bg-neutral-700">
-                <Camera className="h-4 w-4" />
-                {t("task.addPhoto")}
-                <input
-                  ref={imageInputRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="hidden"
-                  onChange={handleImageSelect}
-                />
-              </label>
+            {planInfo.photoAttachments ? (
+              !imagePreview ? (
+                <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 py-3.5 text-sm font-medium text-gray-500 transition-colors active:bg-gray-50 dark:border-neutral-600 dark:text-neutral-400 dark:active:bg-neutral-700">
+                  <Camera className="h-4 w-4" />
+                  {t("task.addPhoto")}
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handleImageSelect}
+                  />
+                </label>
+              ) : (
+                <div className="relative mt-3">
+                  <img
+                    src={imagePreview}
+                    alt=""
+                    className="w-full rounded-xl object-cover"
+                    style={{ maxHeight: 200 }}
+                  />
+                  {imageUploading && (
+                    <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
+                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white transition-colors active:bg-black/70"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )
             ) : (
-              <div className="relative mt-3">
-                <img
-                  src={imagePreview}
-                  alt=""
-                  className="w-full rounded-xl object-cover"
-                  style={{ maxHeight: 200 }}
-                />
-                {imageUploading && (
-                  <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white transition-colors active:bg-black/70"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+              <a
+                href="/plans"
+                className="mt-3 flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-amber-300 bg-amber-50/50 py-3.5 text-sm font-medium text-amber-700 transition-colors active:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/20 dark:text-amber-400"
+              >
+                <Lock className="h-4 w-4" />
+                {t("task.addPhoto")} — {t("upgrade.cta")}
+              </a>
             )}
           </section>
         )}

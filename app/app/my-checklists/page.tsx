@@ -7,7 +7,7 @@ import { getCustomTasks, getCustomChecklist, deleteCustomTask } from "@/lib/stor
 import type { Task } from "@/types";
 import { TaskIcon } from "@/components/task-icon";
 import { ArrowLeft, PenLine, Plus, Trash2 } from "lucide-react";
-import { usePlan, isPaid } from "@/lib/hooks/use-plan";
+import { usePlan } from "@/lib/hooks/use-plan";
 import { UpgradeBanner, LimitBanner } from "@/components/upgrade-banner";
 
 export default function MyChecklistsPage() {
@@ -19,8 +19,8 @@ export default function MyChecklistsPage() {
     setCustomTasks(getCustomTasks());
   }, []);
 
-  const canAdd = isPaid(planInfo.plan) && customTasks.length < planInfo.customChecklists;
-  const atLimit = isPaid(planInfo.plan) && customTasks.length >= planInfo.customChecklists && planInfo.customChecklists !== Infinity;
+  const canAdd = planInfo.customChecklists > 0 && customTasks.length < planInfo.customChecklists;
+  const atLimit = planInfo.customChecklists > 0 && customTasks.length >= planInfo.customChecklists && planInfo.customChecklists !== Infinity;
 
   return (
     <div className="relative z-[2] mx-auto min-h-dvh w-full max-w-3xl bg-white shadow-sm dark:bg-neutral-900 dark:shadow-none">
@@ -35,7 +35,7 @@ export default function MyChecklistsPage() {
       </header>
 
       <main className="px-5 pb-10 sm:px-8">
-        {!planInfo.loading && !isPaid(planInfo.plan) ? (
+        {!planInfo.loading && planInfo.customChecklists === 0 ? (
           <div className="py-8">
             <UpgradeBanner messageKey="upgrade.checklists" />
           </div>

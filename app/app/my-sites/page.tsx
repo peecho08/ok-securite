@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
 import { PlaceAutocomplete } from "@/components/address-autocomplete";
 import { ArrowLeft, MapPin, Plus, Trash2 } from "lucide-react";
-import { usePlan, isPaid } from "@/lib/hooks/use-plan";
-import { UpgradeBanner, LimitBanner } from "@/components/upgrade-banner";
+import { usePlan } from "@/lib/hooks/use-plan";
+import { LimitBanner } from "@/components/upgrade-banner";
 import { trackEvent } from "@/lib/analytics";
 import { toast } from "sonner";
 
@@ -48,8 +48,8 @@ export default function MySitesPage() {
     fetchSites();
   }, [fetchSites]);
 
-  const canAddSite = isPaid(planInfo.plan) && sites.length < planInfo.sites;
-  const atLimit = isPaid(planInfo.plan) && sites.length >= planInfo.sites && planInfo.sites !== Infinity;
+  const canAddSite = sites.length < planInfo.sites;
+  const atLimit = sites.length >= planInfo.sites && planInfo.sites !== Infinity;
 
   async function handleAddSite() {
     const name = newSiteName.trim();
@@ -106,11 +106,6 @@ export default function MySitesPage() {
       </header>
 
       <main className="px-5 pb-10 sm:px-8">
-        {!planInfo.loading && !isPaid(planInfo.plan) ? (
-          <div className="py-8">
-            <UpgradeBanner messageKey="upgrade.sites" />
-          </div>
-        ) : (<>
         {showAddSite && (
           <div className="mb-4 rounded-xl border border-gray-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-800">
             <PlaceAutocomplete
@@ -231,7 +226,6 @@ export default function MySitesPage() {
             {t("site.add")}
           </button>
         )}
-        </>)}
       </main>
     </div>
   );
