@@ -20,6 +20,7 @@ import { APP_URL } from "@/lib/urls";
 import type { Locale } from "@/lib/i18n";
 import type { Task } from "@/types";
 import { TaskIcon } from "@/components/task-icon";
+import { mergePhases } from "@/lib/locale-helpers";
 
 // ── Locale helpers (server-side, no hooks) ─────────────
 
@@ -126,9 +127,10 @@ function CTASection({ locale }: { locale: Locale }) {
 // ── Task Card ──────────────────────────────────────────
 
 function TaskCard({ task, locale }: { task: Task; locale: Locale }) {
-  const checklist = checklists[task.id];
+  const raw = checklists[task.id];
+  const phases = raw ? mergePhases(raw.phases) : null;
   const itemCount =
-    checklist?.phases.reduce((sum, p) => sum + p.items.length, 0) ?? 0;
+    phases?.reduce((sum, p) => sum + p.items.length, 0) ?? 0;
 
   return (
     <Link
@@ -206,6 +208,98 @@ function PhaseSection({
           );
         })}
       </ul>
+    </div>
+  );
+}
+
+// ── Checklist Preview with fade-out ────────────────────
+
+function ChecklistPreview({
+  phases,
+  locale,
+  totalItems,
+}: {
+  phases: PhaseGroup[];
+  locale: Locale;
+  totalItems: number;
+}) {
+  const previewPhase = phases[0];
+  const remainingPhases = phases.slice(1);
+  const hiddenItemCount =
+    totalItems - (previewPhase?.items.length ?? 0);
+
+  return (
+    <div>
+      {/* First phase shown fully */}
+      {previewPhase && (
+        <PhaseSection phase={previewPhase} locale={locale} />
+      )}
+
+      {/* Remaining phases fade out */}
+      {remainingPhases.length > 0 && (
+        <div className="relative mt-6">
+          <div className="space-y-6 [mask-image:linear-gradient(to_bottom,black_0%,black_20%,transparent_90%)]">
+            {remainingPhases.map((phase) => (
+              <PhaseSection
+                key={phase.phase}
+                phase={phase}
+                locale={locale}
+              />
+            ))}
+          </div>
+
+          {/* CTA overlay at the bottom of the fade */}
+          <div className="relative z-10 -mt-8 flex flex-col items-center pb-2 pt-10">
+            <p className="mb-2 text-center text-sm font-medium text-gray-500 dark:text-neutral-400">
+              {l(
+                locale,
+                `+ ${hiddenItemCount} autres vérifications`,
+                `+ ${hiddenItemCount} more checks`,
+              )}
+            </p>
+            <a
+              href={APP_URL}
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-primary)] px-8 py-3.5 font-heading text-base font-bold text-white shadow-lg shadow-[var(--color-primary)]/20 transition-all hover:bg-[var(--color-primary-dark)] hover:shadow-xl hover:shadow-[var(--color-primary)]/30"
+            >
+              {l(
+                locale,
+                "Voir la liste complète — gratuit",
+                "See full checklist — free",
+              )}
+            </a>
+            <p className="mt-2 text-xs text-gray-400 dark:text-neutral-500">
+              {l(
+                locale,
+                "Aucune carte de crédit requise",
+                "No credit card required",
+              )}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Fallback CTA if only one phase */}
+      {remainingPhases.length === 0 && (
+        <div className="mt-8 flex flex-col items-center">
+          <a
+            href={APP_URL}
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-primary)] px-8 py-3.5 font-heading text-base font-bold text-white shadow-lg shadow-[var(--color-primary)]/20 transition-all hover:bg-[var(--color-primary-dark)] hover:shadow-xl hover:shadow-[var(--color-primary)]/30"
+          >
+            {l(
+              locale,
+              "Utiliser cette liste sur le terrain",
+              "Use this checklist on-site",
+            )}
+          </a>
+          <p className="mt-2 text-xs text-gray-400 dark:text-neutral-500">
+            {l(
+              locale,
+              "Gratuit — aucune carte de crédit requise",
+              "Free — no credit card required",
+            )}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -361,7 +455,9 @@ export function TaskLanding({
   task: Task;
   locale: Locale;
 }) {
-  const checklist = checklists[task.id];
+  const raw = checklists[task.id];
+  const phases = raw ? mergePhases(raw.phases) : null;
+  const totalItems = phases?.reduce((sum, p) => sum + p.items.length, 0) ?? 0;
   const relatedTasks = getTasksForCategory(
     task.category as TaskCategory,
   ).filter((t) => t.id !== task.id);
@@ -405,12 +501,12 @@ export function TaskLanding({
         </p>
       </div>
 
-      {checklist ? (
-        <div className="space-y-6">
-          {checklist.phases.map((phase) => (
-            <PhaseSection key={phase.phase} phase={phase} locale={locale} />
-          ))}
-        </div>
+      {phases ? (
+        <ChecklistPreview
+          phases={phases}
+          locale={locale}
+          totalItems={totalItems}
+        />
       ) : (
         <p className="italic text-gray-500">
           {l(
@@ -420,29 +516,6 @@ export function TaskLanding({
           )}
         </p>
       )}
-
-      <section className="mt-12 rounded-2xl bg-[var(--color-header)] px-6 py-10 text-center sm:px-12">
-        <h2 className="font-heading text-xl font-bold text-white sm:text-2xl">
-          {l(
-            locale,
-            "Utilisez cette liste sur le terrain",
-            "Use this checklist on-site",
-          )}
-        </h2>
-        <p className="mx-auto mt-2 max-w-md text-sm text-white/70">
-          {l(
-            locale,
-            "Cochez les points, prenez des photos et générez un rapport PDF professionnel — directement depuis votre téléphone.",
-            "Check off items, take photos and generate a professional PDF report — right from your phone.",
-          )}
-        </p>
-        <a
-          href={APP_URL}
-          className="mt-6 inline-block rounded-xl bg-[var(--color-primary)] px-8 py-3.5 font-heading text-base font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
-        >
-          {l(locale, "Essayer gratuitement", "Try for free")}
-        </a>
-      </section>
 
       {relatedTasks.length > 0 && (
         <div className="mt-14">
@@ -490,9 +563,10 @@ export function TaskJsonLd({
   task: Task;
   locale: Locale;
 }) {
-  const checklist = checklists[task.id];
-  if (!checklist) return null;
+  const raw = checklists[task.id];
+  if (!raw) return null;
 
+  const phases = mergePhases(raw.phases);
   const title = tTitle(task, locale);
   const desc = tDesc(task, locale);
 
@@ -501,7 +575,7 @@ export function TaskJsonLd({
     "@type": "HowTo",
     name: `${l(locale, "Liste de vérification", "Safety checklist")} — ${title}`,
     description: desc,
-    step: checklist.phases.map((phase) => ({
+    step: phases.map((phase) => ({
       "@type": "HowToSection",
       name: phTitle(phase.title, locale),
       itemListElement: phase.items.map((item, i) => ({

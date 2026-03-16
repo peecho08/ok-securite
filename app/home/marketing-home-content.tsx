@@ -129,10 +129,10 @@ export function MarketingHomeContent() {
             {t("mkt.hero.cta")}
           </a>
           <Link
-            href="/plans"
+            href="/checklists"
             className="rounded-xl border border-white/20 px-8 py-3.5 font-heading text-base font-bold text-white transition-colors hover:bg-white/10"
           >
-            {t("mkt.nav.plans")}
+            {t("mkt.nav.checklists")}
           </Link>
         </div>
         <div className="mt-10 flex flex-col items-center gap-2">
