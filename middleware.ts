@@ -30,8 +30,30 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.rewrite(url);
   }
 
+  if (pathname.startsWith("/app/join/")) {
+    const { userId } = await auth();
+    if (!userId) {
+      const signUpUrl = new URL("/sign-up", request.url);
+      signUpUrl.searchParams.set("redirect_url", pathname);
+      const response = NextResponse.redirect(signUpUrl);
+      response.cookies.set("pending_join", pathname, { maxAge: 300, path: "/" });
+      return response;
+    }
+    const response = NextResponse.next();
+    response.cookies.set("pending_join", pathname, { maxAge: 300, path: "/" });
+    return response;
+  }
+
   if (isProtectedRoute(request)) {
     await auth.protect();
+  }
+
+  const pendingJoin = request.cookies.get("pending_join")?.value;
+  if (pendingJoin && pathname === "/app" && !pathname.startsWith("/app/join/")) {
+    const joinUrl = new URL(pendingJoin, request.url);
+    const response = NextResponse.redirect(joinUrl);
+    response.cookies.delete("pending_join");
+    return response;
   }
 });
 

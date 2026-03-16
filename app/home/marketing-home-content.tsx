@@ -135,17 +135,6 @@ export function MarketingHomeContent() {
             {t("mkt.nav.plans")}
           </Link>
         </div>
-        <div className="mt-10 flex flex-col items-center gap-2">
-          <p className="text-xs text-white/30">
-            &copy; {new Date().getFullYear()} OK Sécurité. {t("mkt.footer.rights")}
-          </p>
-          <span className="flex items-center gap-1.5 text-[10px] text-white/20">
-            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 2L9.19 7.53 4.02 7.22 7.09 11.37 5.82 16.4 10.66 14.22 12 19.5 13.34 14.22 18.18 16.4 16.91 11.37 19.98 7.22 14.81 7.53Z" />
-            </svg>
-            {t("mkt.madeInCanada")}
-          </span>
-        </div>
       </section>
     </>
   );

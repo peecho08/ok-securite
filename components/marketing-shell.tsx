@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { I18nProvider, useLocale } from "@/lib/i18n";
@@ -7,6 +8,8 @@ import { APP_URL } from "@/lib/urls";
 
 function MarketingNav() {
   const { locale, setLocale, t } = useLocale();
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
 
   return (
     <nav className="absolute top-0 left-0 right-0 z-50 bg-[var(--color-header)]">
@@ -21,7 +24,9 @@ function MarketingNav() {
             priority
           />
         </Link>
-        <div className="flex items-center gap-4">
+
+        {/* Desktop nav */}
+        <div className="hidden items-center gap-4 md:flex">
           <Link
             href="/comment-ca-marche"
             className="text-sm font-medium text-white/80 transition-colors hover:text-white"
@@ -54,7 +59,65 @@ function MarketingNav() {
             {t("mkt.nav.try")}
           </a>
         </div>
+
+        {/* Mobile: CTA + hamburger */}
+        <div className="flex items-center gap-3 md:hidden">
+          <a
+            href={APP_URL}
+            className="rounded-lg bg-[var(--color-primary)] px-3.5 py-1.5 text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
+          >
+            {t("mkt.nav.try")}
+          </a>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Menu"
+            className="flex h-9 w-9 items-center justify-center rounded-md text-white/80 transition-colors hover:text-white"
+          >
+            {open ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile dropdown */}
+      {open && (
+        <div className="border-t border-white/10 bg-[var(--color-header)] px-5 pb-5 pt-3 md:hidden">
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/comment-ca-marche"
+              onClick={close}
+              className="text-sm font-medium text-white/80 transition-colors hover:text-white"
+            >
+              {t("mkt.nav.howItWorks")}
+            </Link>
+            <Link
+              href="/checklists"
+              onClick={close}
+              className="text-sm font-medium text-white/80 transition-colors hover:text-white"
+            >
+              {t("mkt.nav.checklists")}
+            </Link>
+            <Link
+              href="/plans"
+              onClick={close}
+              className="text-sm font-medium text-white/80 transition-colors hover:text-white"
+            >
+              {t("mkt.nav.plans")}
+            </Link>
+            <button
+              type="button"
+              onClick={() => { setLocale(locale === "fr" ? "en" : "fr"); close(); }}
+              className="w-fit rounded-md px-2 py-1 text-xs font-bold uppercase text-white/60 transition-colors hover:text-white"
+            >
+              {locale === "fr" ? "EN" : "FR"}
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
@@ -66,7 +129,7 @@ function MarketingFooter() {
     <footer className="border-t border-gray-200 bg-gray-50 dark:border-neutral-800 dark:bg-neutral-950">
       <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-neutral-400">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-500 dark:text-neutral-400">
             <Link href="/comment-ca-marche" className="transition-colors hover:text-gray-700 dark:hover:text-neutral-200">
               {t("mkt.nav.howItWorks")}
             </Link>

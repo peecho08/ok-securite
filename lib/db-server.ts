@@ -21,7 +21,7 @@ export async function updateProfileRoleServer(
       { id: userId, role, updated_at: new Date().toISOString() },
       { onConflict: "id" }
     );
-  if (error) console.error("updateProfileRoleServer:", error.message);
+  if (error) throw new Error(`updateProfileRoleServer: ${error.message}`);
 }
 
 export async function getOrgSubscriptionServer(orgId: string): Promise<Subscription | null> {

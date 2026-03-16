@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { tasks } from "@/data/tasks";
 import { type TaskCategory } from "@/types";
 import { useLocale } from "@/lib/i18n";
 import { localCatLabel, localTitle, normalize } from "@/lib/locale-helpers";
-import { clearProgress, getActiveTaskProgress, getTeamTasks, getWorkerName, getWorkerOnboardingDone, getCustomTasks, getCustomChecklists, getActiveRole } from "@/lib/storage";
+import { clearProgress, getActiveTaskProgress, getTeamTasks, getWorkerName, getWorkerOnboardingDone, getCustomTasks, getCustomChecklists, getActiveRole, getSupervisorOrgId } from "@/lib/storage";
 
 import { checklists } from "@/data/checklists";
 import type { Task, Checklist } from "@/types";
@@ -30,6 +31,7 @@ const categoryOrder: TaskCategory[] = [
 
 export default function HomePage() {
   const { locale, t } = useLocale();
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [teamTaskIds, setTeamTaskIds] = useState<string[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -160,7 +162,14 @@ export default function HomePage() {
     setActiveProgress((prev) => prev.filter((p) => p.taskId !== taskId));
   }, [t]);
 
+  useEffect(() => {
+    if (ready && isSupervisor && !getSupervisorOrgId()) {
+      router.replace("/app/create-team");
+    }
+  }, [ready, isSupervisor, router]);
+
   if (ready && isSupervisor && !showOnboarding) {
+    if (!getSupervisorOrgId()) return null;
     return <SupervisorHome />;
   }
 

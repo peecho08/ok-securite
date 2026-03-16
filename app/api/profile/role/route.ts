@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     return Response.json({ ok: true });
   } catch (err) {
     console.error("POST /api/profile/role:", err);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    const msg = err instanceof Error ? err.message : "Internal server error";
+    return Response.json({ error: msg }, { status: 500 });
   }
 }

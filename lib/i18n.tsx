@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { getLanguage, setLanguage as persistLanguage } from "./storage";
 import { translations } from "./translations";
 
@@ -19,7 +19,12 @@ const I18nContext = createContext<I18nContextValue>({
 });
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => (getLanguage() as Locale) || "fr");
+  const [locale, setLocaleState] = useState<Locale>("fr");
+
+  useEffect(() => {
+    const saved = getLanguage() as Locale;
+    if (saved && saved !== "fr") setLocaleState(saved);
+  }, []);
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);

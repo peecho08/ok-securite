@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { useLocale } from "@/lib/i18n";
 import { setSupervisorOrg, setActiveRole, setWorkerName, setCompanyLogo, getTeamName, getInviteToken, getDashboardSecret, getSupervisorOrgId, getTeamTasks, setTeamTasks, clearRoleChoiceDone, setSupervisorEmail } from "@/lib/storage";
 import { persistRole } from "@/lib/hooks/use-db-role";
@@ -190,15 +191,26 @@ export default function CreateTeamPage() {
   const { t } = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useUser();
   const isEditTasks = searchParams.has("edit-tasks");
   const [supervisorName, setSupervisorName] = useState("");
   const [supervisorEmail, setSupervisorEmailState] = useState("");
   const [teamName, setTeamName] = useState("");
+  const [prefilled, setPrefilled] = useState(false);
   const [pdfName, setPdfName] = useState("");
   const [step, setStep] = useState<"form" | "tasks" | "invite">("form");
   const [copied, setCopied] = useState<"invite" | "dashboard" | null>(null);
   const [fetchedLogo, setFetchedLogo] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (prefilled || !user) return;
+    const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
+    if (fullName && !supervisorName) setSupervisorName(fullName);
+    const email = user.primaryEmailAddress?.emailAddress;
+    if (email && !supervisorEmail) setSupervisorEmailState(email);
+    setPrefilled(true);
+  }, [user, prefilled, supervisorName, supervisorEmail]);
 
   useEffect(() => {
     const match = supervisorEmail.match(/@([^\s@]+\.[^\s@]+)$/);

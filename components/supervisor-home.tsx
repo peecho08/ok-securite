@@ -5,16 +5,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
-import { getTeamName, getInviteToken, getWorkerName, getHistory, getCustomTasks, type HistoryEntry } from "@/lib/storage";
+import { useClerk } from "@clerk/nextjs";
+import { getTeamName, getInviteToken, getWorkerName, setWorkerName, getHistory, getCustomTasks, getSupervisorEmail, setSupervisorEmail, type HistoryEntry } from "@/lib/storage";
 
 import type { Task } from "@/types";
 import { TaskIcon } from "@/components/task-icon";
-import { Copy, Check, Users, ClipboardList, ExternalLink, Mail, MessageSquare, MapPin, ListChecks, PenLine } from "lucide-react";
+import { Copy, Check, Users, ClipboardList, ExternalLink, Mail, MessageSquare, MapPin, ListChecks, PenLine, LogOut } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 export function SupervisorHome() {
   const { locale, setLocale, t } = useLocale();
   const { theme, toggle: toggleTheme } = useTheme();
+  const { signOut } = useClerk();
   const [teamName, setTeamName] = useState("");
   const [inviteUrl, setInviteUrl] = useState("");
   const [copied, setCopied] = useState(false);
@@ -23,6 +25,9 @@ export function SupervisorHome() {
   const [showMenu, setShowMenu] = useState(false);
   const [sites, setSites] = useState<{ id: string; name: string; address?: string | null; active: boolean }[]>([]);
   const [customTasks, setCustomTasks] = useState<Task[]>([]);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
 
   useEffect(() => {
     if (showMenu) {
@@ -90,8 +95,23 @@ export function SupervisorHome() {
           </div>
         </div>
         <h1 className="mt-4 font-heading text-2xl font-bold text-white">{teamName || t("supervisor.myTeam")}</h1>
-        {workerName && <p className="mt-0.5 text-sm text-white/70">{workerName} · {t("menu.supervisor")}</p>}
-        {!workerName && <p className="mt-0.5 text-sm text-white/70">{t("menu.supervisor")}</p>}
+        <div className="mt-0.5 flex items-center gap-2">
+          <p className="text-sm text-white/70">
+            {workerName ? `${workerName} · ${t("menu.supervisor")}` : t("menu.supervisor")}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setEditName(workerName);
+              setEditEmail(getSupervisorEmail());
+              setShowEditProfile(true);
+            }}
+            className="flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium text-white/80 transition-colors hover:bg-white/25 active:bg-white/30"
+          >
+            <PenLine className="h-3 w-3" />
+            {t("menu.editProfile")}
+          </button>
+        </div>
       </header>
 
       {/* Profile menu */}
@@ -176,7 +196,58 @@ export function SupervisorHome() {
                 <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" /></svg>
                 {t("menu.language")}
               </button>
+              <button
+                onClick={() => { setShowMenu(false); signOut({ redirectUrl: "/sign-in" }); }}
+                className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-red-600 transition-colors active:bg-red-50 dark:text-red-400 dark:active:bg-red-950/30 hover:bg-red-50 dark:hover:bg-red-950/20"
+              >
+                <LogOut className="h-5 w-5 shrink-0" />
+                {t("auth.signOut")}
+              </button>
             </div>
+          </div>
+        </>
+      )}
+
+      {showEditProfile && (
+        <>
+          <div className="fixed inset-0 z-40 animate-fade-in bg-black/30" onClick={() => setShowEditProfile(false)} aria-hidden="true" />
+          <div className="fixed inset-x-0 bottom-0 z-50 animate-sheet-up rounded-t-2xl border-t border-gray-200 bg-white p-5 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] dark:border-neutral-700 dark:bg-neutral-800 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
+            <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-gray-200" aria-hidden="true" />
+            <h2 className="mb-4 font-heading text-lg font-bold text-gray-900 dark:text-neutral-100">{t("menu.editProfile")}</h2>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-neutral-300">{t("createTeam.yourName")}</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:bg-white dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:focus:border-[var(--color-primary)]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-neutral-300">{t("createTeam.yourEmail")}</label>
+                <input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base outline-none placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:bg-white dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:focus:border-[var(--color-primary)]"
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (editName.trim()) {
+                  setWorkerName(editName.trim());
+                  setWorkerNameState(editName.trim());
+                }
+                if (editEmail.trim()) setSupervisorEmail(editEmail.trim());
+                setShowEditProfile(false);
+              }}
+              className="mt-4 w-full rounded-xl bg-[var(--color-primary)] py-3.5 font-heading text-base font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
+            >
+              {t("createTeam.done")}
+            </button>
           </div>
         </>
       )}

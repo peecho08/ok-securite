@@ -49,6 +49,7 @@ const fr: Record<string, string | string[]> = {
   "menu.joinTeam": "Rejoindre une équipe",
   "menu.joinTeamHint": "Collez le lien d'invitation de votre superviseur.",
   "menu.joinTeamSuccess": "Vous avez rejoint l'équipe !",
+  "menu.editProfile": "Modifier mon profil",
 
   // ── Role choice ─────────────────────────────────────────
   "role.chooseTitle": "Vous êtes…",
@@ -410,7 +411,7 @@ const fr: Record<string, string | string[]> = {
   "mkt.step2.desc": "Cochez les points, signalez les non-conformités, ajoutez des photos.",
   "mkt.step3.title": "Générez votre rapport",
   "mkt.step3.desc": "Rapport PDF professionnel en un clic — preuve de conformité instantanée.",
-  "mkt.testimonial.quote": "OK Sécurité a transformé nos inspections quotidiennes. Ce qui prenait 30 minutes sur papier se fait maintenant en 5 minutes.",
+  "mkt.testimonial.quote": "OK Sécurité a transformé nos inspections quotidiennes. Ce qui prenait 30 minutes sur papier se fait maintenant en 30 secondes.",
   "mkt.testimonial.author": "Marc-Antoine D.",
   "mkt.testimonial.role": "Superviseur de chantier",
   "mkt.footer.cta": "Commencer maintenant",
@@ -581,6 +582,7 @@ const en: Record<string, string | string[]> = {
   "menu.joinTeam": "Join a team",
   "menu.joinTeamHint": "Paste the invite link from your supervisor.",
   "menu.joinTeamSuccess": "You joined the team!",
+  "menu.editProfile": "Edit my profile",
 
   // ── Role choice ─────────────────────────────────────────
   "role.chooseTitle": "You are…",
@@ -942,7 +944,7 @@ const en: Record<string, string | string[]> = {
   "mkt.step2.desc": "Check items, flag non-conformities, add photos.",
   "mkt.step3.title": "Generate your report",
   "mkt.step3.desc": "Professional PDF report in one tap — instant proof of compliance.",
-  "mkt.testimonial.quote": "OK Sécurité transformed our daily inspections. What used to take 30 minutes on paper now takes 5.",
+  "mkt.testimonial.quote": "OK Sécurité transformed our daily inspections. What used to take 30 minutes on paper now takes 30 seconds.",
   "mkt.testimonial.author": "Marc-Antoine D.",
   "mkt.testimonial.role": "Site Supervisor",
   "mkt.footer.cta": "Get started now",

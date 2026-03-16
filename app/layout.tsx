@@ -39,11 +39,13 @@ export const metadata: Metadata = {
     siteName: "OK Sécurité",
     locale: "fr_CA",
     type: "website",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "OK Sécurité" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "OK Sécurité",
     description: "Listes de vérification sécurité — rapide et fiable",
+    images: ["/og-image.jpg"],
   },
 };
 

@@ -49,11 +49,19 @@ export function ChooseRole() {
     <div className="fixed inset-y-0 left-0 right-0 z-50 mx-auto flex w-full max-w-3xl flex-col overflow-y-auto bg-white text-gray-900 shadow-sm dark:bg-neutral-900 dark:text-neutral-100 dark:shadow-none">
       <div className="flex flex-1 flex-col items-center justify-center px-8 pb-8 pt-6">
         <Image
+          src="/ok-securite-dark.svg"
+          alt="OK Sécurité"
+          width={188}
+          height={48}
+          className="h-10 w-auto dark:hidden"
+          priority
+        />
+        <Image
           src="/ok-securite.svg"
           alt="OK Sécurité"
           width={188}
           height={48}
-          className="h-10 w-auto"
+          className="hidden h-10 w-auto dark:block"
           priority
         />
         <h1 className="mt-6 font-heading text-xl font-bold text-black dark:text-neutral-100">
@@ -88,7 +96,7 @@ export function ChooseRole() {
           </button>
         </div>
       </div>
-      <div className="flex items-center gap-4 pb-6 pt-2">
+      <div className="flex items-center justify-center gap-4 pb-6 pt-2">
         <button
           type="button"
           onClick={() => setLocale(locale === "fr" ? "en" : "fr")}
