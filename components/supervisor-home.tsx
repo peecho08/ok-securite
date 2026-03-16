@@ -11,12 +11,12 @@ import { getTeamName, getInviteToken, getWorkerName, setWorkerName, getHistory, 
 
 import type { Task } from "@/types";
 import { TaskIcon } from "@/components/task-icon";
-import { Copy, Check, Users, ClipboardList, ExternalLink, Mail, MessageSquare, MapPin, ListChecks, PenLine, LogOut, FileText, ImageIcon, QrCode, ChevronDown, ArrowUpCircle } from "lucide-react";
+import { Copy, Check, Users, ClipboardList, ExternalLink, Mail, MessageSquare, MapPin, ListChecks, PenLine, LogOut, FileText, ImageIcon, QrCode, ChevronDown, ArrowUpCircle, Download } from "lucide-react";
 import { WeeklyRecap } from "@/components/weekly-recap";
 import { getDailyFact } from "@/lib/safety-facts";
 import { trackEvent } from "@/lib/analytics";
 import { InviteQRCode } from "@/components/invite-qr-code";
-import { usePlan } from "@/lib/hooks/use-plan";
+import { usePlan, invalidatePlanCache } from "@/lib/hooks/use-plan";
 import { MusicPlayer } from "@/components/music-player";
 
 export function SupervisorHome() {
@@ -42,6 +42,7 @@ export function SupervisorHome() {
 
   useEffect(() => {
     if (searchParams.get("upgraded") === "true") {
+      invalidatePlanCache();
       setShowUpgradeSuccess(true);
       window.history.replaceState({}, "", "/app");
     }
@@ -84,6 +85,7 @@ export function SupervisorHome() {
             siteName: e.siteName as string | undefined,
             notes: (e.notes as string) || undefined,
             imageUrl: (e.imageUrl as string) || undefined,
+            pdfUrl: (e.pdfUrl as string) || undefined,
           })));
         } else {
           setHistory(getHistory());
@@ -480,33 +482,48 @@ export function SupervisorHome() {
           ) : (
             <div className="space-y-2">
               {history.map((entry, i) => (
-                <Link
+                <div
                   key={`${entry.taskId}-${entry.completedAt}-${i}`}
-                  href={entry.id ? `/app/history/${entry.id}` : "/app/history"}
-                  className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-3 transition-colors active:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-700"
+                  className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800"
                 >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-neutral-700 dark:text-neutral-400">
-                    <TaskIcon taskId={entry.taskId} className="h-4 w-4" fallback={entry.taskIcon} />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-heading text-sm font-semibold leading-tight">{entry.taskTitle}</p>
-                    <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-gray-500 dark:text-neutral-400">
-                      {entry.workerName || t("menu.supervisor")}
-                      <span className="text-gray-400 dark:text-neutral-500">·</span>
-                      {new Date(entry.completedAt).toLocaleDateString(dateLocale, { day: "numeric", month: "short" })}
-                      {(entry.notes || entry.imageUrl) && (
-                        <>
-                          <span className="text-gray-400 dark:text-neutral-500">·</span>
-                          {entry.notes && <FileText className="inline h-3 w-3 text-gray-400 dark:text-neutral-500" />}
-                          {entry.imageUrl && <ImageIcon className="inline h-3 w-3 text-gray-400 dark:text-neutral-500" />}
-                        </>
-                      )}
-                    </p>
-                  </div>
-                  <svg className="h-4 w-4 shrink-0 text-gray-400 dark:text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
+                  <Link
+                    href={entry.id ? `/app/history/${entry.id}` : "/app/history"}
+                    className="flex items-center gap-3 px-3.5 py-3 transition-colors active:bg-gray-50 dark:active:bg-neutral-700"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-neutral-700 dark:text-neutral-400">
+                      <TaskIcon taskId={entry.taskId} className="h-4 w-4" fallback={entry.taskIcon} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-heading text-sm font-semibold leading-tight">{entry.taskTitle}</p>
+                      <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-gray-500 dark:text-neutral-400">
+                        {entry.workerName || t("menu.supervisor")}
+                        <span className="text-gray-400 dark:text-neutral-500">·</span>
+                        {new Date(entry.completedAt).toLocaleDateString(dateLocale, { day: "numeric", month: "short" })}
+                        {(entry.notes || entry.imageUrl) && (
+                          <>
+                            <span className="text-gray-400 dark:text-neutral-500">·</span>
+                            {entry.notes && <FileText className="inline h-3 w-3 text-gray-400 dark:text-neutral-500" />}
+                            {entry.imageUrl && <ImageIcon className="inline h-3 w-3 text-gray-400 dark:text-neutral-500" />}
+                          </>
+                        )}
+                      </p>
+                    </div>
+                    <svg className="h-4 w-4 shrink-0 text-gray-400 dark:text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                  {entry.pdfUrl && (
+                    <a
+                      href={entry.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 border-t border-gray-100 px-3.5 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/5 active:bg-primary/10 dark:border-neutral-700 dark:text-primary"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      {t("history.detail.downloadPdf")}
+                    </a>
+                  )}
+                </div>
               ))}
             </div>
           )}

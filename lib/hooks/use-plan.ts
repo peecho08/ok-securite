@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { PlanTier, PlanLimits } from "@/lib/stripe";
 
 export interface PlanInfo extends PlanLimits {
@@ -23,31 +23,50 @@ const DEFAULT: PlanInfo = {
 };
 
 let cached: PlanInfo | null = null;
+let cachedAt = 0;
+
+const PLAN_CHANGED_EVENT = "plan-cache-invalidated";
+const STALE_MS = 60_000;
+
+function fetchPlan(onResult: (info: PlanInfo) => void, onError?: () => void) {
+  fetch("/api/plan")
+    .then((r) => r.json())
+    .then((data) => {
+      const result: PlanInfo = { ...data, loading: false };
+      cached = result;
+      cachedAt = Date.now();
+      onResult(result);
+    })
+    .catch(() => onError?.());
+}
 
 export function usePlan(): PlanInfo {
   const [info, setInfo] = useState<PlanInfo>(cached ?? DEFAULT);
 
+  const refresh = useCallback(() => {
+    fetchPlan(setInfo, () => setInfo((prev) => ({ ...prev, loading: false })));
+  }, []);
+
   useEffect(() => {
     if (cached) {
       setInfo(cached);
-      return;
+    } else {
+      refresh();
     }
 
-    let cancelled = false;
-    fetch("/api/plan")
-      .then((r) => r.json())
-      .then((data) => {
-        if (cancelled) return;
-        const result: PlanInfo = { ...data, loading: false };
-        cached = result;
-        setInfo(result);
-      })
-      .catch(() => {
-        if (!cancelled) setInfo({ ...DEFAULT, loading: false });
-      });
+    const onInvalidated = () => refresh();
+    window.addEventListener(PLAN_CHANGED_EVENT, onInvalidated);
 
-    return () => { cancelled = true; };
-  }, []);
+    const onFocus = () => {
+      if (!cachedAt || Date.now() - cachedAt > STALE_MS) refresh();
+    };
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      window.removeEventListener(PLAN_CHANGED_EVENT, onInvalidated);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [refresh]);
 
   return info;
 }
@@ -58,4 +77,8 @@ export function isPaid(plan: PlanTier): boolean {
 
 export function invalidatePlanCache() {
   cached = null;
+  cachedAt = 0;
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(PLAN_CHANGED_EVENT));
+  }
 }
