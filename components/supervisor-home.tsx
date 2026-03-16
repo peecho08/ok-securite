@@ -10,7 +10,7 @@ import { getTeamName, getInviteToken, getWorkerName, setWorkerName, getHistory, 
 
 import type { Task } from "@/types";
 import { TaskIcon } from "@/components/task-icon";
-import { Copy, Check, Users, ClipboardList, ExternalLink, Mail, MessageSquare, MapPin, ListChecks, PenLine, LogOut } from "lucide-react";
+import { Copy, Check, Users, ClipboardList, ExternalLink, Mail, MessageSquare, MapPin, ListChecks, PenLine, LogOut, FileText, ImageIcon } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 export function SupervisorHome() {
@@ -64,6 +64,8 @@ export function SupervisorHome() {
             totalCount: e.totalCount as number,
             completedAt: e.completedAt as string,
             siteName: e.siteName as string | undefined,
+            notes: (e.notes as string) || undefined,
+            imageUrl: (e.imageUrl as string) || undefined,
           })));
         } else {
           setHistory(getHistory());
@@ -279,21 +281,21 @@ export function SupervisorHome() {
         <section className="mb-5 grid grid-cols-2 gap-3">
           <Link
             href="/app/my-team"
-            className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
+            className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:border-gray-300 active:border-gray-400 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-500 dark:active:border-neutral-400"
           >
             <Users className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
             <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{t("supervisor.manageTeam")}</span>
           </Link>
           <Link
             href="/app/dashboard"
-            className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
+            className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:border-gray-300 active:border-gray-400 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-500 dark:active:border-neutral-400"
           >
             <ClipboardList className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
             <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">{t("menu.dashboard")}</span>
           </Link>
           <Link
             href="/app/my-sites"
-            className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
+            className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:border-gray-300 active:border-gray-400 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-500 dark:active:border-neutral-400"
           >
             <MapPin className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
             <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">
@@ -303,7 +305,7 @@ export function SupervisorHome() {
           </Link>
           <Link
             href="/app/my-checklists"
-            className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:bg-gray-50 active:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800"
+            className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-colors hover:border-gray-300 active:border-gray-400 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-500 dark:active:border-neutral-400"
           >
             <PenLine className="h-5 w-5 text-gray-500 dark:text-neutral-400" />
             <span className="text-sm font-medium text-gray-700 dark:text-neutral-200">
@@ -386,10 +388,17 @@ export function SupervisorHome() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-heading text-sm font-semibold leading-tight">{entry.taskTitle}</p>
-                    <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-neutral-400">
+                    <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-gray-500 dark:text-neutral-400">
                       {entry.workerName || t("menu.supervisor")}
-                      <span className="mx-1 text-gray-400 dark:text-neutral-500">·</span>
+                      <span className="text-gray-400 dark:text-neutral-500">·</span>
                       {new Date(entry.completedAt).toLocaleDateString(dateLocale, { day: "numeric", month: "short" })}
+                      {(entry.notes || entry.imageUrl) && (
+                        <>
+                          <span className="text-gray-400 dark:text-neutral-500">·</span>
+                          {entry.notes && <FileText className="inline h-3 w-3 text-gray-400 dark:text-neutral-500" />}
+                          {entry.imageUrl && <ImageIcon className="inline h-3 w-3 text-gray-400 dark:text-neutral-500" />}
+                        </>
+                      )}
                     </p>
                   </div>
                   <svg className="h-4 w-4 shrink-0 text-gray-400 dark:text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

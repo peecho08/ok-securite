@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
-  const { taskId, taskTitle, taskIcon, workerName, siteName, siteId, checkedCount, totalCount } = parsed.data;
+  const { taskId, taskTitle, taskIcon, workerName, siteName, siteId, checkedCount, totalCount, notes, imageUrl } = parsed.data;
 
   const { data: profile } = await supabaseAdmin()
     .from("profiles")
@@ -37,6 +37,8 @@ export async function POST(req: Request) {
     site_name: siteName ?? null,
     checked_count: checkedCount,
     total_count: totalCount,
+    notes: notes ?? null,
+    image_url: imageUrl ?? null,
     completed_at: new Date().toISOString(),
   });
 

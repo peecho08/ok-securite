@@ -10,6 +10,8 @@ export const completeChecklistSchema = z.object({
   checkedCount: z.number().int().min(0),
   totalCount: z.number().int().min(1),
   location: z.string().optional(),
+  notes: z.string().max(2000).optional(),
+  imageUrl: z.string().url().optional(),
 });
 
 export const createSiteSchema = z.object({

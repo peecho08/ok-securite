@@ -81,6 +81,8 @@ create table if not exists history (
   site_name text,
   checked_count integer not null default 0,
   total_count integer not null default 0,
+  notes text,
+  image_url text,
   completed_at timestamptz default now()
 );
 

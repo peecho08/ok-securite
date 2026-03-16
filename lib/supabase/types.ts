@@ -63,6 +63,8 @@ export interface HistoryEntry {
   site_name: string | null;
   checked_count: number;
   total_count: number;
+  notes: string | null;
+  image_url: string | null;
   completed_at: string;
 }
 

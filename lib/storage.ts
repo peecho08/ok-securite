@@ -309,6 +309,8 @@ export interface HistoryEntry {
   completedAt: string; // ISO string
   siteName?: string;
   location?: string;
+  notes?: string;
+  imageUrl?: string;
 }
 
 const HISTORY_KEY = key("history");

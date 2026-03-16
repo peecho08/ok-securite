@@ -38,6 +38,8 @@ export async function GET() {
     completedAt: e.completed_at,
     checkedCount: e.checked_count,
     totalCount: e.total_count,
+    notes: e.notes ?? null,
+    imageUrl: e.image_url ?? null,
   }));
 
   const totalCompleted = entries.length;

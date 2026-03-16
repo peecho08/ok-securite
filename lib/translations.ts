@@ -132,6 +132,11 @@ const fr: Record<string, string | string[]> = {
   "task.na": "N/A",
   "task.markedNa": "Marqué N/A",
   "task.source": "Source : CNESST / Code de sécurité pour les travaux de construction",
+  "task.extras": "Informations supplémentaires (optionnel)",
+  "task.notesPlaceholder": "Ajoutez des notes ou commentaires…",
+  "task.addPhoto": "Ajouter une photo",
+  "task.notesLabel": "Notes",
+  "task.photoLabel": "Photo",
 
   // ── Confirm ─────────────────────────────────────────────
   "confirm.complete": "Liste de vérification complétée",
@@ -182,6 +187,8 @@ const fr: Record<string, string | string[]> = {
   "history.detail.checklist": "Liste de vérification complétée",
   "history.detail.notFound": "Entrée introuvable",
   "history.detail.allChecked": "Tous les points vérifiés",
+  "history.detail.notes": "Notes",
+  "history.detail.photo": "Photo",
 
   // ── Well-being ──────────────────────────────────────────
   "wellbeing.title": "Bien-être",
@@ -675,6 +682,11 @@ const en: Record<string, string | string[]> = {
   "task.na": "N/A",
   "task.markedNa": "Marked N/A",
   "task.source": "Source: CNESST / Construction Safety Code",
+  "task.extras": "Additional information (optional)",
+  "task.notesPlaceholder": "Add notes or comments…",
+  "task.addPhoto": "Add a photo",
+  "task.notesLabel": "Notes",
+  "task.photoLabel": "Photo",
 
   // ── Confirm ─────────────────────────────────────────────
   "confirm.complete": "Checklist completed",
@@ -725,6 +737,8 @@ const en: Record<string, string | string[]> = {
   "history.detail.checklist": "Completed checklist",
   "history.detail.notFound": "Entry not found",
   "history.detail.allChecked": "All items verified",
+  "history.detail.notes": "Notes",
+  "history.detail.photo": "Photo",
 
   // ── Well-being ──────────────────────────────────────────
   "wellbeing.title": "Well-being",

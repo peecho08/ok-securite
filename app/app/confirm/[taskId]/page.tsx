@@ -44,6 +44,8 @@ export default function ConfirmPage() {
 
   const workerName = searchParams.get("worker") || "";
   const siteName = searchParams.get("site") || "";
+  const submittedNotes = searchParams.get("notes") || "";
+  const submittedImageUrl = searchParams.get("imageUrl") || "";
 
   const task = tasks.find((t) => t.id === taskId);
   const [saved, setSaved] = useState(false);
@@ -237,6 +239,8 @@ export default function ConfirmPage() {
       completedAt: now.toISOString(),
       siteName: siteName || undefined,
       location: geoAddress || undefined,
+      notes: submittedNotes || undefined,
+      imageUrl: submittedImageUrl || undefined,
     });
     trackEvent("checklist_completed", {
       task_id: taskId,
@@ -259,11 +263,13 @@ export default function ConfirmPage() {
         checkedCount: items,
         totalCount: items,
         location: geoAddress || undefined,
+        notes: submittedNotes || undefined,
+        imageUrl: submittedImageUrl || undefined,
       }),
     }).catch(() => {});
 
     setSaved(true);
-  }, [task, taskId, workerName, items, now, saved, progressLoaded, locale, siteName, geoAddress, geoLoading]);
+  }, [task, taskId, workerName, items, now, saved, progressLoaded, locale, siteName, geoAddress, geoLoading, submittedNotes, submittedImageUrl]);
 
   function handleFinish() {
     clearProgress(taskId as string);
@@ -347,7 +353,7 @@ export default function ConfirmPage() {
               {t("confirm.statusComplete")}
             </span>
           </div>
-          <div className="flex items-center justify-between pt-3">
+          <div className="flex items-center justify-between border-b border-gray-100 py-3 dark:border-neutral-700">
             <span className="text-sm text-muted">{t("confirm.date")}</span>
             <span className="text-right text-sm font-medium">
               {timestamp}
@@ -355,6 +361,21 @@ export default function ConfirmPage() {
               <span className="text-muted">{time}</span>
             </span>
           </div>
+          {submittedNotes && (
+            <div className="border-b border-gray-100 px-0 py-3 dark:border-neutral-700">
+              <span className="mb-1 block text-sm text-muted">{t("task.notesLabel")}</span>
+              <p className="whitespace-pre-wrap text-sm">{submittedNotes}</p>
+            </div>
+          )}
+          {submittedImageUrl && (
+            <div className="pt-3">
+              <span className="mb-1.5 block text-sm text-muted">{t("task.photoLabel")}</span>
+              <img src={submittedImageUrl} alt="" className="w-full rounded-lg object-cover" style={{ maxHeight: 200 }} />
+            </div>
+          )}
+          {!submittedNotes && !submittedImageUrl && (
+            <div className="pt-3" />
+          )}
         </div>
 
         <p className="animate-confirm-card mt-3 text-sm text-muted">

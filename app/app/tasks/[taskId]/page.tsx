@@ -11,8 +11,9 @@ import { addRecentTask, clearProgress, getWorkerName, loadProgress, saveProgress
 import { mergePhases } from "@/lib/locale-helpers";
 import { useLocale } from "@/lib/i18n";
 import { getLogoPngDataUrl } from "@/lib/pdf-logo";
-import { ArrowLeft, AlertTriangle, Check, ChevronRight, Download, MapPin } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Check, ChevronRight, Download, MapPin, Camera, X, FileText } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
+import { compressImage } from "@/lib/compress-image";
 
 
 function haptic(pattern: number | number[] = 15) {
@@ -103,6 +104,12 @@ export default function TaskPage() {
   const [selectedSiteId, setSelectedSiteId] = useState("");
   const [showCriticalWarning, setShowCriticalWarning] = useState(false);
   const [showSiteSheet, setShowSiteSheet] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const userToggledRef = useRef(false);
   const prevCompletedPhasesRef = useRef<Set<Phase>>(new Set());
   const phaseRefs = useRef<Map<Phase, HTMLElement>>(new Map());
@@ -364,6 +371,40 @@ export default function TaskPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task, phases, checked, na, allItems, workerName, availableSites, selectedSiteId, taskId, locale, t]);
 
+  async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImageUrl(null);
+
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+
+    setImageUploading(true);
+    try {
+      const compressed = await compressImage(file);
+      const form = new FormData();
+      form.append("file", compressed, `photo.jpg`);
+      const res = await fetch("/api/upload", { method: "POST", body: form });
+      if (res.ok) {
+        const { url } = await res.json();
+        setImageUrl(url);
+      }
+    } catch {
+      /* upload will retry at submission if needed */
+    } finally {
+      setImageUploading(false);
+    }
+  }
+
+  function removeImage() {
+    setImageFile(null);
+    setImagePreview(null);
+    setImageUrl(null);
+    if (imageInputRef.current) imageInputRef.current.value = "";
+  }
+
   function navigateToConfirm() {
     const selectedSite = availableSites.find((s) => s.id === selectedSiteId);
     const params = new URLSearchParams({
@@ -373,6 +414,8 @@ export default function TaskPage() {
       worker: workerName.trim(),
     });
     if (selectedSite) params.set("site", selectedSite.name);
+    if (notes.trim()) params.set("notes", notes.trim());
+    if (imageUrl) params.set("imageUrl", imageUrl);
     router.push(`/app/confirm/${taskId}?${params.toString()}`);
   }
 
@@ -665,6 +708,61 @@ export default function TaskPage() {
         <p className="mt-2 mb-4 text-center text-[11px] text-gray-500 dark:text-neutral-400">
           {t("task.source")}
         </p>
+
+        {/* Optional notes & photo when all items resolved */}
+        {allResolved && (
+          <section className="animate-fade-in mt-2 mb-4 rounded-2xl border border-gray-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
+            <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
+              <FileText className="h-3.5 w-3.5" />
+              {t("task.extras")}
+            </h3>
+
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder={t("task.notesPlaceholder")}
+              maxLength={2000}
+              rows={3}
+              className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-sm text-gray-800 placeholder:text-gray-400 focus:border-[var(--color-primary)] focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-500"
+            />
+
+            {!imagePreview ? (
+              <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 py-3.5 text-sm font-medium text-gray-500 transition-colors active:bg-gray-50 dark:border-neutral-600 dark:text-neutral-400 dark:active:bg-neutral-700">
+                <Camera className="h-4 w-4" />
+                {t("task.addPhoto")}
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handleImageSelect}
+                />
+              </label>
+            ) : (
+              <div className="relative mt-3">
+                <img
+                  src={imagePreview}
+                  alt=""
+                  className="w-full rounded-xl object-cover"
+                  style={{ maxHeight: 200 }}
+                />
+                {imageUploading && (
+                  <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white transition-colors active:bg-black/70"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </section>
+        )}
       </main>
 
       {/* Sticky CTA */}

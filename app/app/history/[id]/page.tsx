@@ -10,7 +10,7 @@ import { getHistoryEntry, type HistoryEntry } from "@/lib/storage";
 import { mergePhases } from "@/lib/locale-helpers";
 import { TaskIcon } from "@/components/task-icon";
 import { useLocale } from "@/lib/i18n";
-import { ArrowLeft, MapPin, Check } from "lucide-react";
+import { ArrowLeft, MapPin, Check, FileText, ImageIcon } from "lucide-react";
 
 export default function HistoryDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -19,8 +19,19 @@ export default function HistoryDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setEntry(getHistoryEntry(id));
-    setLoading(false);
+    const local = getHistoryEntry(id);
+    if (local) {
+      setEntry(local);
+      setLoading(false);
+      return;
+    }
+    fetch(`/api/history/${encodeURIComponent(id)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) setEntry(data as HistoryEntry);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [id]);
 
   const task = entry ? tasks.find((t) => t.id === entry.taskId) : null;
@@ -129,7 +140,7 @@ export default function HistoryDetailPage() {
             </span>
             <span className="text-sm font-medium">{timeStr}</span>
           </div>
-          <div className="flex items-center justify-between px-4 py-3">
+          <div className={`flex items-center justify-between px-4 py-3 ${entry.notes || entry.imageUrl ? "border-b border-gray-100 dark:border-neutral-700" : ""}`}>
             <span className="text-sm text-muted">
               {t("history.detail.status")}
             </span>
@@ -137,6 +148,24 @@ export default function HistoryDetailPage() {
               {entry.checkedCount}/{entry.totalCount}
             </span>
           </div>
+          {entry.notes && (
+            <div className={`px-4 py-3 ${entry.imageUrl ? "border-b border-gray-100 dark:border-neutral-700" : ""}`}>
+              <span className="mb-1 flex items-center gap-1.5 text-sm text-muted">
+                <FileText className="h-3.5 w-3.5" />
+                {t("history.detail.notes")}
+              </span>
+              <p className="whitespace-pre-wrap text-sm">{entry.notes}</p>
+            </div>
+          )}
+          {entry.imageUrl && (
+            <div className="px-4 py-3">
+              <span className="mb-1.5 flex items-center gap-1.5 text-sm text-muted">
+                <ImageIcon className="h-3.5 w-3.5" />
+                {t("history.detail.photo")}
+              </span>
+              <img src={entry.imageUrl} alt="" className="w-full rounded-lg object-cover" style={{ maxHeight: 300 }} />
+            </div>
+          )}
         </div>
 
         {/* Checklist items */}
