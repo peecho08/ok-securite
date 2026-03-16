@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function GET() {
@@ -28,16 +28,38 @@ export async function GET() {
       .eq("org_id", profile.org_id)
       .order("joined_at", { ascending: true });
 
-    return Response.json({
-      org,
-      members: (members ?? []).map((m: Record<string, unknown>) => ({
-        id: m.id,
-        userId: m.user_id,
-        role: m.role,
-        joinedAt: m.joined_at,
-        profile: m.profiles,
-      })),
-    });
+    const mapped = (members ?? []).map((m: Record<string, unknown>) => ({
+      id: m.id,
+      userId: m.user_id as string,
+      role: m.role,
+      joinedAt: m.joined_at,
+      profile: m.profiles as { id: string; full_name: string | null; email: string | null; avatar_url: string | null; role: string | null } | null,
+    }));
+
+    const missing = mapped.filter((m) => !m.profile?.full_name && !m.profile?.email);
+    if (missing.length > 0) {
+      try {
+        const clerk = await clerkClient();
+        await Promise.all(
+          missing.map(async (m) => {
+            try {
+              const user = await clerk.users.getUser(m.userId);
+              const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ") || null;
+              const email = user.emailAddresses?.[0]?.emailAddress ?? null;
+              if (fullName || email) {
+                const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+                if (fullName) update.full_name = fullName;
+                if (email) update.email = email;
+                await supabaseAdmin().from("profiles").update(update).eq("id", m.userId);
+                m.profile = { ...(m.profile ?? { id: m.userId, avatar_url: null, role: null, full_name: null, email: null }), full_name: fullName, email };
+              }
+            } catch { /* skip individual member failures */ }
+          })
+        );
+      } catch { /* skip clerk failures */ }
+    }
+
+    return Response.json({ org, members: mapped });
   } catch (err) {
     console.error("GET /api/teams/members:", err);
     return Response.json({ error: "Internal server error" }, { status: 500 });

@@ -2,6 +2,19 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { notifyChecklistCompleted } from "@/lib/notifications";
+import { z } from "zod";
+
+const completeSchema = z.object({
+  taskId: z.string().min(1),
+  taskTitle: z.string().min(1),
+  taskIcon: z.string().optional(),
+  workerName: z.string().optional(),
+  siteName: z.string().optional(),
+  siteId: z.string().optional(),
+  checkedCount: z.number().int().min(0),
+  totalCount: z.number().int().min(1),
+  location: z.string().optional(),
+});
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -9,32 +22,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json();
-  const {
-    taskId,
-    taskTitle,
-    taskIcon,
-    workerName,
-    siteName,
-    siteId,
-    checkedCount,
-    totalCount,
-    location,
-  } = body as {
-    taskId: string;
-    taskTitle: string;
-    taskIcon?: string;
-    workerName?: string;
-    siteName?: string;
-    siteId?: string;
-    checkedCount: number;
-    totalCount: number;
-    location?: string;
-  };
-
-  if (!taskId || !taskTitle || checkedCount == null || totalCount == null) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  const parsed = completeSchema.safeParse(await req.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
+
+  const { taskId, taskTitle, taskIcon, workerName, siteName, siteId, checkedCount, totalCount } = parsed.data;
 
   const { data: profile } = await supabaseAdmin()
     .from("profiles")

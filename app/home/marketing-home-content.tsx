@@ -34,32 +34,6 @@ export function MarketingHomeContent() {
       </section>
 
 
-      {/* 3-step explainer */}
-      <section className="px-5 py-16 sm:px-8 sm:py-24">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="mb-12 text-center font-heading text-2xl font-bold sm:text-3xl">
-            {t("mkt.steps.title")}
-          </h2>
-          <div className="grid gap-8 sm:grid-cols-3 sm:gap-12">
-            <Step
-              icon={<ClipboardCheck className="h-7 w-7" />}
-              title={t("mkt.step1.title")}
-              description={t("mkt.step1.desc")}
-            />
-            <Step
-              icon={<CheckCircle className="h-7 w-7" />}
-              title={t("mkt.step2.title")}
-              description={t("mkt.step2.desc")}
-            />
-            <Step
-              icon={<FileText className="h-7 w-7" />}
-              title={t("mkt.step3.title")}
-              description={t("mkt.step3.desc")}
-            />
-          </div>
-        </div>
-      </section>
-
       {/* Sub-branches */}
       <section className="bg-gray-50 px-5 py-16 dark:bg-neutral-900 sm:px-8 sm:py-24">
         <div className="mx-auto max-w-5xl">
@@ -90,6 +64,32 @@ export function MarketingHomeContent() {
               icon={<Flame className="h-7 w-7" />}
               name={t("mkt.branches.incendie")}
               description={t("mkt.branches.incendieDesc")}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* 3-step explainer */}
+      <section className="px-5 py-16 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="mb-12 text-center font-heading text-2xl font-bold sm:text-3xl">
+            {t("mkt.steps.title")}
+          </h2>
+          <div className="grid gap-8 sm:grid-cols-3 sm:gap-12">
+            <Step
+              icon={<ClipboardCheck className="h-7 w-7" />}
+              title={t("mkt.step1.title")}
+              description={t("mkt.step1.desc")}
+            />
+            <Step
+              icon={<CheckCircle className="h-7 w-7" />}
+              title={t("mkt.step2.title")}
+              description={t("mkt.step2.desc")}
+            />
+            <Step
+              icon={<FileText className="h-7 w-7" />}
+              title={t("mkt.step3.title")}
+              description={t("mkt.step3.desc")}
             />
           </div>
         </div>

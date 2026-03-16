@@ -1,6 +1,23 @@
 import { auth } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getPlanLimits } from "@/lib/stripe";
+import { z } from "zod";
+
+const createSiteSchema = z.object({
+  name: z.string().min(1).max(200),
+  address: z.string().max(500).optional(),
+  lat: z.number().min(-90).max(90).optional().nullable(),
+  lng: z.number().min(-180).max(180).optional().nullable(),
+});
+
+const updateSiteSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).max(200).optional(),
+  address: z.string().max(500).optional().nullable(),
+  lat: z.number().min(-90).max(90).optional().nullable(),
+  lng: z.number().min(-180).max(180).optional().nullable(),
+  active: z.boolean().optional(),
+});
 
 export async function GET() {
   try {

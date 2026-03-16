@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { z } from "zod";
 
@@ -36,9 +36,21 @@ export async function POST(req: Request) {
       role: "supervisor",
     });
 
+    const user = await currentUser();
+    const fullName = user ? [user.firstName, user.lastName].filter(Boolean).join(" ") || null : null;
+    const email = user?.emailAddresses?.[0]?.emailAddress ?? null;
+
+    const profileUpdate: Record<string, unknown> = {
+      org_id: org.id,
+      role: "supervisor",
+      updated_at: new Date().toISOString(),
+    };
+    if (fullName) profileUpdate.full_name = fullName;
+    if (email) profileUpdate.email = email;
+
     await supabaseAdmin()
       .from("profiles")
-      .update({ org_id: org.id, role: "supervisor" })
+      .update(profileUpdate)
       .eq("id", userId);
 
     await supabaseAdmin().from("subscriptions").upsert(

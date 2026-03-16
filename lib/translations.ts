@@ -131,20 +131,6 @@ const fr: Record<string, string | string[]> = {
   "task.criticalWarningContinue": "Continuer quand même",
   "task.na": "N/A",
   "task.markedNa": "Marqué N/A",
-  "task.scanPhoto": "Analyser le chantier",
-  "task.scanTitle": "Analyse IA du chantier",
-  "task.scanning": "Analyse en cours…",
-  "task.scanDone": "Analyse terminée",
-  "task.scanClose": "Fermer",
-  "task.scanHint": "L'IA analyse votre photo pour détecter les risques",
-  "task.scanRisk1": "Travailleur sans casque détecté — zone B",
-  "task.scanRisk2": "Garde-corps manquant côté nord — risque de chute",
-  "task.scanRisk3": "Câble électrique exposé près de la zone de passage",
-  "task.scanRisk4": "Échafaudage non sécurisé — montant manquant",
-  "task.scanRisk5": "Aucun extincteur visible dans la zone de soudage",
-  "task.scanRisk6": "Encombrement excessif — voie d'évacuation obstruée",
-  "task.scanRisk7": "Harnais non attaché — travail en hauteur détecté",
-  "task.scanRisk8": "Signalisation absente — zone de levage active",
   "task.source": "Source : CNESST / Code de sécurité pour les travaux de construction",
 
   // ── Confirm ─────────────────────────────────────────────
@@ -266,6 +252,7 @@ const fr: Record<string, string | string[]> = {
   "team.completions": "{count} complétion{s}",
   "team.removeMember": "Retirer",
   "team.removeConfirm": "Retirer {name} de l'équipe ?",
+  "team.unknownMember": "Membre inconnu",
 
   // ── Construction sites ─────────────────────────────────
   "site.title": "Chantiers",
@@ -665,20 +652,6 @@ const en: Record<string, string | string[]> = {
   "task.criticalWarningContinue": "Continue anyway",
   "task.na": "N/A",
   "task.markedNa": "Marked N/A",
-  "task.scanPhoto": "Analyze the job site",
-  "task.scanTitle": "AI Site Analysis",
-  "task.scanning": "Scanning…",
-  "task.scanDone": "Scan complete",
-  "task.scanClose": "Close",
-  "task.scanHint": "AI analyzes your photo to detect risks",
-  "task.scanRisk1": "Worker without hard hat detected — zone B",
-  "task.scanRisk2": "Missing guardrail on north side — fall risk",
-  "task.scanRisk3": "Exposed electrical cable near walkway",
-  "task.scanRisk4": "Unsecured scaffolding — missing upright",
-  "task.scanRisk5": "No fire extinguisher visible in welding area",
-  "task.scanRisk6": "Excessive clutter — evacuation route blocked",
-  "task.scanRisk7": "Harness not attached — work at height detected",
-  "task.scanRisk8": "Missing signage — active lifting zone",
   "task.source": "Source: CNESST / Construction Safety Code",
 
   // ── Confirm ─────────────────────────────────────────────
@@ -800,6 +773,7 @@ const en: Record<string, string | string[]> = {
   "team.completions": "{count} completion{s}",
   "team.removeMember": "Remove",
   "team.removeConfirm": "Remove {name} from the team?",
+  "team.unknownMember": "Unknown member",
 
   // ── Construction sites ─────────────────────────────────
   "site.title": "Construction sites",

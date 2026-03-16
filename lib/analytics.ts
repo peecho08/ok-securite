@@ -14,7 +14,6 @@ type AnalyticsEvent =
   | "subscription_canceled"
   | "plan_page_viewed"
   | "pdf_downloaded"
-  | "ai_scan_used"
   | "site_created"
   | "custom_checklist_created"
   | "invite_link_copied"

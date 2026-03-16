@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { notifyTeamJoined } from "@/lib/notifications";
 import { checkLimitServer } from "@/lib/db-server";
@@ -49,12 +49,22 @@ export async function POST(req: Request) {
       );
     }
 
+    const user = await currentUser();
+    const fullName = user ? [user.firstName, user.lastName].filter(Boolean).join(" ") || null : null;
+    const email = user?.emailAddresses?.[0]?.emailAddress ?? null;
+
+    const profileData: Record<string, unknown> = {
+      id: userId,
+      role: "worker",
+      org_id: org.id,
+      updated_at: new Date().toISOString(),
+    };
+    if (fullName) profileData.full_name = fullName;
+    if (email) profileData.email = email;
+
     await supabaseAdmin()
       .from("profiles")
-      .upsert(
-        { id: userId, role: "worker", org_id: org.id, updated_at: new Date().toISOString() },
-        { onConflict: "id" }
-      );
+      .upsert(profileData, { onConflict: "id" });
 
     const { error: memberError } = await supabaseAdmin()
       .from("org_members")
@@ -67,13 +77,7 @@ export async function POST(req: Request) {
       return Response.json({ error: memberError.message }, { status: 500 });
     }
 
-    const { data: profile } = await supabaseAdmin()
-      .from("profiles")
-      .select("full_name")
-      .eq("id", userId)
-      .single();
-
-    notifyTeamJoined(profile?.full_name || "Nouveau membre", org.id).catch(console.error);
+    notifyTeamJoined(fullName || "Nouveau membre", org.id).catch(console.error);
 
     return Response.json({ org: { id: org.id, name: org.name, teamTasks: org.team_tasks ?? [] } });
   } catch (err) {
