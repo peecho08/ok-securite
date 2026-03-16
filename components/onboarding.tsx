@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
-import { getWorkerName, setWorkerName, setWorkerOrgId, setWorkerOnboardingDone } from "@/lib/storage";
+import { getWorkerName, getWorkerOrgId, setWorkerName, setWorkerOrgId, setWorkerOnboardingDone } from "@/lib/storage";
 import { useLocale } from "@/lib/i18n";
 
 interface OnboardingProps {
@@ -14,7 +14,7 @@ type OnboardingStep = "join" | "welcome";
 
 export function Onboarding({ onDone }: OnboardingProps) {
   const { t } = useLocale();
-  const [step, setStep] = useState<OnboardingStep>("join");
+  const [step, setStep] = useState<OnboardingStep>(() => getWorkerOrgId() ? "welcome" : "join");
   const [name, setName] = useState(getWorkerName);
   const [joinLink, setJoinLink] = useState("");
 
