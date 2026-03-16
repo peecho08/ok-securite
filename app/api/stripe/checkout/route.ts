@@ -66,6 +66,7 @@ export async function POST(req: Request) {
       subscription_data: {
         trial_period_days: TRIAL_DAYS,
       },
+      allow_promotion_codes: true,
       success_url: `${origin}/plans?success=true`,
       cancel_url: `${origin}/plans?canceled=true`,
       metadata: {
