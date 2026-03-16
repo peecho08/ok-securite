@@ -45,7 +45,7 @@ export default function JoinPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ role: "worker" }),
         });
-        router.replace("/app");
+        window.location.href = "/app";
       } catch {
         setError(t("joinTeam.invalidLink"));
       }
