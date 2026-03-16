@@ -226,9 +226,10 @@ export default function ConfirmPage() {
 
   useEffect(() => {
     if (!task || saved || !progressLoaded || geoLoading) return;
+    const title = locale === "en" && task.titleEn ? task.titleEn : task.title;
     addHistory({
       taskId,
-      taskTitle: locale === "en" && task.titleEn ? task.titleEn : task.title,
+      taskTitle: title,
       taskIcon: task.icon,
       workerName,
       checkedCount: items,
@@ -245,6 +246,22 @@ export default function ConfirmPage() {
       has_site: !!siteName,
       has_worker_name: !!workerName,
     });
+
+    fetch("/api/tasks/complete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        taskId,
+        taskTitle: title,
+        taskIcon: task.icon,
+        workerName: workerName || undefined,
+        siteName: siteName || undefined,
+        checkedCount: items,
+        totalCount: items,
+        location: geoAddress || undefined,
+      }),
+    }).catch(() => {});
+
     setSaved(true);
   }, [task, taskId, workerName, items, now, saved, progressLoaded, locale, siteName, geoAddress, geoLoading]);
 
@@ -275,13 +292,13 @@ export default function ConfirmPage() {
         </Link>
       </div>
       <main className="flex flex-1 flex-col items-center justify-center px-5 py-5 text-center sm:px-8">
-        <div className="flex h-28 w-28 animate-stamp items-center justify-center rounded-full bg-primary/10">
+        <div className="animate-stamp">
           <Image
-            src="/ok-securite.svg"
+            src="/ok-badge.svg"
             alt="OK"
-            width={94}
-            height={49}
-            className="h-12 w-auto"
+            width={112}
+            height={112}
+            className="h-28 w-28"
           />
         </div>
 

@@ -9,7 +9,7 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/ok-securite.svg",
+      "src": "/ok-fav-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }
