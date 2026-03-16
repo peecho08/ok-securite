@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 import { LogOut } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
@@ -11,7 +10,6 @@ import { setActiveRole, setRoleChoiceDone } from "@/lib/storage";
 export function ChooseRole() {
   const { locale, setLocale, t } = useLocale();
   const { signOut } = useClerk();
-  const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,9 +38,9 @@ export function ChooseRole() {
       setRoleChoiceDone();
 
       if (role === "supervisor") {
-        router.push("/app/create-team");
+        window.location.href = "/app/create-team";
       } else {
-        router.refresh();
+        window.location.reload();
       }
     } catch (err) {
       console.error("Error saving role:", err);
