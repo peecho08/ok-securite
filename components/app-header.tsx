@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
-import { getActiveRole, setActiveRole, getWorkerOrgId, setWorkerOrgId, getTeamName } from "@/lib/storage";
+import { getActiveRole, getWorkerOrgId, setWorkerOrgId, getTeamName } from "@/lib/storage";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sounds";
 import { useClerk } from "@clerk/nextjs";
 import { ClipboardList, ExternalLink, LogOut, UserPlus, Volume2, VolumeX } from "lucide-react";
@@ -151,24 +151,6 @@ export function AppHeader({ workerName }: AppHeaderProps) {
                       <p className="font-heading text-base font-bold text-gray-900 dark:text-neutral-100">{workerName || (getActiveRole() === "supervisor" ? t("menu.supervisor") : t("menu.worker"))}</p>
                       <p className="text-sm text-gray-500 dark:text-neutral-400">{getActiveRole() === "supervisor" ? t("menu.supervisor") : (getTeamName() || t("menu.worker"))}</p>
                     </div>
-                    {getActiveRole() === "supervisor" && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveRole("worker");
-                          fetch("/api/profile/role", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ role: "worker" }),
-                          });
-                          setShowMenu(false);
-                          window.location.href = "/app";
-                        }}
-                        className="shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
-                      >
-                        {t("menu.switchToWorker")}
-                      </button>
-                    )}
                   </div>
                   {getActiveRole() === "worker" && !hasTeam && (
                     <div className="border-b border-gray-100 px-5 py-4 dark:border-neutral-700">

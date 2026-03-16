@@ -21,6 +21,19 @@ export async function POST(req: Request) {
 
     const { token } = parsed.data;
 
+    const { data: profile } = await supabaseAdmin()
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
+
+    if (profile?.role === "supervisor") {
+      return Response.json(
+        { error: "Supervisors cannot join a team as a worker" },
+        { status: 403 }
+      );
+    }
+
     const { data: org } = await supabaseAdmin()
       .from("organizations")
       .select("*")

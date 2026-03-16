@@ -20,6 +20,19 @@ export async function POST(req: Request) {
 
     const { name, taskIds } = parsed.data;
 
+    const { data: profile } = await supabaseAdmin()
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
+
+    if (profile?.role === "worker") {
+      return Response.json(
+        { error: "Workers cannot create a team as a supervisor" },
+        { status: 403 }
+      );
+    }
+
     const { data: org, error: orgError } = await supabaseAdmin()
       .from("organizations")
       .insert({ name, created_by: userId })
