@@ -6,9 +6,10 @@ import Link from "next/link";
 import { useLocale } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
 import { getTeamName, getInviteToken, getWorkerName, setActiveRole, clearWorkerOnboardingDone, getHistory, getSites, getCustomTasks, type HistoryEntry, type ConstructionSite } from "@/lib/storage";
+
 import type { Task } from "@/types";
 import { TaskIcon } from "@/components/task-icon";
-import { Copy, Check, Users, ClipboardList, RotateCcw, ExternalLink, Mail, MessageSquare, MapPin, ListChecks, PenLine } from "lucide-react";
+import { Copy, Check, Users, ClipboardList, ExternalLink, Mail, MessageSquare, MapPin, ListChecks, PenLine } from "lucide-react";
 
 export function SupervisorHome() {
   const { locale, setLocale, t } = useLocale();
@@ -184,13 +185,6 @@ export function SupervisorHome() {
               >
                 <svg className="h-5 w-5 shrink-0 text-gray-500 dark:text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" /></svg>
                 {t("menu.language")}
-              </button>
-              <button
-                onClick={() => { resetAllForFreshStart(); setShowMenu(false); window.location.href = "/"; }}
-                className="flex min-h-[52px] w-full items-center gap-4 px-5 py-3 text-left text-base text-gray-500 transition-colors active:bg-gray-100 dark:text-neutral-400 dark:active:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700"
-              >
-                <RotateCcw className="h-5 w-5 shrink-0" />
-                {t("menu.freshStart")}
               </button>
             </div>
           </div>

@@ -34,15 +34,15 @@ export const metadata: Metadata = {
     description: "Listes de vérification sécurité — rapide et fiable",
     url: "https://ok-chantier.com",
     siteName: "OK Sécurité",
-    images: [{ url: "/social-share.jpg", width: 1200, height: 630 }],
+    images: [{ url: "/ok-yellow-white.svg", width: 512, height: 512 }],
     locale: "fr_CA",
     type: "website",
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "OK Sécurité",
     description: "Listes de vérification sécurité — rapide et fiable",
-    images: ["/social-share.jpg"],
+    images: ["/ok-yellow-white.svg"],
   },
 };
 

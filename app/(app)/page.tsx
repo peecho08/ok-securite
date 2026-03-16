@@ -6,6 +6,7 @@ import { type TaskCategory } from "@/types";
 import { useLocale } from "@/lib/i18n";
 import { localCatLabel, localTitle, normalize } from "@/lib/locale-helpers";
 import { clearProgress, getActiveTaskProgress, getTeamTasks, getWorkerName, getActiveRole, getRoleChoiceDone, getWorkerOnboardingDone, getCustomTasks, getCustomChecklists } from "@/lib/storage";
+
 import { checklists } from "@/data/checklists";
 import type { Task, Checklist } from "@/types";
 import { AppHeader } from "@/components/app-header";
@@ -156,10 +157,7 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <AppHeader
-        workerName={workerName}
-        onFreshStart={() => { resetAllForFreshStart(); window.location.href = "/"; }}
-      />
+      <AppHeader workerName={workerName} />
 
       <SearchBar query={query} onQueryChange={setQuery} pinned={searchPinned} />
 

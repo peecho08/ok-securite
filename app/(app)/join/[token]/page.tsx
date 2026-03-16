@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { setWorkerOrgId, setRoleChoiceDone, setActiveRole } from "@/lib/storage";
 import { useLocale } from "@/lib/i18n";
@@ -10,21 +10,56 @@ export default function JoinPage() {
   const router = useRouter();
   const { t } = useLocale();
   const token = (params?.token as string) || "";
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!token) {
       router.replace("/");
       return;
     }
-    setWorkerOrgId(token);
-    setRoleChoiceDone();
-    setActiveRole("worker");
-    router.replace("/");
-  }, [token, router]);
+
+    async function joinTeam() {
+      try {
+        const res = await fetch("/api/teams/join", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          setError(data.error || t("joinTeam.invalidLink"));
+          return;
+        }
+
+        const { org } = await res.json();
+        setWorkerOrgId(org.id);
+        setRoleChoiceDone();
+        setActiveRole("worker");
+        router.replace("/");
+      } catch {
+        setError(t("joinTeam.invalidLink"));
+      }
+    }
+
+    joinTeam();
+  }, [token, router, t]);
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-white px-5 dark:bg-neutral-900">
-      <p className="text-sm text-gray-500">{t("joinTeam.joining")}</p>
+      {error ? (
+        <div className="text-center">
+          <p className="text-sm font-medium text-red-500">{error}</p>
+          <button
+            onClick={() => router.replace("/")}
+            className="mt-4 rounded-lg bg-[var(--color-primary)] px-5 py-2 text-sm font-bold text-white"
+          >
+            {t("nav.back")}
+          </button>
+        </div>
+      ) : (
+        <p className="text-sm text-gray-500">{t("joinTeam.joining")}</p>
+      )}
     </div>
   );
 }

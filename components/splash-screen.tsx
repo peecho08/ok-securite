@@ -12,11 +12,6 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       if (sessionStorage.getItem(SPLASH_KEY)) return;
-      const ndaAlreadyAccepted = localStorage.getItem("ok-chantier:nda-accepted") === "1";
-      if (ndaAlreadyAccepted) {
-        sessionStorage.setItem(SPLASH_KEY, "1");
-        return;
-      }
       setVisible(true);
       sessionStorage.setItem(SPLASH_KEY, "1");
       const fadeTimer = setTimeout(() => setFading(true), 1200);
