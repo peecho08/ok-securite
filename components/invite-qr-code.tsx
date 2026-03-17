@@ -13,37 +13,35 @@ interface InviteQRCodeProps {
 export function InviteQRCode({ url, teamName }: InviteQRCodeProps) {
   const { t } = useLocale();
 
-  const downloadPrintable = useCallback(() => {
-    const canvas = document.createElement("canvas");
-    const w = 800;
-    const h = 1060;
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+  const downloadPrintable = useCallback(async () => {
+    try {
+      const canvas = document.createElement("canvas");
+      const w = 800;
+      const h = 1060;
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-    const svgEl = document.querySelector<SVGElement>("[data-qr-invite]");
-    if (!svgEl) return;
+      const svgEl = document.querySelector<SVGElement>("[data-qr-invite]");
+      if (!svgEl) return;
 
-    const loadImage = (src: string): Promise<HTMLImageElement> =>
-      new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = src;
-      });
+      const loadImage = (src: string): Promise<HTMLImageElement> =>
+        new Promise((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = src;
+        });
 
-    const svgData = new XMLSerializer().serializeToString(svgEl);
-    const svgBlob = new Blob([svgData], {
-      type: "image/svg+xml;charset=utf-8",
-    });
-    const qrUrl = URL.createObjectURL(svgBlob);
+      const svgData = new XMLSerializer().serializeToString(svgEl);
+      const qrDataUrl = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgData)))}`;
 
-    Promise.all([
-      loadImage("/officiel.svg"),
-      loadImage(qrUrl),
-    ]).then(([logoImg, qrImg]) => {
-      URL.revokeObjectURL(qrUrl);
+      const [logoImg, qrImg] = await Promise.all([
+        loadImage("/officiel.svg"),
+        loadImage(qrDataUrl),
+      ]);
 
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, w, h);
@@ -114,11 +112,27 @@ export function InviteQRCode({ url, teamName }: InviteQRCodeProps) {
       ctx.font = "bold 16px system-ui, -apple-system, sans-serif";
       ctx.fillText("www.ok-securite.com", w / 2, h - 30);
 
+      const dataUrl = canvas.toDataURL("image/png");
       const link = document.createElement("a");
       link.download = `qr-${teamName?.replace(/\s+/g, "-").toLowerCase() || "equipe"}.png`;
-      link.href = canvas.toDataURL("image/png");
+      link.href = dataUrl;
+      document.body.appendChild(link);
       link.click();
-    });
+      document.body.removeChild(link);
+    } catch {
+      const fallbackLink = document.createElement("a");
+      fallbackLink.download = `qr-${teamName?.replace(/\s+/g, "-").toLowerCase() || "equipe"}.svg`;
+      const svgEl = document.querySelector<SVGElement>("[data-qr-invite]");
+      if (svgEl) {
+        const svgData = new XMLSerializer().serializeToString(svgEl);
+        const blob = new Blob([svgData], { type: "image/svg+xml" });
+        fallbackLink.href = URL.createObjectURL(blob);
+        document.body.appendChild(fallbackLink);
+        fallbackLink.click();
+        document.body.removeChild(fallbackLink);
+        URL.revokeObjectURL(fallbackLink.href);
+      }
+    }
   }, [url, teamName, t]);
 
   return (
