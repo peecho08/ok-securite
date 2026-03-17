@@ -1,6 +1,7 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { wipeUser } from "@/lib/supabase/wipe-user";
 
 interface ClerkUserEvent {
   data: {
@@ -73,7 +74,7 @@ export async function POST(req: Request) {
     }
 
     if (type === "user.deleted") {
-      await supabaseAdmin().from("profiles").delete().eq("id", data.id);
+      await wipeUser(data.id);
     }
   } catch (err) {
     console.error("Clerk webhook DB error:", err);
