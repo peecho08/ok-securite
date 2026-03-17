@@ -440,6 +440,33 @@ const fr: Record<string, string | string[]> = {
   "mkt.branches.available": "Disponible",
   "mkt.branches.comingSoon": "Bientôt",
   "mkt.madeInCanada": "Fait au Canada",
+  "mkt.contact": "Contact",
+  "mkt.contact.email": "support@ok-securite.com",
+  "mkt.cookieSettings": "Préférences de témoins",
+
+  // ── Social proof ──────────────────────────────────────────
+  "mkt.proof.title": "La confiance du terrain",
+  "mkt.proof.stat1.value": "50+",
+  "mkt.proof.stat1.label": "listes CNESST",
+  "mkt.proof.stat2.value": "7",
+  "mkt.proof.stat2.label": "catégories de travaux",
+  "mkt.proof.stat3.value": "100%",
+  "mkt.proof.stat3.label": "gratuit pour commencer",
+
+  // ── FAQ ─────────────────────────────────────────────────────
+  "mkt.faq.title": "Questions fréquentes",
+  "mkt.faq.q1": "Est-ce vraiment gratuit ?",
+  "mkt.faq.a1": "Oui. Le forfait gratuit vous donne accès à toutes les 50+ listes CNESST sans aucun frais. Les forfaits payants ajoutent les PDF, la gestion d'équipe avancée et plus encore.",
+  "mkt.faq.q2": "Est-ce conforme aux normes CNESST ?",
+  "mkt.faq.a2": "Nos listes de vérification sont basées sur le Code de sécurité pour les travaux de construction (CSTC) et le Règlement sur la santé et la sécurité du travail (RSST) de la CNESST.",
+  "mkt.faq.q3": "Puis-je annuler mon abonnement à tout moment ?",
+  "mkt.faq.a3": "Absolument. Tous les forfaits payants incluent un essai gratuit de 14 jours et vous pouvez annuler à tout moment sans frais supplémentaires.",
+  "mkt.faq.q4": "Est-ce que ça fonctionne hors ligne ?",
+  "mkt.faq.a4": "Oui. L'application est conçue pour fonctionner sur le terrain, même sans connexion Internet. Vos données se synchronisent automatiquement lorsque vous retrouvez une connexion.",
+  "mkt.faq.q5": "Comment fonctionne l'essai gratuit de 14 jours ?",
+  "mkt.faq.a5": "Créez votre compte, choisissez un forfait payant et vous avez 14 jours complets pour tout tester. Aucune carte de crédit n'est requise pour le forfait gratuit. Si vous annulez pendant l'essai, vous ne serez pas facturé.",
+  "mkt.faq.q6": "Que se passe-t-il si je rétrograde mon forfait ?",
+  "mkt.faq.a6": "Vos données sont conservées. Vous perdrez l'accès aux fonctionnalités du forfait supérieur, mais vous pourrez toujours utiliser les fonctionnalités de votre nouveau forfait.",
 
   // ── How it works page ─────────────────────────────────────
   "mkt.nav.howItWorks": "Comment ça marche",
@@ -1050,6 +1077,33 @@ const en: Record<string, string | string[]> = {
   "mkt.branches.available": "Available",
   "mkt.branches.comingSoon": "Coming soon",
   "mkt.madeInCanada": "Made in Canada",
+  "mkt.contact": "Contact",
+  "mkt.contact.email": "support@ok-securite.com",
+  "mkt.cookieSettings": "Cookie preferences",
+
+  // ── Social proof ──────────────────────────────────────────
+  "mkt.proof.title": "Trusted on the job site",
+  "mkt.proof.stat1.value": "50+",
+  "mkt.proof.stat1.label": "CNESST checklists",
+  "mkt.proof.stat2.value": "7",
+  "mkt.proof.stat2.label": "work categories",
+  "mkt.proof.stat3.value": "100%",
+  "mkt.proof.stat3.label": "free to start",
+
+  // ── FAQ ─────────────────────────────────────────────────────
+  "mkt.faq.title": "Frequently asked questions",
+  "mkt.faq.q1": "Is it really free?",
+  "mkt.faq.a1": "Yes. The free plan gives you access to all 50+ CNESST checklists at no cost. Paid plans add PDF reports, advanced team management, and more.",
+  "mkt.faq.q2": "Is it compliant with CNESST standards?",
+  "mkt.faq.a2": "Our checklists are based on the Construction Safety Code (CSTC) and the Regulation respecting occupational health and safety (RSST) from the CNESST.",
+  "mkt.faq.q3": "Can I cancel my subscription anytime?",
+  "mkt.faq.a3": "Absolutely. All paid plans include a 14-day free trial and you can cancel at any time with no extra charges.",
+  "mkt.faq.q4": "Does it work offline?",
+  "mkt.faq.a4": "Yes. The app is built for the field, even without an internet connection. Your data syncs automatically when you're back online.",
+  "mkt.faq.q5": "How does the 14-day free trial work?",
+  "mkt.faq.a5": "Create your account, choose a paid plan, and you get 14 full days to test everything. No credit card required for the free plan. Cancel during the trial and you won't be charged.",
+  "mkt.faq.q6": "What happens if I downgrade my plan?",
+  "mkt.faq.a6": "Your data is preserved. You'll lose access to the higher plan's features, but you can still use everything included in your new plan.",
 
   // ── How it works page ─────────────────────────────────────
   "mkt.nav.howItWorks": "How it works",

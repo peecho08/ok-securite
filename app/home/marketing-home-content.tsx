@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useLocale } from "@/lib/i18n";
 import { APP_URL } from "@/lib/urls";
 import { MusicPlayer } from "@/components/music-player";
-import { ClipboardCheck, CheckCircle, FileText, Quote, HardHat, Truck, Factory, Flame, Lock } from "lucide-react";
+import { ClipboardCheck, CheckCircle, FileText, Quote, HardHat, Truck, Factory, Flame, Lock, ChevronDown, ShieldCheck, Layers, Zap } from "lucide-react";
 
 export function MarketingHomeContent() {
   const { t } = useLocale();
@@ -96,6 +98,23 @@ export function MarketingHomeContent() {
         </div>
       </section>
 
+      {/* Social proof stats */}
+      <section className="border-y border-gray-100 bg-white px-5 py-14 dark:border-neutral-800 dark:bg-neutral-950 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="mb-10 text-center font-heading text-2xl font-bold sm:text-3xl">
+            {t("mkt.proof.title")}
+          </h2>
+          <div className="grid gap-8 sm:grid-cols-3">
+            <ProofStat icon={<ShieldCheck className="h-7 w-7" />} value={t("mkt.proof.stat1.value")} label={t("mkt.proof.stat1.label")} />
+            <ProofStat icon={<Layers className="h-7 w-7" />} value={t("mkt.proof.stat2.value")} label={t("mkt.proof.stat2.label")} />
+            <ProofStat icon={<Zap className="h-7 w-7" />} value={t("mkt.proof.stat3.value")} label={t("mkt.proof.stat3.label")} />
+          </div>
+          <div className="mt-12 flex items-center justify-center gap-6 opacity-60 grayscale">
+            <Image src="/cnesst-logo.svg" alt="CNESST" width={100} height={32} className="h-8 w-auto dark:invert" />
+          </div>
+        </div>
+      </section>
+
       {/* Testimonial */}
       <section className="px-5 py-16 sm:px-8 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
@@ -114,8 +133,22 @@ export function MarketingHomeContent() {
         </div>
       </section>
 
+      {/* FAQ */}
+      <section className="bg-gray-50 px-5 py-16 dark:bg-neutral-900 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-2xl">
+          <h2 className="mb-10 text-center font-heading text-2xl font-bold sm:text-3xl">
+            {t("mkt.faq.title")}
+          </h2>
+          <div className="space-y-3">
+            {(["1", "2", "3", "4", "5", "6"] as const).map((n) => (
+              <FaqItem key={n} question={t(`mkt.faq.q${n}`)} answer={t(`mkt.faq.a${n}`)} />
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Song */}
-      <section className="bg-gray-50 px-5 py-12 dark:bg-neutral-900 sm:px-8">
+      <section className="bg-white px-5 py-12 dark:bg-neutral-950 sm:px-8">
         <div className="mx-auto max-w-md">
           <MusicPlayer />
         </div>
@@ -166,6 +199,52 @@ function Step({
       <p className="text-sm leading-relaxed text-gray-600 dark:text-neutral-400">
         {description}
       </p>
+    </div>
+  );
+}
+
+function ProofStat({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+}) {
+  return (
+    <div className="flex flex-col items-center text-center">
+      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+        {icon}
+      </div>
+      <p className="font-heading text-3xl font-bold sm:text-4xl">{value}</p>
+      <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400">{label}</p>
+    </div>
+  );
+}
+
+function FaqItem({ question, answer }: { question: string; answer: string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+      >
+        <span className="font-heading text-sm font-bold sm:text-base">{question}</span>
+        <ChevronDown
+          className={`h-5 w-5 shrink-0 text-gray-400 transition-transform dark:text-neutral-500 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {open && (
+        <div className="border-t border-gray-100 px-5 pb-4 pt-3 text-sm leading-relaxed text-gray-600 dark:border-neutral-700 dark:text-neutral-400">
+          {answer}
+        </div>
+      )}
     </div>
   );
 }

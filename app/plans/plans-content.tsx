@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useLocale } from "@/lib/i18n";
-import { Check, Minus, Loader2, X } from "lucide-react";
+import { Check, Minus, Loader2, X, ChevronDown } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 interface Feature {
@@ -334,7 +334,45 @@ function PlansInner() {
         <p className="mt-10 text-center text-sm text-gray-500 dark:text-neutral-400">
           {t("plans.launchNote")}
         </p>
+
+        {/* FAQ */}
+        <div className="mt-16 border-t border-gray-200 pt-16 dark:border-neutral-700">
+          <h2 className="mb-8 text-center font-heading text-2xl font-bold sm:text-3xl">
+            {t("mkt.faq.title")}
+          </h2>
+          <div className="mx-auto max-w-2xl space-y-3">
+            {(["3", "5", "6", "1"] as const).map((n) => (
+              <PlansFaqItem key={n} question={t(`mkt.faq.q${n}`)} answer={t(`mkt.faq.a${n}`)} />
+            ))}
+          </div>
+        </div>
       </div>
     </section>
+  );
+}
+
+function PlansFaqItem({ question, answer }: { question: string; answer: string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+      >
+        <span className="font-heading text-sm font-bold sm:text-base">{question}</span>
+        <ChevronDown
+          className={`h-5 w-5 shrink-0 text-gray-400 transition-transform dark:text-neutral-500 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {open && (
+        <div className="border-t border-gray-100 px-5 pb-4 pt-3 text-sm leading-relaxed text-gray-600 dark:border-neutral-700 dark:text-neutral-400">
+          {answer}
+        </div>
+      )}
+    </div>
   );
 }

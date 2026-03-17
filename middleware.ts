@@ -25,10 +25,15 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.next();
   }
 
+  const addPathHeader = (response: NextResponse) => {
+    response.headers.set("x-pathname", pathname);
+    return response;
+  };
+
   if (pathname === "/") {
     const url = request.nextUrl.clone();
     url.pathname = "/home";
-    return NextResponse.rewrite(url);
+    return addPathHeader(NextResponse.rewrite(url));
   }
 
   if (pathname === "/app/create-team" && request.nextUrl.searchParams.get("plan")) {
@@ -36,7 +41,7 @@ export default clerkMiddleware(async (auth, request) => {
     const plan = request.nextUrl.searchParams.get("plan")!;
     const response = NextResponse.next();
     response.cookies.set("pending_plan", plan, { maxAge: 600, path: "/" });
-    return response;
+    return addPathHeader(response);
   }
 
   if (pathname.startsWith("/app/join/")) {
@@ -48,12 +53,14 @@ export default clerkMiddleware(async (auth, request) => {
     }
     const response = NextResponse.next();
     response.cookies.set("pending_join", pathname, { maxAge: 300, path: "/" });
-    return response;
+    return addPathHeader(response);
   }
 
   if (isProtectedRoute(request)) {
     await auth.protect();
   }
+
+  return addPathHeader(NextResponse.next());
 });
 
 export const config = {

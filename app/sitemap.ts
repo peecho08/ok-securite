@@ -11,8 +11,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
   const staticPages: MetadataRoute.Sitemap = [
-    { url: baseUrl, lastModified: now, changeFrequency: "weekly", priority: 1 },
-    { url: `${baseUrl}/home`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/home`, lastModified: now, changeFrequency: "monthly", priority: 1 },
+    { url: `${baseUrl}/comment-ca-marche`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/plans`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/terms`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: `${baseUrl}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },

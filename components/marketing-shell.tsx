@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { I18nProvider, useLocale } from "@/lib/i18n";
 import { APP_URL } from "@/lib/urls";
+import { Mail } from "lucide-react";
 
 function MarketingNav() {
   const { locale, setLocale, t } = useLocale();
@@ -125,6 +126,12 @@ function MarketingNav() {
 function MarketingFooter() {
   const { t } = useLocale();
 
+  function openCookieSettings() {
+    localStorage.removeItem("cookie-consent");
+    window.dispatchEvent(new Event("cookie-consent-reset"));
+    window.location.reload();
+  }
+
   return (
     <footer className="border-t border-gray-200 bg-gray-50 dark:border-neutral-800 dark:bg-neutral-950">
       <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
@@ -146,9 +153,25 @@ function MarketingFooter() {
               {t("legal.privacy")}
             </Link>
           </div>
-          <p className="text-xs text-gray-400 dark:text-neutral-500">
-            &copy; {new Date().getFullYear()} OK Sécurité. {t("mkt.footer.rights")}
-          </p>
+          <a
+            href="mailto:support@ok-securite.com"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+          >
+            <Mail className="h-3.5 w-3.5" />
+            {t("mkt.contact.email")}
+          </a>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <p className="text-xs text-gray-400 dark:text-neutral-500">
+              &copy; {new Date().getFullYear()} OK Sécurité. {t("mkt.footer.rights")}
+            </p>
+            <button
+              type="button"
+              onClick={openCookieSettings}
+              className="text-xs text-gray-400 underline decoration-gray-300 underline-offset-2 transition-colors hover:text-gray-600 dark:text-neutral-500 dark:decoration-neutral-600 dark:hover:text-neutral-300"
+            >
+              {t("mkt.cookieSettings")}
+            </button>
+          </div>
           <span className="flex items-center gap-1.5 text-[10px] text-gray-300 dark:text-neutral-600">
             <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M12 2L9.19 7.53 4.02 7.22 7.09 11.37 5.82 16.4 10.66 14.22 12 19.5 13.34 14.22 18.18 16.4 16.91 11.37 19.98 7.22 14.81 7.53Z" />

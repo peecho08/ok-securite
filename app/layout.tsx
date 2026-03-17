@@ -25,7 +25,10 @@ const workSans = Work_Sans({
 export const metadata: Metadata = {
   title: "OK Sécurité",
   description: "Listes de vérification sécurité — rapide et fiable",
-  icons: { icon: "/ok-fav-icon.svg", apple: "/ok-fav-icon.svg" },
+  icons: {
+    icon: "/ok-fav-icon.svg",
+    apple: "/icon-192.png",
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -57,13 +60,18 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { headers } = await import("next/headers");
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const lang = pathname.startsWith("/en") ? "en" : "fr";
+
   return (
-    <html lang="fr" className={`${rubik.variable} ${workSans.variable}`}>
+    <html lang={lang} className={`${rubik.variable} ${workSans.variable}`}>
       <head>
         <OrganizationJsonLd />
         <SoftwareApplicationJsonLd />
