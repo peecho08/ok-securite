@@ -22,8 +22,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("fr");
 
   useEffect(() => {
-    const saved = getLanguage() as Locale;
-    if (saved && saved !== "fr") setLocaleState(saved);
+    const saved = getLanguage();
+    if (saved === "fr" || saved === "en") {
+      setLocaleState(saved);
+      return;
+    }
+    const browserLang = navigator.languages?.[0] ?? navigator.language ?? "";
+    const detected: Locale = browserLang.startsWith("fr") ? "fr" : "en";
+    setLocaleState(detected);
+    persistLanguage(detected);
   }, []);
 
   const setLocale = useCallback((l: Locale) => {

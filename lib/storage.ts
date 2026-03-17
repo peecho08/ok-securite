@@ -259,13 +259,13 @@ export function clearWorkerOnboardingDone() {
 
 const LANG_KEY = key("lang");
 
-export function getLanguage(): string {
+export function getLanguage(): string | null {
   const storage = safeStorage();
-  if (!storage) return "fr";
+  if (!storage) return null;
   try {
-    return storage.getItem(LANG_KEY) || "fr";
+    return storage.getItem(LANG_KEY);
   } catch {
-    return "fr";
+    return null;
   }
 }
 

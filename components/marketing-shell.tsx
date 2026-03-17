@@ -60,8 +60,15 @@ function MarketingNav() {
           </a>
         </div>
 
-        {/* Mobile: CTA + hamburger */}
-        <div className="flex items-center gap-3 md:hidden">
+        {/* Mobile: lang toggle + CTA + hamburger */}
+        <div className="flex items-center gap-2 md:hidden">
+          <button
+            type="button"
+            onClick={() => setLocale(locale === "fr" ? "en" : "fr")}
+            className="rounded-md px-2 py-1 text-xs font-bold uppercase text-white/60 transition-colors hover:text-white"
+          >
+            {locale === "fr" ? "EN" : "FR"}
+          </button>
           <a
             href={APP_URL}
             className="rounded-lg bg-[var(--color-primary)] px-3.5 py-1.5 text-sm font-bold text-white transition-colors hover:bg-[var(--color-primary-dark)]"
@@ -108,13 +115,6 @@ function MarketingNav() {
             >
               {t("mkt.nav.plans")}
             </Link>
-            <button
-              type="button"
-              onClick={() => { setLocale(locale === "fr" ? "en" : "fr"); close(); }}
-              className="w-fit rounded-md px-2 py-1 text-xs font-bold uppercase text-white/60 transition-colors hover:text-white"
-            >
-              {locale === "fr" ? "EN" : "FR"}
-            </button>
           </div>
         </div>
       )}
